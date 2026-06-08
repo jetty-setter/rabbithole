@@ -1,45 +1,55 @@
-import { useEffect, useRef, useState } from "react";
-import { createUpload, listVideos, uploadToS3, WS_URL, type Video } from "./api";
-import { Player } from "./Player";
+import { useEffect, useState } from "react";
+import { Routes, Route, Outlet, useOutletContext } from "react-router-dom";
+import { getToken, setToken, listVideos, WS_URL, type Video } from "./api";
+import { Header } from "./Header";
+import { Sidebar } from "./Sidebar";
+import { UploadModal } from "./UploadModal";
+import { PlayerModal } from "./PlayerModal";
+import { LoginModal } from "./LoginModal";
+import { LibraryPage } from "./LibraryPage";
+import { AdminPage } from "./AdminPage";
 
-const STATUS_LABEL: Record<string, string> = {
-  pending_upload: "Awaiting upload",
-  uploaded: "Uploaded",
-  processing: "Transcoding",
-  ready: "Ready",
-  failed: "Failed",
-};
+export interface AppCtx {
+  videos: Video[];
+  refresh: () => void;
+  live: boolean;
+  play: (v: Video) => void;
+  authed: boolean;
+  requireLogin: () => void;
+  query: string;
+}
 
-export default function App() {
+export const useApp = () => useOutletContext<AppCtx>();
+
+function Layout() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [selected, setSelected] = useState<Video | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [progress, setProgress] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
   const [live, setLive] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [query, setQuery] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [token, setTok] = useState<string | null>(() => getToken());
+  const authed = !!token;
 
   async function refresh() {
     try {
       setVideos(await listVideos());
     } catch {
-      /* keep last good list on transient errors */
+      /* keep last good list */
     }
   }
 
-  // Initial load + slow poll as a fallback for the WebSocket.
   useEffect(() => {
     refresh();
     const t = setInterval(refresh, 15000);
     return () => clearInterval(t);
   }, []);
 
-  // Real-time status: refresh immediately whenever the server pushes a change.
   useEffect(() => {
     if (!WS_URL) return;
     let ws: WebSocket | null = null;
     let retry: ReturnType<typeof setTimeout>;
-
     const connect = () => {
       ws = new WebSocket(WS_URL!);
       ws.onopen = () => setLive(true);
@@ -50,7 +60,6 @@ export default function App() {
       };
       ws.onerror = () => ws?.close();
     };
-
     connect();
     return () => {
       clearTimeout(retry);
@@ -58,114 +67,67 @@ export default function App() {
     };
   }, []);
 
-  async function handleUpload() {
-    const file = fileRef.current?.files?.[0];
-    if (!file) {
-      setError("Choose a video file first.");
-      return;
-    }
-    setBusy(true);
-    setError(null);
-    setProgress(0);
-    try {
-      const ticket = await createUpload(file.name, file.type || "video/mp4");
-      await uploadToS3(ticket.upload_url, file, setProgress);
-      if (fileRef.current) fileRef.current.value = "";
-      await refresh();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Upload failed");
-    } finally {
-      setBusy(false);
-      setProgress(null);
-    }
+  function logout() {
+    setToken(null);
+    setTok(null);
   }
 
-  const readyCount = videos.filter((v) => v.status === "ready").length;
-  const totalCost = videos.reduce((sum, v) => sum + Number(v.cost_usd ?? 0), 0);
+  const ctx: AppCtx = {
+    videos,
+    refresh,
+    live,
+    play: setSelected,
+    authed,
+    requireLogin: () => setLoginOpen(true),
+    query,
+  };
 
   return (
-    <div className="wrap">
-      <header className="head">
-        <h1>🐇 RabbitHole</h1>
-        <p>Upload a video — it's transcoded into adaptive HLS and streamed back.</p>
-      </header>
-
-      <section className="stats">
-        <div className="stat">
-          <span className="stat-num">{videos.length}</span>
-          <span className="stat-label">Videos</span>
+    <>
+      <Header
+        authed={authed}
+        onToggleSidebar={() => setSidebarOpen((o) => !o)}
+        onUpload={() => setUploadOpen(true)}
+        onLogin={() => setLoginOpen(true)}
+        onLogout={logout}
+        query={query}
+        setQuery={setQuery}
+      />
+      <div className="shell">
+        <Sidebar
+          open={sidebarOpen}
+          authed={authed}
+          onUpload={() => setUploadOpen(true)}
+          onLogin={() => setLoginOpen(true)}
+        />
+        <div className="main">
+          <Outlet context={ctx} />
         </div>
-        <div className="stat">
-          <span className="stat-num">{readyCount}</span>
-          <span className="stat-label">Ready</span>
-        </div>
-        <div className="stat">
-          <span className="stat-num">${totalCost.toFixed(4)}</span>
-          <span className="stat-label">Transcode cost</span>
-        </div>
-        <div className="stat">
-          <span className={live ? "dot live" : "dot"} />
-          <span className="stat-label">{live ? "Live" : "Polling"}</span>
-        </div>
-      </section>
-
+      </div>
+      {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} onUploaded={refresh} />}
       {selected?.playback_url && (
-        <section className="card">
-          <div className="player-head">
-            <h2>{selected.filename}</h2>
-            <button className="ghost" onClick={() => setSelected(null)}>
-              Close
-            </button>
-          </div>
-          <Player src={selected.playback_url} />
-        </section>
+        <PlayerModal video={selected} onClose={() => setSelected(null)} />
       )}
+      {loginOpen && (
+        <LoginModal
+          onClose={() => setLoginOpen(false)}
+          onSuccess={(t) => {
+            setTok(t);
+            setLoginOpen(false);
+          }}
+        />
+      )}
+    </>
+  );
+}
 
-      <section className="card uploader">
-        <input ref={fileRef} type="file" accept="video/*" disabled={busy} />
-        <button onClick={handleUpload} disabled={busy}>
-          {busy ? "Uploading…" : "Upload"}
-        </button>
-        {progress !== null && (
-          <div className="bar">
-            <div className="fill" style={{ width: `${progress}%` }} />
-          </div>
-        )}
-        {error && <p className="err">{error}</p>}
-      </section>
-
-      <section className="card">
-        <h2>Library</h2>
-        {videos.length === 0 ? (
-          <p className="muted">No videos yet. Upload one above.</p>
-        ) : (
-          <ul className="list">
-            {videos.map((v) => {
-              const ready = v.status === "ready" && !!v.playback_url;
-              return (
-                <li
-                  key={v.video_id}
-                  className={ready ? "row clickable" : "row"}
-                  onClick={() => ready && setSelected(v)}
-                >
-                  <div className="thumb">
-                    {v.thumbnail_url ? (
-                      <img src={v.thumbnail_url} alt="" />
-                    ) : (
-                      <span className="thumb-ph">🐇</span>
-                    )}
-                  </div>
-                  <span className="name">{v.filename}</span>
-                  {v.cost_usd && <span className="cost">${v.cost_usd}</span>}
-                  <span className={`status s-${v.status}`}>
-                    {STATUS_LABEL[v.status] ?? v.status}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
-    </div>
+export default function App() {
+  return (
+    <Routes>
+      <Route element={<Layout />}>
+        <Route path="/" element={<LibraryPage />} />
+        <Route path="/admin" element={<AdminPage />} />
+      </Route>
+    </Routes>
   );
 }

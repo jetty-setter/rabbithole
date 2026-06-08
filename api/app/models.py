@@ -1,6 +1,11 @@
 from pydantic import BaseModel, Field
 
 
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
 class UploadRequest(BaseModel):
     filename: str = Field(min_length=1, max_length=255)
     content_type: str = "video/mp4"
