@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { deleteVideo, STATUS_LABEL, type Video } from "./api";
 
+function prettyTitle(name: string): string {
+  return name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").trim();
+}
+
 export function VideoCard({
   v,
   onPlay,
@@ -43,7 +47,7 @@ export function VideoCard({
       <div className="vcard-row">
         <span className="avatar">R</span>
         <div className="vcard-info">
-          <span className="vtitle">{v.filename}</span>
+          <span className="vtitle">{prettyTitle(v.filename)}</span>
           <span className="vchannel">RabbitHole</span>
           <span className="vmeta">
             {ready

@@ -19,13 +19,13 @@ export function LibraryPage() {
     <main className="page">
       {ready.length === 0 ? (
         <div className="empty">
-          <img src="/RHLogo.png?v=4" alt="RabbitHole" className="empty-logo" />
-          <h3>No videos yet</h3>
-          <p>{authed ? "Upload the first one." : "Check back soon."}</p>
+          <img src="/RHLogo.png?v=5" alt="RabbitHole" className="empty-logo" />
+          <h3>Nothing in the hole yet</h3>
+          <p>{authed ? "Throw the first one down." : "The rabbit's still digging — check back soon."}</p>
         </div>
       ) : list.length === 0 ? (
         <div className="empty">
-          <p>Nothing here{query ? ` for “${query}”` : ""}.</p>
+          <p>The rabbit came up empty{query ? ` for “${query}”` : ""}.</p>
         </div>
       ) : (
         <div className="grid">

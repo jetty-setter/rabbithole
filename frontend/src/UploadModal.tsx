@@ -33,7 +33,7 @@ export function UploadModal({
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
-          <h2>Drop a video</h2>
+          <h2>Feed the rabbit</h2>
           <button className="icon-btn" onClick={onClose} aria-label="Close">
             ✕
           </button>
@@ -67,7 +67,7 @@ export function UploadModal({
             <>
               <span className="dz-icon">⬆</span>
               <span>
-                Drag a video here, or <b>browse</b>
+                Drag a video down the hole, or <b>browse</b>
               </span>
             </>
           )}
