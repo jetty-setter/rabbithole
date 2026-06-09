@@ -23,15 +23,15 @@ variable "vpc_cidr" {
 }
 
 variable "worker_cpu" {
-  description = "Fargate task CPU units (256/512/1024/...)"
+  description = "Fargate task CPU units (256/512/1024/2048/4096)"
   type        = string
-  default     = "512"
+  default     = "2048" # 2 vCPU — real video transcodes fast enough to finish before scale-in
 }
 
 variable "worker_memory" {
   description = "Fargate task memory (MiB)"
   type        = string
-  default     = "1024"
+  default     = "4096"
 }
 
 variable "worker_desired_count" {

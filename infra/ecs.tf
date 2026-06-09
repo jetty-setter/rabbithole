@@ -52,6 +52,7 @@ resource "aws_ecs_task_definition" "worker" {
         { name = "AWS_REGION", value = var.aws_region },
         { name = "FARGATE_CPU_UNITS", value = var.worker_cpu },
         { name = "FARGATE_MEMORY_MIB", value = var.worker_memory },
+        { name = "PYTHONUNBUFFERED", value = "1" },
       ]
 
       logConfiguration = {

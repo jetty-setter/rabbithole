@@ -4,7 +4,13 @@ import { VideoCard } from "./VideoCard";
 import { displayTitle } from "./api";
 
 export function LibraryPage() {
-  const { videos, authed, query } = useApp();
+  const { videos, authed, username, query } = useApp();
+
+  // The signed-in user's own in-progress uploads (so they get live feedback).
+  const mine = useMemo(
+    () => (authed ? videos.filter((v) => v.owner === username && v.status !== "ready") : []),
+    [videos, authed, username],
+  );
 
   const ready = useMemo(
     () => videos.filter((v) => v.status === "ready" && !!v.playback_url),
@@ -12,13 +18,18 @@ export function LibraryPage() {
   );
 
   const list = useMemo(
-    () => ready.filter((v) => displayTitle(v).toLowerCase().includes(query.toLowerCase())),
-    [ready, query],
+    () =>
+      [...mine, ...ready].filter((v) =>
+        displayTitle(v).toLowerCase().includes(query.toLowerCase()),
+      ),
+    [mine, ready, query],
   );
+
+  const hasAny = mine.length + ready.length > 0;
 
   return (
     <main className="page">
-      {ready.length === 0 ? (
+      {!hasAny ? (
         <div className="empty">
           <img src="/RHLogo.png?v=5" alt="RabbitHole" className="empty-logo" />
           <h3>Nothing in the hole yet</h3>

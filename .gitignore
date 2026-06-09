@@ -38,3 +38,7 @@ infra/build/*.zip
 *.mov
 *.m3u8
 *.ts
+
+# Terraform saved plans
+infra/tfplan
+*.tfplan

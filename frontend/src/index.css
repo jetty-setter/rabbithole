@@ -1421,6 +1421,49 @@ body {
   transform: scale(1);
 }
 
+/* ── Processing card (live upload feedback) ──────────────── */
+
+.vcard.processing {
+  cursor: default;
+}
+
+.thumb.proc {
+  flex-direction: column;
+  gap: 12px;
+}
+
+.proc-spinner {
+  width: 36px;
+  height: 36px;
+  border-radius: 99px;
+  border: 3px solid var(--border-2);
+  border-top-color: var(--pink);
+  animation: spin 0.8s linear infinite;
+}
+
+.proc-x {
+  font-size: 30px;
+  color: var(--red);
+}
+
+.proc-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.vcard.processing.failed .proc-label {
+  color: var(--red);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ── Upload extra fields ─────────────────────────────────── */
 
 .upload-fields {

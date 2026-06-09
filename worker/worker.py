@@ -20,6 +20,7 @@ import time
 from pathlib import Path
 
 import boto3
+from botocore.exceptions import ClientError
 
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 QUEUE_URL = os.getenv("JOB_QUEUE_URL", "")
@@ -63,12 +64,21 @@ def _set_status(video_id: str, status: str, extra: dict | None = None) -> None:
         expr += f", #k{i} = :v{i}"
         names[f"#k{i}"] = field
         values[f":v{i}"] = value
-    _videos.update_item(
-        Key={"video_id": video_id},
-        UpdateExpression=expr,
-        ExpressionAttributeNames=names,
-        ExpressionAttributeValues=values,
-    )
+    try:
+        _videos.update_item(
+            Key={"video_id": video_id},
+            UpdateExpression=expr,
+            ExpressionAttributeNames=names,
+            ExpressionAttributeValues=values,
+            # Never create a record — only update an existing one. Prevents the
+            # "phantom untitled video" bug when a job runs for a deleted video.
+            ConditionExpression="attribute_exists(video_id)",
+        )
+    except ClientError as exc:
+        if exc.response["Error"]["Code"] == "ConditionalCheckFailedException":
+            print(f"record {video_id} no longer exists; skipping status update")
+            return
+        raise
 
 
 def _estimate_cost(seconds: float) -> float:
@@ -135,6 +145,11 @@ def process_record(bucket: str, key: str) -> None:
     video_id = _video_id_from_key(key)
     if not video_id:
         print(f"skip: unrecognized key {key}")
+        return
+
+    # Skip jobs whose video record no longer exists (deleted before processing).
+    if not _videos.get_item(Key={"video_id": video_id}).get("Item"):
+        print(f"skip: no record for {video_id} (deleted)")
         return
 
     print(f"processing video_id={video_id} key={key}")

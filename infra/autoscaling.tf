@@ -12,25 +12,6 @@ resource "aws_appautoscaling_target" "worker" {
   max_capacity       = var.worker_max_count
 }
 
-resource "aws_appautoscaling_policy" "scale_out" {
-  name               = "${local.name}-worker-scale-out"
-  policy_type        = "StepScaling"
-  service_namespace  = aws_appautoscaling_target.worker.service_namespace
-  resource_id        = aws_appautoscaling_target.worker.resource_id
-  scalable_dimension = aws_appautoscaling_target.worker.scalable_dimension
-
-  step_scaling_policy_configuration {
-    adjustment_type         = "ChangeInCapacity"
-    cooldown                = 60
-    metric_aggregation_type = "Maximum"
-
-    step_adjustment {
-      metric_interval_lower_bound = 0
-      scaling_adjustment          = 1
-    }
-  }
-}
-
 resource "aws_appautoscaling_policy" "scale_in" {
   name               = "${local.name}-worker-scale-in"
   policy_type        = "StepScaling"
@@ -50,35 +31,46 @@ resource "aws_appautoscaling_policy" "scale_in" {
   }
 }
 
-# Backlog present → scale out.
-resource "aws_cloudwatch_metric_alarm" "backlog" {
-  alarm_name          = "${local.name}-worker-backlog"
-  alarm_description   = "Jobs waiting in the queue - scale the worker fleet out"
-  namespace           = "AWS/SQS"
-  metric_name         = "ApproximateNumberOfMessagesVisible"
-  dimensions          = { QueueName = aws_sqs_queue.jobs.name }
-  statistic           = "Maximum"
-  period              = 60
-  evaluation_periods  = 1
-  threshold           = 1
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  alarm_actions       = [aws_appautoscaling_policy.scale_out.arn]
-}
+# Worker wake-up is now event-driven (see scaleup.tf) — no SQS-metric scale-out
+# alarm, because SQS only emits metrics every 5 min, which made it unreliable.
 
-# Queue drained for 5 min → scale in (to zero).
-# NOTE: this watches visible messages only; with a 900s visibility timeout a job
-# in flight won't be lost if a task is reaped — SQS redelivers and the transcode
-# is idempotent.
+# Scale in to zero only when the queue is TRULY empty — both waiting (visible)
+# AND in-flight (not-visible) messages are gone. Watching visible-only would reap
+# a worker the instant it picked up a job, killing the transcode mid-flight.
 resource "aws_cloudwatch_metric_alarm" "idle" {
   alarm_name          = "${local.name}-worker-idle"
-  alarm_description   = "Queue drained - scale the worker fleet in (to zero)"
-  namespace           = "AWS/SQS"
-  metric_name         = "ApproximateNumberOfMessagesVisible"
-  dimensions          = { QueueName = aws_sqs_queue.jobs.name }
-  statistic           = "Maximum"
-  period              = 60
-  evaluation_periods  = 5
-  threshold           = 1
+  alarm_description   = "No waiting or in-flight jobs - scale the worker fleet to zero"
   comparison_operator = "LessThanThreshold"
+  threshold           = 1
+  evaluation_periods  = 5
   alarm_actions       = [aws_appautoscaling_policy.scale_in.arn]
+
+  metric_query {
+    id          = "total"
+    expression  = "visible + inflight"
+    label       = "TotalJobs"
+    return_data = true
+  }
+
+  metric_query {
+    id = "visible"
+    metric {
+      namespace   = "AWS/SQS"
+      metric_name = "ApproximateNumberOfMessagesVisible"
+      dimensions  = { QueueName = aws_sqs_queue.jobs.name }
+      period      = 60
+      stat        = "Maximum"
+    }
+  }
+
+  metric_query {
+    id = "inflight"
+    metric {
+      namespace   = "AWS/SQS"
+      metric_name = "ApproximateNumberOfMessagesNotVisible"
+      dimensions  = { QueueName = aws_sqs_queue.jobs.name }
+      period      = 60
+      stat        = "Maximum"
+    }
+  }
 }
