@@ -17,3 +17,7 @@ def videos_table():
 
 def users_table():
     return _dynamodb.Table(config.USERS_TABLE)
+
+
+def comments_table():
+    return _dynamodb.Table(config.COMMENTS_TABLE)

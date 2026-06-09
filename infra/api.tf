@@ -37,9 +37,14 @@ resource "aws_iam_role_policy" "api_lambda" {
         Effect = "Allow"
         Action = [
           "dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem",
-          "dynamodb:DeleteItem", "dynamodb:Scan",
+          "dynamodb:DeleteItem", "dynamodb:Scan", "dynamodb:Query",
+          "dynamodb:BatchWriteItem",
         ]
-        Resource = [aws_dynamodb_table.videos.arn, aws_dynamodb_table.users.arn]
+        Resource = [
+          aws_dynamodb_table.videos.arn,
+          aws_dynamodb_table.users.arn,
+          aws_dynamodb_table.comments.arn,
+        ]
       },
       {
         Effect   = "Allow"
@@ -67,6 +72,7 @@ resource "aws_lambda_function" "api" {
       STREAMING_BUCKET       = aws_s3_bucket.streaming.bucket
       VIDEOS_TABLE           = aws_dynamodb_table.videos.name
       USERS_TABLE            = aws_dynamodb_table.users.name
+      COMMENTS_TABLE         = aws_dynamodb_table.comments.name
       CLOUDFRONT_DOMAIN      = aws_cloudfront_distribution.streaming.domain_name
       CREATOR_USERNAME       = "admin"
       JWT_SECRET             = random_password.jwt.result

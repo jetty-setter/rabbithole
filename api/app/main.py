@@ -9,6 +9,7 @@ import re
 import uuid
 from datetime import datetime, timezone
 
+from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from fastapi import Depends, FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,7 +17,15 @@ from mangum import Mangum
 
 from . import aws, config
 from .auth import create_token, hash_password, is_admin, require_auth, verify_password
-from .models import Credentials, UpdateVideo, UploadRequest, UploadResponse, Video
+from .models import (
+    Comment,
+    CommentCreate,
+    Credentials,
+    UpdateVideo,
+    UploadRequest,
+    UploadResponse,
+    Video,
+)
 
 app = FastAPI(title="RabbitHole API", version="0.2.0")
 
@@ -71,6 +80,88 @@ def login(req: Credentials) -> dict:
 @app.get("/auth/me")
 def me(user: str = Depends(require_auth)) -> dict:
     return {"username": user, "is_admin": is_admin(user)}
+
+
+@app.get("/favorites")
+def list_favorites(user: str = Depends(require_auth)) -> dict:
+    item = aws.users_table().get_item(Key={"username": user}).get("Item") or {}
+    return {"favorites": sorted(item.get("favorites") or set())}
+
+
+@app.post("/favorites/{video_id}", status_code=204)
+def add_favorite(video_id: str, user: str = Depends(require_auth)) -> Response:
+    aws.users_table().update_item(
+        Key={"username": user},
+        UpdateExpression="ADD favorites :v",
+        ExpressionAttributeValues={":v": {video_id}},
+    )
+    return Response(status_code=204)
+
+
+@app.delete("/favorites/{video_id}", status_code=204)
+def remove_favorite(video_id: str, user: str = Depends(require_auth)) -> Response:
+    aws.users_table().update_item(
+        Key={"username": user},
+        UpdateExpression="DELETE favorites :v",
+        ExpressionAttributeValues={":v": {video_id}},
+    )
+    return Response(status_code=204)
+
+
+@app.get("/likes")
+def list_likes(user: str = Depends(require_auth)) -> dict:
+    item = aws.users_table().get_item(Key={"username": user}).get("Item") or {}
+    return {"likes": sorted(item.get("liked") or set())}
+
+
+@app.post("/videos/{video_id}/like", status_code=204)
+def like_video(video_id: str, user: str = Depends(require_auth)) -> Response:
+    # Record the like on the user; only bump the public counter if it's new.
+    try:
+        aws.users_table().update_item(
+            Key={"username": user},
+            UpdateExpression="ADD liked :v",
+            ConditionExpression="attribute_not_exists(liked) OR NOT contains(liked, :id)",
+            ExpressionAttributeValues={":v": {video_id}, ":id": video_id},
+        )
+    except ClientError as exc:
+        if exc.response["Error"]["Code"] == "ConditionalCheckFailedException":
+            return Response(status_code=204)  # already liked — no double count
+        raise
+    aws.videos_table().update_item(
+        Key={"video_id": video_id},
+        UpdateExpression="ADD #l :one",
+        ExpressionAttributeNames={"#l": "likes"},
+        ExpressionAttributeValues={":one": 1},
+    )
+    return Response(status_code=204)
+
+
+@app.delete("/videos/{video_id}/like", status_code=204)
+def unlike_video(video_id: str, user: str = Depends(require_auth)) -> Response:
+    try:
+        aws.users_table().update_item(
+            Key={"username": user},
+            UpdateExpression="DELETE liked :v",
+            ConditionExpression="contains(liked, :id)",
+            ExpressionAttributeValues={":v": {video_id}, ":id": video_id},
+        )
+    except ClientError as exc:
+        if exc.response["Error"]["Code"] == "ConditionalCheckFailedException":
+            return Response(status_code=204)  # wasn't liked — nothing to undo
+        raise
+    try:
+        aws.videos_table().update_item(
+            Key={"video_id": video_id},
+            UpdateExpression="ADD #l :neg",
+            ConditionExpression="attribute_exists(#l) AND #l > :zero",
+            ExpressionAttributeNames={"#l": "likes"},
+            ExpressionAttributeValues={":neg": -1, ":zero": 0},
+        )
+    except ClientError as exc:
+        if exc.response["Error"]["Code"] != "ConditionalCheckFailedException":
+            raise
+    return Response(status_code=204)
 
 
 @app.post("/uploads", response_model=UploadResponse)
@@ -135,6 +226,7 @@ def _to_video(item: dict) -> Video:
         title=item.get("title"),
         description=item.get("description"),
         views=int(item.get("views") or 0),
+        likes=int(item.get("likes") or 0),
     )
 
 
@@ -203,6 +295,19 @@ def _delete_prefix(bucket: str, prefix: str) -> None:
         aws.s3.delete_objects(Bucket=bucket, Delete={"Objects": keys[i : i + 1000]})
 
 
+def _delete_comments(video_id: str) -> None:
+    table = aws.comments_table()
+    resp = table.query(KeyConditionExpression=Key("video_id").eq(video_id))
+    items = resp.get("Items", [])
+    if not items:
+        return
+    with table.batch_writer() as batch:
+        for it in items:
+            batch.delete_item(
+                Key={"video_id": video_id, "comment_id": it["comment_id"]}
+            )
+
+
 @app.delete("/videos/{video_id}", status_code=204)
 def delete_video(video_id: str, user: str = Depends(require_auth)) -> Response:
     item = aws.videos_table().get_item(Key={"video_id": video_id}).get("Item")
@@ -211,7 +316,66 @@ def delete_video(video_id: str, user: str = Depends(require_auth)) -> Response:
         raise HTTPException(status_code=403, detail="not allowed")
     _delete_prefix(config.UPLOADS_BUCKET, f"uploads/{video_id}/")
     _delete_prefix(config.STREAMING_BUCKET, f"{video_id}/")
+    _delete_comments(video_id)
     aws.videos_table().delete_item(Key={"video_id": video_id})
+    return Response(status_code=204)
+
+
+def _to_comment(item: dict) -> Comment:
+    return Comment(
+        video_id=item["video_id"],
+        comment_id=item["comment_id"],
+        author=item.get("author") or "someone",
+        text=item.get("text") or "",
+        created_at=item.get("created_at") or "",
+    )
+
+
+@app.get("/videos/{video_id}/comments", response_model=list[Comment])
+def list_comments(video_id: str) -> list[Comment]:
+    resp = aws.comments_table().query(
+        KeyConditionExpression=Key("video_id").eq(video_id),
+        ScanIndexForward=False,  # newest first (comment_id is timestamp-prefixed)
+        Limit=200,
+    )
+    return [_to_comment(i) for i in resp.get("Items", [])]
+
+
+@app.post("/videos/{video_id}/comments", response_model=Comment, status_code=201)
+def add_comment(
+    video_id: str, body: CommentCreate, user: str = Depends(require_auth)
+) -> Comment:
+    if not aws.videos_table().get_item(Key={"video_id": video_id}).get("Item"):
+        raise HTTPException(status_code=404, detail="video not found")
+    text = body.text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="empty comment")
+    now = datetime.now(timezone.utc).isoformat()
+    item = {
+        "video_id": video_id,
+        "comment_id": f"{now}#{uuid.uuid4().hex[:8]}",
+        "author": user,
+        "text": text[:1000],
+        "created_at": now,
+    }
+    aws.comments_table().put_item(Item=item)
+    return _to_comment(item)
+
+
+@app.delete("/videos/{video_id}/comments/{comment_id}", status_code=204)
+def delete_comment(
+    video_id: str, comment_id: str, user: str = Depends(require_auth)
+) -> Response:
+    item = (
+        aws.comments_table()
+        .get_item(Key={"video_id": video_id, "comment_id": comment_id})
+        .get("Item")
+    )
+    if not item:
+        return Response(status_code=204)
+    if not (is_admin(user) or item.get("author") == user):
+        raise HTTPException(status_code=403, detail="not allowed")
+    aws.comments_table().delete_item(Key={"video_id": video_id, "comment_id": comment_id})
     return Response(status_code=204)
 
 

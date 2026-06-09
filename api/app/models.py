@@ -24,6 +24,18 @@ class UploadResponse(BaseModel):
     key: str
 
 
+class CommentCreate(BaseModel):
+    text: str = Field(min_length=1, max_length=1000)
+
+
+class Comment(BaseModel):
+    video_id: str
+    comment_id: str
+    author: str
+    text: str
+    created_at: str
+
+
 class Video(BaseModel):
     video_id: str
     filename: str
@@ -37,3 +49,4 @@ class Video(BaseModel):
     title: str | None = None
     description: str | None = None
     views: int = 0
+    likes: int = 0

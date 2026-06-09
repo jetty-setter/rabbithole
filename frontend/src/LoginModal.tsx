@@ -4,14 +4,17 @@ import { login, signup, type AuthUser } from "./api";
 export function LoginModal({
   onClose,
   onSuccess,
+  initialMode = "login",
 }: {
   onClose: () => void;
   onSuccess: (user: AuthUser) => void;
+  initialMode?: "login" | "signup";
 }) {
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<"login" | "signup">(initialMode);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function submit(e: React.FormEvent) {
@@ -54,10 +57,23 @@ export function LoginModal({
             onChange={(e) => setPassword(e.target.value)}
           />
           {error && <p className="err">{error}</p>}
+          {notice && <p className="notice">{notice}</p>}
           <button className="btn-primary full" type="submit" disabled={busy}>
             {busy ? "…" : mode === "signup" ? "Create account" : "Sign in"}
           </button>
         </form>
+
+        {mode === "login" && (
+          <button
+            type="button"
+            className="link-btn forgot"
+            onClick={() =>
+              setNotice("Password reset by email is coming soon — for now, ask the site admin to reset it.")
+            }
+          >
+            Forgot password?
+          </button>
+        )}
 
         <p className="auth-switch">
           {mode === "signup" ? "Already have an account?" : "New here?"}{" "}

@@ -37,3 +37,26 @@ resource "aws_dynamodb_table" "users" {
 output "users_table" {
   value = aws_dynamodb_table.users.name
 }
+
+# Comments, one row per comment, partitioned by video.
+# comment_id is timestamp-prefixed so a Query returns them in time order.
+resource "aws_dynamodb_table" "comments" {
+  name         = "${local.name}-comments"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "video_id"
+  range_key    = "comment_id"
+
+  attribute {
+    name = "video_id"
+    type = "S"
+  }
+
+  attribute {
+    name = "comment_id"
+    type = "S"
+  }
+}
+
+output "comments_table" {
+  value = aws_dynamodb_table.comments.name
+}

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 export function Header({
@@ -6,6 +7,7 @@ export function Header({
   onToggleSidebar,
   onUpload,
   onLogin,
+  onSignup,
   onLogout,
   query,
   setQuery,
@@ -15,12 +17,14 @@ export function Header({
   onToggleSidebar: () => void;
   onUpload: () => void;
   onLogin: () => void;
+  onSignup: () => void;
   onLogout: () => void;
   query: string;
   setQuery: (s: string) => void;
 }) {
   const { pathname } = useLocation();
   const onFeed = pathname === "/";
+  const [menuOpen, setMenuOpen] = useState(false);
   const initial = username?.[0]?.toUpperCase() ?? "U";
 
   return (
@@ -50,17 +54,46 @@ export function Header({
             <button className="btn-primary" onClick={onUpload}>
               ＋ Upload
             </button>
-            <button className="btn-ghost" onClick={onLogout}>
-              Sign out
-            </button>
-            <span className="avatar-sm" title={username ?? ""}>
-              {initial}
-            </span>
+            <div className="account">
+              <button
+                className="avatar-sm"
+                onClick={() => setMenuOpen((o) => !o)}
+                title={username ?? ""}
+                aria-label="Account menu"
+              >
+                {initial}
+              </button>
+              {menuOpen && (
+                <>
+                  <div className="menu-backdrop" onClick={() => setMenuOpen(false)} />
+                  <div className="account-menu">
+                    <div className="menu-user">@{username}</div>
+                    <Link to="/favorites" className="menu-item" onClick={() => setMenuOpen(false)}>
+                      Favorites
+                    </Link>
+                    <button
+                      className="menu-item"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        onLogout();
+                      }}
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </>
         ) : (
-          <button className="btn-primary" onClick={onLogin}>
-            Sign in
-          </button>
+          <>
+            <button className="btn-ghost" onClick={onLogin}>
+              Sign in
+            </button>
+            <button className="btn-primary" onClick={onSignup}>
+              Sign up
+            </button>
+          </>
         )}
       </nav>
     </header>
