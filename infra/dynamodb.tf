@@ -21,3 +21,19 @@ resource "aws_dynamodb_table" "videos" {
 output "videos_table" {
   value = aws_dynamodb_table.videos.name
 }
+
+# Registered user accounts (username + bcrypt password hash).
+resource "aws_dynamodb_table" "users" {
+  name         = "${local.name}-users"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "username"
+
+  attribute {
+    name = "username"
+    type = "S"
+  }
+}
+
+output "users_table" {
+  value = aws_dynamodb_table.users.name
+}

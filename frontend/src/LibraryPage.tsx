@@ -1,9 +1,10 @@
 import { useMemo } from "react";
 import { useApp } from "./App";
 import { VideoCard } from "./VideoCard";
+import { displayTitle } from "./api";
 
 export function LibraryPage() {
-  const { videos, refresh, play, authed, query } = useApp();
+  const { videos, authed, query } = useApp();
 
   const ready = useMemo(
     () => videos.filter((v) => v.status === "ready" && !!v.playback_url),
@@ -11,7 +12,7 @@ export function LibraryPage() {
   );
 
   const list = useMemo(
-    () => ready.filter((v) => v.filename.toLowerCase().includes(query.toLowerCase())),
+    () => ready.filter((v) => displayTitle(v).toLowerCase().includes(query.toLowerCase())),
     [ready, query],
   );
 
@@ -30,13 +31,7 @@ export function LibraryPage() {
       ) : (
         <div className="grid">
           {list.map((v) => (
-            <VideoCard
-              key={v.video_id}
-              v={v}
-              onPlay={() => play(v)}
-              onDeleted={refresh}
-              canManage={authed}
-            />
+            <VideoCard key={v.video_id} v={v} />
           ))}
         </div>
       )}

@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { createUpload, uploadToS3 } from "./api";
+import { createUpload, displayTitle, uploadToS3 } from "./api";
 
 export function UploadModal({
   onClose,
@@ -9,17 +9,24 @@ export function UploadModal({
   onUploaded: () => void;
 }) {
   const [file, setFile] = useState<File | null>(null);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [drag, setDrag] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  function chooseFile(f: File | null) {
+    setFile(f);
+    if (f && !title.trim()) setTitle(displayTitle({ filename: f.name }));
+  }
 
   async function start() {
     if (!file) return;
     setError(null);
     setProgress(0);
     try {
-      const ticket = await createUpload(file.name, file.type || "video/mp4");
+      const ticket = await createUpload(file.name, file.type || "video/mp4", title, description);
       await uploadToS3(ticket.upload_url, file, setProgress);
       onUploaded();
       onClose();
@@ -50,7 +57,7 @@ export function UploadModal({
             e.preventDefault();
             setDrag(false);
             const f = e.dataTransfer.files?.[0];
-            if (f) setFile(f);
+            if (f) chooseFile(f);
           }}
           onClick={() => inputRef.current?.click()}
         >
@@ -59,7 +66,7 @@ export function UploadModal({
             type="file"
             accept="video/*"
             hidden
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            onChange={(e) => chooseFile(e.target.files?.[0] ?? null)}
           />
           {file ? (
             <span className="dz-file">{file.name}</span>
@@ -73,6 +80,24 @@ export function UploadModal({
           )}
         </div>
 
+        {file && (
+          <div className="upload-fields">
+            <input
+              className="search wide"
+              placeholder="Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+            <textarea
+              className="search wide ta"
+              placeholder="Description (optional)"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+            />
+          </div>
+        )}
+
         {progress !== null && (
           <div className="bar">
             <div className="fill" style={{ width: `${progress}%` }} />
@@ -80,11 +105,7 @@ export function UploadModal({
         )}
         {error && <p className="err">{error}</p>}
 
-        <button
-          className="btn-primary full"
-          disabled={!file || progress !== null}
-          onClick={start}
-        >
+        <button className="btn-primary full" disabled={!file || progress !== null} onClick={start}>
           {progress !== null ? `Uploading… ${progress}%` : "Upload & transcode"}
         </button>
       </div>

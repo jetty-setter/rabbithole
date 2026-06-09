@@ -10,6 +10,7 @@ AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 UPLOADS_BUCKET = os.getenv("UPLOADS_BUCKET", "")
 STREAMING_BUCKET = os.getenv("STREAMING_BUCKET", "")
 VIDEOS_TABLE = os.getenv("VIDEOS_TABLE", "rabbithole-dev-videos")
+USERS_TABLE = os.getenv("USERS_TABLE", "rabbithole-dev-users")
 CLOUDFRONT_DOMAIN = os.getenv("CLOUDFRONT_DOMAIN", "")
 PRESIGN_EXPIRY_SECONDS = int(os.getenv("PRESIGN_EXPIRY_SECONDS", "900"))
 

@@ -6,6 +6,7 @@ The video feed is public; uploading and managing require a signed-in creator.
 
 import time
 
+import bcrypt
 import jwt
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -13,6 +14,21 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from . import config
 
 _bearer = HTTPBearer(auto_error=False)
+
+
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+
+def verify_password(password: str, hashed: str) -> bool:
+    try:
+        return bcrypt.checkpw(password.encode(), hashed.encode())
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def is_admin(username: str) -> bool:
+    return username == config.CREATOR_USERNAME
 
 
 def create_token(sub: str) -> str:

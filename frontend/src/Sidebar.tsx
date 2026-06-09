@@ -34,11 +34,13 @@ const IconUser = () => (
 export function Sidebar({
   open,
   authed,
+  isAdmin,
   onUpload,
   onLogin,
 }: {
   open: boolean;
   authed: boolean;
+  isAdmin: boolean;
   onUpload: () => void;
   onLogin: () => void;
 }) {
@@ -50,7 +52,7 @@ export function Sidebar({
         Watch
       </Link>
 
-      {authed && (
+      {isAdmin && (
         <Link to="/admin" className={pathname === "/admin" ? "side-link active" : "side-link"}>
           <IconAdmin />
           Admin

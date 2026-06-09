@@ -5,18 +5,18 @@ Runs locally as a normal FastAPI app (uvicorn) and on AWS Lambda via Mangum.
 
 from __future__ import annotations
 
-import hmac
 import re
 import uuid
 from datetime import datetime, timezone
 
+from botocore.exceptions import ClientError
 from fastapi import Depends, FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 
 from . import aws, config
-from .auth import create_token, require_auth
-from .models import LoginRequest, UploadRequest, UploadResponse, Video
+from .auth import create_token, hash_password, is_admin, require_auth, verify_password
+from .models import Credentials, UpdateVideo, UploadRequest, UploadResponse, Video
 
 app = FastAPI(title="RabbitHole API", version="0.2.0")
 
@@ -40,20 +40,41 @@ def health() -> dict:
     return {"status": "ok"}
 
 
+@app.post("/auth/signup")
+def signup(req: Credentials) -> dict:
+    username = req.username.strip().lower()
+    item = {
+        "username": username,
+        "password_hash": hash_password(req.password),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    try:
+        aws.users_table().put_item(
+            Item=item, ConditionExpression="attribute_not_exists(username)"
+        )
+    except ClientError as exc:
+        if exc.response["Error"]["Code"] == "ConditionalCheckFailedException":
+            raise HTTPException(status_code=409, detail="username already taken") from exc
+        raise
+    return {"token": create_token(username), "username": username, "is_admin": is_admin(username)}
+
+
 @app.post("/auth/login")
-def login(req: LoginRequest) -> dict:
-    ok = (
-        bool(config.CREATOR_PASSWORD)
-        and req.username == config.CREATOR_USERNAME
-        and hmac.compare_digest(req.password, config.CREATOR_PASSWORD)
-    )
-    if not ok:
+def login(req: Credentials) -> dict:
+    username = req.username.strip().lower()
+    user = aws.users_table().get_item(Key={"username": username}).get("Item")
+    if not user or not verify_password(req.password, user.get("password_hash", "")):
         raise HTTPException(status_code=401, detail="invalid credentials")
-    return {"token": create_token(req.username), "username": req.username}
+    return {"token": create_token(username), "username": username, "is_admin": is_admin(username)}
+
+
+@app.get("/auth/me")
+def me(user: str = Depends(require_auth)) -> dict:
+    return {"username": user, "is_admin": is_admin(user)}
 
 
 @app.post("/uploads", response_model=UploadResponse)
-def create_upload(req: UploadRequest, _user: str = Depends(require_auth)) -> UploadResponse:
+def create_upload(req: UploadRequest, user: str = Depends(require_auth)) -> UploadResponse:
     if not req.content_type.startswith("video/"):
         raise HTTPException(status_code=400, detail="content_type must be video/*")
     if not config.UPLOADS_BUCKET:
@@ -76,16 +97,20 @@ def create_upload(req: UploadRequest, _user: str = Depends(require_auth)) -> Upl
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=502, detail=f"presign failed: {exc}") from exc
 
-    aws.videos_table().put_item(
-        Item={
-            "video_id": video_id,
-            "filename": filename,
-            "key": key,
-            "content_type": req.content_type,
-            "status": "pending_upload",
-            "created_at": datetime.now(timezone.utc).isoformat(),
-        }
-    )
+    item = {
+        "video_id": video_id,
+        "filename": filename,
+        "key": key,
+        "content_type": req.content_type,
+        "status": "pending_upload",
+        "owner": user,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    if req.title and req.title.strip():
+        item["title"] = req.title.strip()[:200]
+    if req.description and req.description.strip():
+        item["description"] = req.description.strip()[:5000]
+    aws.videos_table().put_item(Item=item)
 
     return UploadResponse(video_id=video_id, upload_url=upload_url, key=key)
 
@@ -106,6 +131,10 @@ def _to_video(item: dict) -> Video:
         thumbnail_url=_cdn_url(item.get("thumb_key")),
         duration_seconds=item.get("duration_seconds"),
         cost_usd=item.get("cost_usd"),
+        owner=item.get("owner"),
+        title=item.get("title"),
+        description=item.get("description"),
+        views=int(item.get("views") or 0),
     )
 
 
@@ -128,6 +157,41 @@ def get_video(video_id: str) -> Video:
     return _to_video(item)
 
 
+@app.patch("/videos/{video_id}", response_model=Video)
+def update_video(video_id: str, body: UpdateVideo, user: str = Depends(require_auth)) -> Video:
+    item = aws.videos_table().get_item(Key={"video_id": video_id}).get("Item")
+    if not item:
+        raise HTTPException(status_code=404, detail="video not found")
+    if not (is_admin(user) or item.get("owner") == user):
+        raise HTTPException(status_code=403, detail="not allowed")
+
+    updates: dict = {}
+    if body.title is not None:
+        updates["title"] = body.title.strip()[:200]
+    if body.description is not None:
+        updates["description"] = body.description.strip()[:5000]
+    if updates:
+        expr = "SET " + ", ".join(f"#{k} = :{k}" for k in updates)
+        aws.videos_table().update_item(
+            Key={"video_id": video_id},
+            UpdateExpression=expr,
+            ExpressionAttributeNames={f"#{k}": k for k in updates},
+            ExpressionAttributeValues={f":{k}": v for k, v in updates.items()},
+        )
+    return get_video(video_id)
+
+
+@app.post("/videos/{video_id}/view", status_code=204)
+def add_view(video_id: str) -> Response:
+    aws.videos_table().update_item(
+        Key={"video_id": video_id},
+        UpdateExpression="ADD #v :one",
+        ExpressionAttributeNames={"#v": "views"},
+        ExpressionAttributeValues={":one": 1},
+    )
+    return Response(status_code=204)
+
+
 def _delete_prefix(bucket: str, prefix: str) -> None:
     if not bucket:
         return
@@ -140,7 +204,11 @@ def _delete_prefix(bucket: str, prefix: str) -> None:
 
 
 @app.delete("/videos/{video_id}", status_code=204)
-def delete_video(video_id: str, _user: str = Depends(require_auth)) -> Response:
+def delete_video(video_id: str, user: str = Depends(require_auth)) -> Response:
+    item = aws.videos_table().get_item(Key={"video_id": video_id}).get("Item")
+    allowed = is_admin(user) or (item is not None and item.get("owner") == user)
+    if not allowed:
+        raise HTTPException(status_code=403, detail="not allowed")
     _delete_prefix(config.UPLOADS_BUCKET, f"uploads/{video_id}/")
     _delete_prefix(config.STREAMING_BUCKET, f"{video_id}/")
     aws.videos_table().delete_item(Key={"video_id": video_id})

@@ -1,13 +1,14 @@
 import { useState } from "react";
-import { login } from "./api";
+import { login, signup, type AuthUser } from "./api";
 
 export function LoginModal({
   onClose,
   onSuccess,
 }: {
   onClose: () => void;
-  onSuccess: (token: string) => void;
+  onSuccess: (user: AuthUser) => void;
 }) {
+  const [mode, setMode] = useState<"login" | "signup">("login");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -18,10 +19,10 @@ export function LoginModal({
     setBusy(true);
     setError(null);
     try {
-      const token = await login(username, password);
-      onSuccess(token);
+      const user = mode === "signup" ? await signup(username, password) : await login(username, password);
+      onSuccess(user);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setBusy(false);
     }
@@ -31,11 +32,12 @@ export function LoginModal({
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
-          <h2>Creator sign-in</h2>
+          <h2>{mode === "signup" ? "Join the warren" : "Welcome back"}</h2>
           <button className="icon-btn" onClick={onClose} aria-label="Close">
             ✕
           </button>
         </div>
+
         <form onSubmit={submit} className="login-form">
           <input
             className="search"
@@ -53,9 +55,22 @@ export function LoginModal({
           />
           {error && <p className="err">{error}</p>}
           <button className="btn-primary full" type="submit" disabled={busy}>
-            {busy ? "Signing in…" : "Sign in"}
+            {busy ? "…" : mode === "signup" ? "Create account" : "Sign in"}
           </button>
         </form>
+
+        <p className="auth-switch">
+          {mode === "signup" ? "Already have an account?" : "New here?"}{" "}
+          <button
+            className="link-btn"
+            onClick={() => {
+              setMode(mode === "signup" ? "login" : "signup");
+              setError(null);
+            }}
+          >
+            {mode === "signup" ? "Sign in" : "Create one"}
+          </button>
+        </p>
       </div>
     </div>
   );

@@ -1,75 +1,24 @@
-import { useState } from "react";
-import { deleteVideo, STATUS_LABEL, type Video } from "./api";
+import { Link } from "react-router-dom";
+import { displayTitle, type Video } from "./api";
 
-function prettyTitle(name: string): string {
-  return name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").trim();
-}
-
-export function VideoCard({
-  v,
-  onPlay,
-  onDeleted,
-  canManage,
-}: {
-  v: Video;
-  onPlay: () => void;
-  onDeleted: () => void;
-  canManage: boolean;
-}) {
-  const ready = v.status === "ready" && !!v.playback_url;
-  const [copied, setCopied] = useState(false);
-
-  async function copyLink(e: React.MouseEvent) {
-    e.stopPropagation();
-    if (!v.playback_url) return;
-    await navigator.clipboard.writeText(v.playback_url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  }
-
-  async function remove(e: React.MouseEvent) {
-    e.stopPropagation();
-    if (!confirm(`Delete "${v.filename}"? This can't be undone.`)) return;
-    await deleteVideo(v.video_id);
-    onDeleted();
-  }
-
+export function VideoCard({ v }: { v: Video }) {
   return (
-    <div className={ready ? "vcard play" : "vcard"} onClick={() => ready && onPlay()}>
+    <Link to={`/watch/${v.video_id}`} className="vcard">
       <div className="thumb">
         {v.thumbnail_url ? <img src={v.thumbnail_url} alt="" /> : <span className="thumb-ph">🐇</span>}
-        {ready && <span className="play-badge">▶</span>}
-        {v.status !== "ready" && (
-          <span className={`ov-status s-${v.status}`}>{STATUS_LABEL[v.status] ?? v.status}</span>
-        )}
+        <span className="play-badge">▶</span>
       </div>
-
       <div className="vcard-row">
-        <span className="avatar">R</span>
+        <span className="avatar">{(v.owner?.[0] || "R").toUpperCase()}</span>
         <div className="vcard-info">
-          <span className="vtitle">{prettyTitle(v.filename)}</span>
-          <span className="vchannel">RabbitHole</span>
+          <span className="vtitle">{displayTitle(v)}</span>
+          <span className="vchannel">{v.owner || "RabbitHole"}</span>
           <span className="vmeta">
-            {ready
-              ? v.duration_seconds && `${v.duration_seconds}s`
-              : STATUS_LABEL[v.status] ?? v.status}
+            {v.views ?? 0} views
+            {v.duration_seconds ? ` · ${v.duration_seconds}s` : ""}
           </span>
         </div>
-        {(ready || canManage) && (
-          <div className="vcard-actions">
-            {ready && (
-              <button className="act" title="Copy share link" onClick={copyLink}>
-                {copied ? "✓" : "🔗"}
-              </button>
-            )}
-            {canManage && (
-              <button className="act danger" title="Delete" onClick={remove}>
-                🗑
-              </button>
-            )}
-          </div>
-        )}
       </div>
-    </div>
+    </Link>
   );
 }

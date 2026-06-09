@@ -13,3 +13,7 @@ _dynamodb = _session.resource("dynamodb")
 
 def videos_table():
     return _dynamodb.Table(config.VIDEOS_TABLE)
+
+
+def users_table():
+    return _dynamodb.Table(config.USERS_TABLE)

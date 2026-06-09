@@ -2,17 +2,19 @@ import { useApp } from "./App";
 import { STATUS_LABEL } from "./api";
 
 export function AdminPage() {
-  const { videos, live, authed, requireLogin } = useApp();
+  const { videos, live, authed, isAdmin, requireLogin } = useApp();
 
-  if (!authed) {
+  if (!isAdmin) {
     return (
       <main className="page">
         <div className="empty">
-          <h3>Admin only</h3>
-          <p>Sign in as the creator to view operations.</p>
-          <button className="btn-primary" onClick={requireLogin}>
-            Sign in
-          </button>
+          <h3>Admins only</h3>
+          <p>{authed ? "You don't have access to operations." : "Sign in as an admin to view operations."}</p>
+          {!authed && (
+            <button className="btn-primary" onClick={requireLogin}>
+              Sign in
+            </button>
+          )}
         </div>
       </main>
     );

@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 
 export function Header({
   authed,
+  username,
   onToggleSidebar,
   onUpload,
   onLogin,
@@ -10,6 +11,7 @@ export function Header({
   setQuery,
 }: {
   authed: boolean;
+  username: string | null;
   onToggleSidebar: () => void;
   onUpload: () => void;
   onLogin: () => void;
@@ -19,6 +21,7 @@ export function Header({
 }) {
   const { pathname } = useLocation();
   const onFeed = pathname === "/";
+  const initial = username?.[0]?.toUpperCase() ?? "U";
 
   return (
     <header className="topbar">
@@ -50,7 +53,9 @@ export function Header({
             <button className="btn-ghost" onClick={onLogout}>
               Sign out
             </button>
-            <span className="avatar-sm">S</span>
+            <span className="avatar-sm" title={username ?? ""}>
+              {initial}
+            </span>
           </>
         ) : (
           <button className="btn-primary" onClick={onLogin}>

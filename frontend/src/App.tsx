@@ -1,20 +1,21 @@
 import { useEffect, useState } from "react";
 import { Routes, Route, Outlet, useOutletContext } from "react-router-dom";
-import { getToken, setToken, listVideos, WS_URL, type Video } from "./api";
+import { getMe, setToken, listVideos, WS_URL, type AuthUser, type Video } from "./api";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 import { UploadModal } from "./UploadModal";
-import { PlayerModal } from "./PlayerModal";
 import { LoginModal } from "./LoginModal";
 import { LibraryPage } from "./LibraryPage";
+import { WatchPage } from "./WatchPage";
 import { AdminPage } from "./AdminPage";
 
 export interface AppCtx {
   videos: Video[];
   refresh: () => void;
   live: boolean;
-  play: (v: Video) => void;
   authed: boolean;
+  isAdmin: boolean;
+  username: string | null;
   requireLogin: () => void;
   query: string;
 }
@@ -23,14 +24,15 @@ export const useApp = () => useOutletContext<AppCtx>();
 
 function Layout() {
   const [videos, setVideos] = useState<Video[]>([]);
-  const [selected, setSelected] = useState<Video | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [live, setLive] = useState(false);
   const [query, setQuery] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [token, setTok] = useState<string | null>(() => getToken());
-  const authed = !!token;
+  const [user, setUser] = useState<AuthUser | null>(null);
+
+  const authed = !!user;
+  const isAdmin = !!user?.is_admin;
 
   async function refresh() {
     try {
@@ -42,6 +44,7 @@ function Layout() {
 
   useEffect(() => {
     refresh();
+    getMe().then(setUser);
     const t = setInterval(refresh, 15000);
     return () => clearInterval(t);
   }, []);
@@ -69,15 +72,16 @@ function Layout() {
 
   function logout() {
     setToken(null);
-    setTok(null);
+    setUser(null);
   }
 
   const ctx: AppCtx = {
     videos,
     refresh,
     live,
-    play: setSelected,
     authed,
+    isAdmin,
+    username: user?.username ?? null,
     requireLogin: () => setLoginOpen(true),
     query,
   };
@@ -86,6 +90,7 @@ function Layout() {
     <>
       <Header
         authed={authed}
+        username={user?.username ?? null}
         onToggleSidebar={() => setSidebarOpen((o) => !o)}
         onUpload={() => setUploadOpen(true)}
         onLogin={() => setLoginOpen(true)}
@@ -97,6 +102,7 @@ function Layout() {
         <Sidebar
           open={sidebarOpen}
           authed={authed}
+          isAdmin={isAdmin}
           onUpload={() => setUploadOpen(true)}
           onLogin={() => setLoginOpen(true)}
         />
@@ -105,14 +111,11 @@ function Layout() {
         </div>
       </div>
       {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} onUploaded={refresh} />}
-      {selected?.playback_url && (
-        <PlayerModal video={selected} onClose={() => setSelected(null)} />
-      )}
       {loginOpen && (
         <LoginModal
           onClose={() => setLoginOpen(false)}
-          onSuccess={(t) => {
-            setTok(t);
+          onSuccess={(u) => {
+            setUser(u);
             setLoginOpen(false);
           }}
         />
@@ -126,6 +129,7 @@ export default function App() {
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<LibraryPage />} />
+        <Route path="/watch/:id" element={<WatchPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Route>
     </Routes>
