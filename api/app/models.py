@@ -24,6 +24,19 @@ class UploadResponse(BaseModel):
     key: str
 
 
+class ReactionRequest(BaseModel):
+    # "hop" (approve), "thump" (disapprove), or null to clear.
+    reaction: str | None = None
+
+
+class VoteRequest(BaseModel):
+    # Anonymous vote: move the counters from one reaction to another.
+    # "from"/"to" are each "hop", "thump", or null.
+    model_config = {"populate_by_name": True}
+    from_: str | None = Field(default=None, alias="from")
+    to: str | None = None
+
+
 class CommentCreate(BaseModel):
     text: str = Field(min_length=1, max_length=1000)
 
@@ -49,4 +62,7 @@ class Video(BaseModel):
     title: str | None = None
     description: str | None = None
     views: int = 0
-    likes: int = 0
+    hops: int = 0
+    thumps: int = 0
+    tags: list[str] = []
+    ai_generated: bool = False

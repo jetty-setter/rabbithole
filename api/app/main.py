@@ -21,10 +21,12 @@ from .models import (
     Comment,
     CommentCreate,
     Credentials,
+    ReactionRequest,
     UpdateVideo,
     UploadRequest,
     UploadResponse,
     Video,
+    VoteRequest,
 )
 
 app = FastAPI(title="RabbitHole API", version="0.2.0")
@@ -108,59 +110,102 @@ def remove_favorite(video_id: str, user: str = Depends(require_auth)) -> Respons
     return Response(status_code=204)
 
 
-@app.get("/likes")
-def list_likes(user: str = Depends(require_auth)) -> dict:
-    item = aws.users_table().get_item(Key={"username": user}).get("Item") or {}
-    return {"likes": sorted(item.get("liked") or set())}
+# ── Rabbit reactions: Hop (approve) / Thump (disapprove) ───
+# A bunny thumps its foot to signal displeasure — so a thump is our downvote.
+# One reaction per user per video; switching sides moves the counts atomically.
 
-
-@app.post("/videos/{video_id}/like", status_code=204)
-def like_video(video_id: str, user: str = Depends(require_auth)) -> Response:
-    # Record the like on the user; only bump the public counter if it's new.
-    try:
-        aws.users_table().update_item(
-            Key={"username": user},
-            UpdateExpression="ADD liked :v",
-            ConditionExpression="attribute_not_exists(liked) OR NOT contains(liked, :id)",
-            ExpressionAttributeValues={":v": {video_id}, ":id": video_id},
-        )
-    except ClientError as exc:
-        if exc.response["Error"]["Code"] == "ConditionalCheckFailedException":
-            return Response(status_code=204)  # already liked — no double count
-        raise
-    aws.videos_table().update_item(
+def _bump(video_id: str, attr: str, delta: int) -> None:
+    kwargs: dict = dict(
         Key={"video_id": video_id},
-        UpdateExpression="ADD #l :one",
-        ExpressionAttributeNames={"#l": "likes"},
-        ExpressionAttributeValues={":one": 1},
+        UpdateExpression="ADD #a :d",
+        ExpressionAttributeNames={"#a": attr},
+        ExpressionAttributeValues={":d": delta},
     )
-    return Response(status_code=204)
-
-
-@app.delete("/videos/{video_id}/like", status_code=204)
-def unlike_video(video_id: str, user: str = Depends(require_auth)) -> Response:
+    if delta < 0:
+        kwargs["ConditionExpression"] = "attribute_exists(#a) AND #a > :zero"
+        kwargs["ExpressionAttributeValues"][":zero"] = 0
     try:
-        aws.users_table().update_item(
-            Key={"username": user},
-            UpdateExpression="DELETE liked :v",
-            ConditionExpression="contains(liked, :id)",
-            ExpressionAttributeValues={":v": {video_id}, ":id": video_id},
-        )
-    except ClientError as exc:
-        if exc.response["Error"]["Code"] == "ConditionalCheckFailedException":
-            return Response(status_code=204)  # wasn't liked — nothing to undo
-        raise
-    try:
-        aws.videos_table().update_item(
-            Key={"video_id": video_id},
-            UpdateExpression="ADD #l :neg",
-            ConditionExpression="attribute_exists(#l) AND #l > :zero",
-            ExpressionAttributeNames={"#l": "likes"},
-            ExpressionAttributeValues={":neg": -1, ":zero": 0},
-        )
+        aws.videos_table().update_item(**kwargs)
     except ClientError as exc:
         if exc.response["Error"]["Code"] != "ConditionalCheckFailedException":
             raise
+
+
+@app.get("/reactions")
+def list_reactions(user: str = Depends(require_auth)) -> dict:
+    item = aws.users_table().get_item(Key={"username": user}).get("Item") or {}
+    return {
+        "hopped": sorted(item.get("hopped") or set()),
+        "thumped": sorted(item.get("thumped") or set()),
+    }
+
+
+@app.put("/videos/{video_id}/reaction", status_code=204)
+def set_reaction(
+    video_id: str, body: ReactionRequest, user: str = Depends(require_auth)
+) -> Response:
+    new = body.reaction
+    if new not in (None, "hop", "thump"):
+        raise HTTPException(status_code=400, detail="reaction must be hop, thump, or null")
+
+    item = aws.users_table().get_item(Key={"username": user}).get("Item") or {}
+    hopped = item.get("hopped") or set()
+    thumped = item.get("thumped") or set()
+    current = "hop" if video_id in hopped else "thump" if video_id in thumped else None
+    if current == new:
+        return Response(status_code=204)
+
+    users = aws.users_table()
+    # Clear the existing reaction (set + counter).
+    if current == "hop":
+        users.update_item(
+            Key={"username": user},
+            UpdateExpression="DELETE hopped :v",
+            ExpressionAttributeValues={":v": {video_id}},
+        )
+        _bump(video_id, "hops", -1)
+    elif current == "thump":
+        users.update_item(
+            Key={"username": user},
+            UpdateExpression="DELETE thumped :v",
+            ExpressionAttributeValues={":v": {video_id}},
+        )
+        _bump(video_id, "thumps", -1)
+
+    # Apply the new one.
+    if new == "hop":
+        users.update_item(
+            Key={"username": user},
+            UpdateExpression="ADD hopped :v",
+            ExpressionAttributeValues={":v": {video_id}},
+        )
+        _bump(video_id, "hops", 1)
+    elif new == "thump":
+        users.update_item(
+            Key={"username": user},
+            UpdateExpression="ADD thumped :v",
+            ExpressionAttributeValues={":v": {video_id}},
+        )
+        _bump(video_id, "thumps", 1)
+
+    return Response(status_code=204)
+
+
+_ATTR = {"hop": "hops", "thump": "thumps"}
+
+
+@app.post("/videos/{video_id}/vote", status_code=204)
+def vote(video_id: str, body: VoteRequest) -> Response:
+    """Anonymous, no-auth vote. The browser tracks its own prior choice and
+    sends the transition; we just move the public counters."""
+    if body.from_ not in (None, "hop", "thump") or body.to not in (None, "hop", "thump"):
+        raise HTTPException(status_code=400, detail="from/to must be hop, thump, or null")
+    if body.from_ == body.to:
+        return Response(status_code=204)
+    if body.from_:
+        _bump(video_id, _ATTR[body.from_], -1)
+    if body.to:
+        _bump(video_id, _ATTR[body.to], 1)
     return Response(status_code=204)
 
 
@@ -226,7 +271,10 @@ def _to_video(item: dict) -> Video:
         title=item.get("title"),
         description=item.get("description"),
         views=int(item.get("views") or 0),
-        likes=int(item.get("likes") or 0),
+        hops=int(item.get("hops") or 0),
+        thumps=int(item.get("thumps") or 0),
+        tags=[str(t) for t in (item.get("tags") or [])],
+        ai_generated=bool(item.get("ai_generated") or False),
     )
 
 
