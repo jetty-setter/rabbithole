@@ -33,6 +33,30 @@ POLL_WAIT_SECONDS = int(os.getenv("POLL_WAIT_SECONDS", "20"))
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 AI_MODEL = os.getenv("AI_MODEL", "claude-opus-4-8")
 
+# Kept in sync with the API's upload-time suggester (api/app/main.py).
+_AI_SYSTEM = (
+    "You title videos for RabbitHole, a fun, irreverent, internet-native video "
+    "site. You're given a few frames sampled in chronological order across one "
+    "short clip. Read them as a SEQUENCE and find the hook — the funniest, most "
+    "surprising, or most satisfying beat. Return JSON with: "
+    "(1) \"title\": a SHORT, punchy, scroll-stopping title — aim for 4-8 words, "
+    "max 60 chars, no quotes, no end punctuation. Write it like a clip built to "
+    "go viral: bold, playful, a little cheeky, with vivid active verbs and "
+    "attitude; lead with the hook or a funny angle. Examples of the VIBE (never "
+    "reuse): 'Zoomies Activated: Dog vs The Entire Agility Course', 'This Dog Has "
+    "Zero Chill at the Beach', 'He Fully Committed to the Bit'. Avoid flat "
+    "captions ('Dog in water') and lazy hype ('Amazing video'). "
+    "(2) \"description\": a lively 1-2 sentence description of what actually "
+    "happens. (3) \"tags\": 3-5 short lowercase tags. "
+    "Be bold in VOICE but strictly accurate about what's on screen: never invent "
+    "subjects or events that aren't clearly visible — do not add extra people or "
+    "animals, do not state a specific breed, name, or place unless obvious, and "
+    "count subjects conservatively (if you can't tell how many, say 'a dog', not "
+    "'two dogs'). The comedy comes from framing and word choice, not made-up "
+    'facts. Respond with ONLY a JSON object: {"title": str, "description": str, '
+    '"tags": [str]}'
+)
+
 # Fargate pricing inputs for the per-video cost estimate (us-east-1 defaults).
 FARGATE_CPU_UNITS = int(os.getenv("FARGATE_CPU_UNITS", "512"))
 FARGATE_MEMORY_MIB = int(os.getenv("FARGATE_MEMORY_MIB", "1024"))
@@ -93,11 +117,44 @@ def _estimate_cost(seconds: float) -> float:
     return seconds / 3600 * (vcpu * FARGATE_VCPU_HOUR + gb * FARGATE_GB_HOUR)
 
 
-def _ai_metadata(thumb: Path, filename: str) -> dict | None:
-    """Auto-generate title/description/tags from a representative frame using
-    Claude vision. Best-effort: any failure returns None and the pipeline
-    proceeds untouched (the video still plays; it just stays manually-titled)."""
-    if not ANTHROPIC_API_KEY:
+def _duration_seconds(src: Path) -> float:
+    """Probe the source duration (seconds). 0.0 if it can't be read."""
+    try:
+        out = subprocess.run(
+            ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+             "-of", "default=noprint_wrappers=1:nokey=1", str(src)],
+            capture_output=True, text=True, check=True,
+        )
+        return float(out.stdout.strip())
+    except Exception:  # noqa: BLE001
+        return 0.0
+
+
+def _sample_frames(src: Path, outdir: Path, n: int = 4) -> list[Path]:
+    """Grab N frames spread across the clip so the AI sees the action and the
+    payoff — not just a static opening frame. Falls back to one early frame."""
+    outdir.mkdir(parents=True, exist_ok=True)
+    dur = _duration_seconds(src)
+    fracs = [0.1, 0.37, 0.63, 0.9][:n] if dur > 0 else [0.0]
+    frames: list[Path] = []
+    for i, fr in enumerate(fracs):
+        f = outdir / f"f{i}.jpg"
+        ts = f"{dur * fr:.2f}" if dur > 0 else "00:00:01"
+        try:
+            _ffmpeg(["-ss", ts, "-i", str(src), "-vframes", "1",
+                     "-vf", "scale=512:-2", str(f)])
+            if f.exists():
+                frames.append(f)
+        except subprocess.CalledProcessError:
+            pass
+    return frames
+
+
+def _ai_metadata(frames: list[Path], filename: str) -> dict | None:
+    """Auto-generate title/description/tags from a few frames sampled across the
+    clip, using Claude vision. Best-effort: any failure returns None and the
+    pipeline proceeds untouched (the video still plays; just manually-titled)."""
+    if not ANTHROPIC_API_KEY or not frames:
         return None
     try:
         import base64
@@ -105,36 +162,32 @@ def _ai_metadata(thumb: Path, filename: str) -> dict | None:
         import anthropic
 
         client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-        img_b64 = base64.standard_b64encode(thumb.read_bytes()).decode()
         hint = Path(filename).stem.replace("-", " ").replace("_", " ").strip()
+        images = [
+            {
+                "type": "image",
+                "source": {
+                    "type": "base64",
+                    "media_type": "image/jpeg",
+                    "data": base64.standard_b64encode(f.read_bytes()).decode(),
+                },
+            }
+            for f in frames
+        ]
         resp = client.messages.create(
             model=AI_MODEL,
             max_tokens=400,
-            system=(
-                "You write metadata for short user-uploaded clips on RabbitHole, "
-                "a punchy, irreverent video site. Given one representative frame, "
-                "return a vivid but accurate title (max 60 chars, no quotes, no "
-                "trailing punctuation), a 1-2 sentence description, and 3-5 short "
-                "lowercase tags. Describe only what you can actually see — never "
-                "invent specifics. Respond with ONLY a JSON object of the form "
-                '{"title": str, "description": str, "tags": [str]}'
-            ),
+            system=_AI_SYSTEM,
             messages=[
                 {
                     "role": "user",
                     "content": [
-                        {
-                            "type": "image",
-                            "source": {
-                                "type": "base64",
-                                "media_type": "image/jpeg",
-                                "data": img_b64,
-                            },
-                        },
+                        *images,
                         {
                             "type": "text",
-                            "text": f"Filename hint (weak, may be meaningless): '{hint}'. "
-                            "Generate the metadata JSON.",
+                            "text": "Frames are in chronological order (start -> end). "
+                            f"Filename hint (weak, may be meaningless): '{hint}'. "
+                            "Write the metadata JSON.",
                         },
                     ],
                 }
@@ -260,13 +313,14 @@ def process_record(bucket: str, key: str) -> None:
         # Auto-name untitled uploads from the freshly-extracted frame.
         ai_extra: dict = {}
         if not (item.get("title") or "").strip():
-            meta = _ai_metadata(thumb, Path(key).name)
+            frames = _sample_frames(src, workdir / "frames")
+            meta = _ai_metadata(frames, Path(key).name)
             if meta:
                 if meta.get("title"):
                     ai_extra["title"] = meta["title"]
                 if meta.get("description") and not (item.get("description") or "").strip():
                     ai_extra["description"] = meta["description"]
-                if meta.get("tags"):
+                if meta.get("tags") and not item.get("tags"):
                     ai_extra["tags"] = meta["tags"]
                 if ai_extra:
                     ai_extra["ai_generated"] = True
