@@ -47,6 +47,17 @@ resource "aws_iam_role_policy" "api_lambda" {
         ]
       },
       {
+        # Read the Anthropic key (SSM SecureString) for upload-time AI suggestions.
+        Effect   = "Allow"
+        Action   = ["ssm:GetParameter"]
+        Resource = [local.anthropic_key_arn]
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["kms:Decrypt"]
+        Resource = "*"
+      },
+      {
         Effect   = "Allow"
         Action   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
         Resource = "*"
@@ -73,6 +84,8 @@ resource "aws_lambda_function" "api" {
       VIDEOS_TABLE           = aws_dynamodb_table.videos.name
       USERS_TABLE            = aws_dynamodb_table.users.name
       COMMENTS_TABLE         = aws_dynamodb_table.comments.name
+      ANTHROPIC_KEY_PARAM    = local.anthropic_key_param
+      AI_MODEL               = var.ai_model
       CLOUDFRONT_DOMAIN      = aws_cloudfront_distribution.streaming.domain_name
       CREATOR_USERNAME       = "admin"
       JWT_SECRET             = random_password.jwt.result

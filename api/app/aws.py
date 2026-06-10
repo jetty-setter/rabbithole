@@ -8,6 +8,7 @@ from . import config
 _session = boto3.session.Session(region_name=config.AWS_REGION)
 
 s3 = _session.client("s3")
+ssm = _session.client("ssm")
 _dynamodb = _session.resource("dynamodb")
 
 

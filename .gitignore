@@ -37,7 +37,7 @@ infra/build/*.zip
 *.mp4
 *.mov
 *.m3u8
-*.ts
+seg_*.ts  # HLS transport-stream segments (NOT TypeScript — was *.ts, which ate .ts source)
 
 # Terraform saved plans
 infra/tfplan

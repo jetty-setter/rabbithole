@@ -5,6 +5,8 @@ Runs locally as a normal FastAPI app (uvicorn) and on AWS Lambda via Mangum.
 
 from __future__ import annotations
 
+import functools
+import json
 import re
 import uuid
 from datetime import datetime, timezone
@@ -22,6 +24,7 @@ from .models import (
     CommentCreate,
     Credentials,
     ReactionRequest,
+    SuggestRequest,
     UpdateVideo,
     UploadRequest,
     UploadResponse,
@@ -44,6 +47,98 @@ _UNSAFE = re.compile(r"[^A-Za-z0-9._-]+")
 def _safe_filename(name: str) -> str:
     cleaned = _UNSAFE.sub("", name.strip().replace(" ", "_"))
     return cleaned or "video.mp4"
+
+
+# Shared with the worker's auto-titler so upload-time suggestions and the
+# server-side fallback read identically.
+_AI_SYSTEM = (
+    "You title videos for RabbitHole, a fun, irreverent, internet-native video "
+    "site. You're given a few frames sampled in chronological order across one "
+    "short clip. Read them as a SEQUENCE and find the hook — the funniest, most "
+    "surprising, or most satisfying beat. Return JSON with: "
+    "(1) \"title\": a SHORT, punchy, scroll-stopping title — aim for 4-8 words, "
+    "max 60 chars, no quotes, no end punctuation. Write it like a clip built to "
+    "go viral: bold, playful, a little cheeky, with vivid active verbs and "
+    "attitude; lead with the hook or a funny angle. Examples of the VIBE (never "
+    "reuse): 'Zoomies Activated: Dog vs The Entire Agility Course', 'This Dog Has "
+    "Zero Chill at the Beach', 'He Fully Committed to the Bit'. Avoid flat "
+    "captions ('Dog in water') and lazy hype ('Amazing video'). "
+    "(2) \"description\": a lively 1-2 sentence description of what actually "
+    "happens. (3) \"tags\": 3-5 short lowercase tags. "
+    "Be bold in VOICE but strictly accurate about what's on screen: never invent "
+    "subjects or events that aren't clearly visible — do not add extra people or "
+    "animals, do not state a specific breed, name, or place unless obvious, and "
+    "count subjects conservatively (if you can't tell how many, say 'a dog', not "
+    "'two dogs'). The comedy comes from framing and word choice, not made-up "
+    'facts. Respond with ONLY a JSON object: {"title": str, "description": str, '
+    '"tags": [str]}'
+)
+
+
+@functools.lru_cache(maxsize=1)
+def _anthropic_key() -> str:
+    """Fetch the Anthropic key from SSM once per warm Lambda (cached)."""
+    if not config.ANTHROPIC_KEY_PARAM:
+        return ""
+    try:
+        resp = aws.ssm.get_parameter(Name=config.ANTHROPIC_KEY_PARAM, WithDecryption=True)
+        return resp["Parameter"]["Value"]
+    except Exception:  # noqa: BLE001
+        return ""
+
+
+@app.post("/ai/suggest")
+def ai_suggest(body: SuggestRequest, user: str = Depends(require_auth)) -> dict:
+    """Suggest a title/description/tags from browser-extracted frames so the
+    uploader can see and tweak the AI's take before publishing."""
+    key = _anthropic_key()
+    frames = [f for f in (body.frames or []) if f][:5]
+    if not key or not frames:
+        raise HTTPException(status_code=503, detail="AI suggestions unavailable")
+
+    import anthropic
+
+    client = anthropic.Anthropic(api_key=key)
+    images = [
+        {
+            "type": "image",
+            "source": {"type": "base64", "media_type": "image/jpeg", "data": f},
+        }
+        for f in frames
+    ]
+    try:
+        resp = client.messages.create(
+            model=config.AI_MODEL,
+            max_tokens=400,
+            system=_AI_SYSTEM,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        *images,
+                        {
+                            "type": "text",
+                            "text": "Frames are in chronological order (start -> end). "
+                            "Write the metadata JSON.",
+                        },
+                    ],
+                }
+            ],
+        )
+        text = "".join(b.text for b in resp.content if b.type == "text").strip()
+        if "{" in text:
+            text = text[text.find("{") : text.rfind("}") + 1]
+        data = json.loads(text)
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=502, detail="AI suggestion failed") from exc
+
+    return {
+        "title": (data.get("title") or "").strip().strip('"')[:120],
+        "description": (data.get("description") or "").strip()[:1000],
+        "tags": [
+            str(t).strip().lower()[:30] for t in (data.get("tags") or []) if str(t).strip()
+        ][:5],
+    }
 
 
 @app.get("/health")
@@ -246,6 +341,13 @@ def create_upload(req: UploadRequest, user: str = Depends(require_auth)) -> Uplo
         item["title"] = req.title.strip()[:200]
     if req.description and req.description.strip():
         item["description"] = req.description.strip()[:5000]
+    if req.tags:
+        clean = [
+            t2 for t in req.tags
+            if (t2 := str(t).strip().lstrip("#").lower()[:30])
+        ][:8]
+        if clean:
+            item["tags"] = clean
     aws.videos_table().put_item(Item=item)
 
     return UploadResponse(video_id=video_id, upload_url=upload_url, key=key)
@@ -310,6 +412,10 @@ def update_video(video_id: str, body: UpdateVideo, user: str = Depends(require_a
         updates["title"] = body.title.strip()[:200]
     if body.description is not None:
         updates["description"] = body.description.strip()[:5000]
+    if body.tags is not None:
+        updates["tags"] = [
+            t2 for t in body.tags if (t2 := str(t).strip().lstrip("#").lower()[:30])
+        ][:8]
     if updates:
         expr = "SET " + ", ".join(f"#{k} = :{k}" for k in updates)
         aws.videos_table().update_item(

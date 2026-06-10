@@ -12,6 +12,9 @@ STREAMING_BUCKET = os.getenv("STREAMING_BUCKET", "")
 VIDEOS_TABLE = os.getenv("VIDEOS_TABLE", "rabbithole-dev-videos")
 USERS_TABLE = os.getenv("USERS_TABLE", "rabbithole-dev-users")
 COMMENTS_TABLE = os.getenv("COMMENTS_TABLE", "rabbithole-dev-comments")
+# AI title/description suggestions at upload time.
+ANTHROPIC_KEY_PARAM = os.getenv("ANTHROPIC_KEY_PARAM", "")
+AI_MODEL = os.getenv("AI_MODEL", "claude-opus-4-8")
 CLOUDFRONT_DOMAIN = os.getenv("CLOUDFRONT_DOMAIN", "")
 PRESIGN_EXPIRY_SECONDS = int(os.getenv("PRESIGN_EXPIRY_SECONDS", "900"))
 

@@ -11,11 +11,13 @@ class UploadRequest(BaseModel):
     content_type: str = "video/mp4"
     title: str | None = None
     description: str | None = None
+    tags: list[str] | None = None
 
 
 class UpdateVideo(BaseModel):
     title: str | None = None
     description: str | None = None
+    tags: list[str] | None = None
 
 
 class UploadResponse(BaseModel):
@@ -35,6 +37,11 @@ class VoteRequest(BaseModel):
     model_config = {"populate_by_name": True}
     from_: str | None = Field(default=None, alias="from")
     to: str | None = None
+
+
+class SuggestRequest(BaseModel):
+    # base64-encoded JPEG frames (no data: prefix), chronological order.
+    frames: list[str] = Field(default_factory=list)
 
 
 class CommentCreate(BaseModel):
