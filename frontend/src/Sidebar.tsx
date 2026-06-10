@@ -56,16 +56,16 @@ export function Sidebar({
       </Link>
       <Link to="/trending" className={cls("/trending")}>
         <IconTrending />
-        Trending
+        Surfacing
       </Link>
 
       {authed && (
         <>
           <div className="side-sep" />
-          <div className="side-label">You</div>
+          <div className="side-label">Your warren</div>
           <Link to="/favorites" className={cls("/favorites")}>
             <IconHeart />
-            Favorites
+            Burrow
           </Link>
           <Link to="/mine" className={cls("/mine")}>
             <IconVideo />

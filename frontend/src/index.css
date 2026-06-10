@@ -1915,3 +1915,385 @@ body {
   text-align: center;
   font-size: 13px;
 }
+
+/* ══ RabbitHole identity ═══════════════════════════════════ */
+
+/* Hop / Thump vote — clean up/down; the mascot burst carries the personality */
+.vote {
+  display: inline-flex;
+  align-items: stretch;
+  background: var(--panel);
+  border: 1px solid var(--border-2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.vote-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 8px 16px;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.vote-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.vote-ico {
+  width: 19px;
+  height: 19px;
+}
+
+.vote-count {
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.vote-sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border-2);
+}
+
+.vote-btn.up.on,
+.vote-btn.up.on .vote-count {
+  color: var(--green);
+}
+
+.vote-btn.up.on {
+  background: rgba(155, 232, 11, 0.12);
+}
+
+.vote-btn.down.on,
+.vote-btn.down.on .vote-count {
+  color: var(--pink);
+}
+
+.vote-btn.down.on {
+  background: rgba(243, 28, 146, 0.12);
+}
+
+/* AI-generated tags on the watch page */
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.tag {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--panel);
+  border: 1px solid var(--border-2);
+  border-radius: 999px;
+  padding: 4px 11px;
+}
+
+.tag.ai-tag {
+  color: var(--green);
+  border-color: rgba(155, 232, 11, 0.4);
+  background: rgba(155, 232, 11, 0.08);
+}
+
+/* Owner overflow menu (Edit / Delete) on the watch page */
+.owner-menu {
+  position: relative;
+  display: inline-flex;
+}
+
+.kebab {
+  font-size: 18px;
+  line-height: 1;
+  padding: 8px 14px;
+}
+
+.act-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 132px;
+  padding: 6px;
+  background: var(--panel-2);
+  border: 1px solid var(--border-2);
+  border-radius: 12px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55);
+}
+
+/* Tiny hop glyph inline in card meta */
+.meta-ico {
+  width: 13px;
+  height: 13px;
+  vertical-align: -2px;
+  margin: 0 1px;
+}
+
+/* Reaction burst — the mascot leaps/stomps over the player on click */
+.player-stage {
+  position: relative;
+}
+
+.player-wrap.shake {
+  animation: rh-shake 0.5s ease;
+}
+
+.burst {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 5;
+  overflow: hidden;
+}
+
+.burst-mascot {
+  height: clamp(150px, 30vh, 300px);
+  aspect-ratio: 1 / 1;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+/* White mascots, with a thicker (offset-shadow) line weight + colored neon glow */
+.burst-hop .burst-mascot,
+.burst-thump .burst-mascot {
+  background-color: #fff;
+}
+
+.burst-hop .burst-mascot {
+  -webkit-mask-image: url("/hop.png?v=2");
+  mask-image: url("/hop.png?v=2");
+  filter: drop-shadow(2.5px 0 0 #fff) drop-shadow(-2.5px 0 0 #fff)
+    drop-shadow(0 2.5px 0 #fff) drop-shadow(0 -2.5px 0 #fff)
+    drop-shadow(1.8px 1.8px 0 #fff) drop-shadow(-1.8px -1.8px 0 #fff)
+    drop-shadow(0 0 28px rgba(155, 232, 11, 0.85));
+  animation: rh-burst-hop 1s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+}
+
+.burst-thump .burst-mascot {
+  -webkit-mask-image: url("/thump.png?v=2");
+  mask-image: url("/thump.png?v=2");
+  filter: drop-shadow(2.5px 0 0 #fff) drop-shadow(-2.5px 0 0 #fff)
+    drop-shadow(0 2.5px 0 #fff) drop-shadow(0 -2.5px 0 #fff)
+    drop-shadow(1.8px 1.8px 0 #fff) drop-shadow(-1.8px -1.8px 0 #fff)
+    drop-shadow(0 0 28px rgba(243, 28, 146, 0.85));
+  animation: rh-burst-thump 0.9s cubic-bezier(0.3, 0.7, 0.4, 1) forwards;
+}
+
+@keyframes rh-burst-hop {
+  0% {
+    transform: translateY(70px) scale(0.5) rotate(-8deg);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  55% {
+    transform: translateY(-26px) scale(1.15) rotate(5deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-90px) scale(1) rotate(0deg);
+    opacity: 0;
+  }
+}
+
+@keyframes rh-burst-thump {
+  0% {
+    transform: translateY(-55px) scale(1.2) rotate(7deg);
+    opacity: 0;
+  }
+  22% {
+    transform: translateY(0) scale(1.1) rotate(0deg);
+    opacity: 1;
+  }
+  36% {
+    transform: translateY(0) scale(0.94);
+  }
+  52% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes rh-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  15% {
+    transform: translateX(-6px) rotate(-0.4deg);
+  }
+  30% {
+    transform: translateX(6px) rotate(0.4deg);
+  }
+  45% {
+    transform: translateX(-5px);
+  }
+  60% {
+    transform: translateX(5px);
+  }
+  75% {
+    transform: translateX(-3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .burst-hop .burst-mascot,
+  .burst-thump .burst-mascot,
+  .player-wrap.shake {
+    animation-duration: 0.01ms;
+  }
+}
+
+/* "Down the rabbit hole" dive CTA (in the Deeper rail) */
+.dive-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  color: #0a0a0d;
+  background: linear-gradient(120deg, var(--green), #c7f54a);
+  border: none;
+  box-shadow: 0 8px 26px rgba(155, 232, 11, 0.28);
+  transition: transform 140ms ease, box-shadow 160ms ease;
+}
+
+.dive-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(155, 232, 11, 0.42);
+}
+
+.dive-cta.diving {
+  background: linear-gradient(120deg, var(--pink), #ff5db4);
+  color: #fff;
+  box-shadow: 0 8px 26px rgba(243, 28, 146, 0.32);
+}
+
+.dive-cta-big {
+  font-family: var(--display);
+  font-size: 20px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1.05;
+}
+
+.dive-cta-sub {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.78;
+}
+
+/* Dive HUD across the top of the watch page while diving */
+.dive-hud {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  padding: 12px 18px;
+  margin-bottom: 18px;
+  border-radius: 14px;
+  background: rgba(243, 28, 146, 0.1);
+  border: 1px solid rgba(243, 28, 146, 0.45);
+}
+
+.dive-depth {
+  font-family: var(--display);
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--pink);
+}
+
+.dive-note {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.dive-hud-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+}
+
+.dive-deeper,
+.dive-surface {
+  border-radius: 999px;
+  padding: 7px 16px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1.5px solid var(--pink);
+  background: transparent;
+  color: var(--pink);
+  transition: background 130ms ease, color 130ms ease;
+}
+
+.dive-deeper:hover {
+  background: var(--pink);
+  color: #fff;
+}
+
+.dive-surface {
+  border-color: var(--border-2);
+  color: var(--muted);
+}
+
+.dive-surface:hover {
+  border-color: var(--text);
+  color: var(--text);
+}
+
+/* Sticker-card tilt — a touch of zine energy on hover */
+.vcard:hover .thumb {
+  transform: translateY(-3px) rotate(-0.6deg);
+}
+
+/* Anton treatment for the rail + echoes headers */
+.related-head,
+.comments-head {
+  font-family: var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-size: 18px;
+}
+
+/* Film grain overlay — subtle texture so it doesn't read as flat YouTube dark */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}

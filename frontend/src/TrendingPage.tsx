@@ -16,12 +16,12 @@ export function TrendingPage() {
   return (
     <main className="page">
       <div className="feed-head">
-        <h1>Trending</h1>
-        <p>The most-watched videos right now.</p>
+        <h1>Surfacing</h1>
+        <p>What's clawing its way up the hole right now.</p>
       </div>
       {list.length === 0 ? (
         <div className="empty">
-          <p>Nothing trending yet.</p>
+          <p>Nothing's surfaced yet.</p>
         </div>
       ) : (
         <div className="grid">

@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 
 /** Adaptive HLS player. Uses native HLS on Safari, hls.js everywhere else.
  *  Auto-starts on mount (best-effort — browsers may block autoplay with sound). */
-export function Player({ src }: { src: string }) {
+export function Player({ src, onEnded }: { src: string; onEnded?: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -32,5 +32,14 @@ export function Player({ src }: { src: string }) {
     }
   }, [src]);
 
-  return <video ref={videoRef} controls playsInline autoPlay className="player" />;
+  return (
+    <video
+      ref={videoRef}
+      controls
+      playsInline
+      autoPlay
+      className="player"
+      onEnded={onEnded}
+    />
+  );
 }

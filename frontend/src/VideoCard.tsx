@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { displayTitle, formatDuration, relativeTime, type Video } from "./api";
 import { useApp } from "./App";
+import { HopGlyph } from "./Icons";
 
 const PROC_LABEL: Record<string, string> = {
   pending_upload: "Queued…",
@@ -65,7 +66,13 @@ export function VideoCard({ v }: { v: Video }) {
           <span className="vchannel">{v.owner || "RabbitHole"}</span>
           <span className="vmeta">
             {v.views ?? 0} views
-            {v.likes ? ` · ♥ ${v.likes}` : ""}
+            {v.hops ? (
+              <>
+                {" · "}
+                <HopGlyph className="meta-ico" />
+                {v.hops}
+              </>
+            ) : null}
             {relativeTime(v.created_at) ? ` · ${relativeTime(v.created_at)}` : ""}
           </span>
         </div>

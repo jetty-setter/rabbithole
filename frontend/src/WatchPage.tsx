@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useApp } from "./App";
 import {
@@ -25,9 +25,14 @@ export function WatchPage() {
     refresh,
     favorites,
     toggleFavorite,
-    liked,
-    toggleLike,
-    requireLogin,
+    hopped,
+    thumped,
+    react,
+    diveActive,
+    diveDepth,
+    startDive,
+    stopDive,
+    nextDive,
   } = useApp();
 
   const [video, setVideo] = useState<Video | null>(null);
@@ -36,6 +41,17 @@ export function WatchPage() {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [copied, setCopied] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [burst, setBurst] = useState<{ kind: "hop" | "thump"; id: number } | null>(null);
+  const burstTimer = useRef<number>();
+
+  useEffect(() => () => window.clearTimeout(burstTimer.current), []);
+
+  function fireBurst(kind: "hop" | "thump") {
+    setBurst({ kind, id: Date.now() });
+    window.clearTimeout(burstTimer.current);
+    burstTimer.current = window.setTimeout(() => setBurst(null), 1100);
+  }
 
   useEffect(() => {
     if (!id) return;
@@ -60,9 +76,10 @@ export function WatchPage() {
     return (
       <main className="page">
         <div className="empty">
-          <h3>Video not found</h3>
+          <h3>Lost down the hole</h3>
+          <p className="muted">That video isn't here.</p>
           <Link to="/" className="btn-primary">
-            Back to feed
+            Back to the surface
           </Link>
         </div>
       </main>
@@ -71,20 +88,51 @@ export function WatchPage() {
   if (!video) {
     return (
       <main className="page">
-        <p className="muted">Loading…</p>
+        <p className="muted">Digging it up…</p>
       </main>
     );
   }
 
+  const vid = video.video_id;
   const canManage = isAdmin || (!!username && video.owner === username);
-  const faved = favorites.has(video.video_id);
-  const isLiked = liked.has(video.video_id);
+  const faved = favorites.has(vid);
+  const isHopped = hopped.has(vid);
+  const isThumped = thumped.has(vid);
 
-  function onLike() {
-    if (!authed) return;
-    const willLike = !liked.has(video!.video_id);
-    toggleLike(video!.video_id);
-    setVideo((v) => (v ? { ...v, likes: Math.max(0, (v.likes ?? 0) + (willLike ? 1 : -1)) } : v));
+  function onReact(kind: "hop" | "thump") {
+    const wasHop = hopped.has(vid);
+    const wasThump = thumped.has(vid);
+    const next =
+      kind === "hop" ? (wasHop ? null : "hop") : wasThump ? null : "thump";
+    react(vid, kind);
+    if (next === kind) fireBurst(kind);
+    const dHop = (next === "hop" ? 1 : 0) - (wasHop ? 1 : 0);
+    const dThump = (next === "thump" ? 1 : 0) - (wasThump ? 1 : 0);
+    setVideo((v) =>
+      v
+        ? {
+            ...v,
+            hops: Math.max(0, (v.hops ?? 0) + dHop),
+            thumps: Math.max(0, (v.thumps ?? 0) + dThump),
+          }
+        : v,
+    );
+  }
+
+  function fallDeeper() {
+    const n = nextDive(vid);
+    if (n) navigate(`/watch/${n}`);
+    else stopDive();
+  }
+
+  function beginDive() {
+    startDive(vid);
+    const n = nextDive(vid);
+    if (n) navigate(`/watch/${n}`);
+  }
+
+  function onEnded() {
+    if (diveActive) fallDeeper();
   }
 
   async function copyLink() {
@@ -118,9 +166,35 @@ export function WatchPage() {
 
   return (
     <main className="page watch">
+      {diveActive && (
+        <div className="dive-hud">
+          <span className="dive-depth">🕳️ You're {diveDepth} {diveDepth === 1 ? "hole" : "holes"} deep</span>
+          <span className="dive-note">Auto-falling when this ends…</span>
+          <div className="dive-hud-actions">
+            <button className="dive-deeper" onClick={fallDeeper}>
+              Deeper ▼
+            </button>
+            <button className="dive-surface" onClick={stopDive}>
+              Surface ▲
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="watch-grid">
         <div className="watch-main">
-          {video.playback_url && <Player src={video.playback_url} />}
+          <div className="player-stage">
+            {video.playback_url && (
+              <div className={burst?.kind === "thump" ? "player-wrap shake" : "player-wrap"}>
+                <Player src={video.playback_url} onEnded={onEnded} />
+              </div>
+            )}
+            {burst && (
+              <div className={`burst burst-${burst.kind}`} key={burst.id}>
+                <span className="burst-mascot" />
+              </div>
+            )}
+          </div>
 
           <div className="watch-meta">
             {editing ? (
@@ -159,46 +233,132 @@ export function WatchPage() {
                     </div>
                   </div>
                   <div className="watch-actions">
-                    <button
-                      className={isLiked ? "btn-ghost liked" : "btn-ghost"}
-                      onClick={authed ? onLike : requireLogin}
-                      title={authed ? "Like this video" : "Sign in to like"}
-                    >
-                      {isLiked ? "♥" : "♡"} {video.likes ?? 0}
-                    </button>
+                    <div className="vote">
+                      <button
+                        className={isHopped ? "vote-btn up on" : "vote-btn up"}
+                        onClick={() => onReact("hop")}
+                        title="Hop it up"
+                        aria-label="Hop it up"
+                      >
+                        <svg
+                          className="vote-ico"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.4"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M6 14l6-6 6 6" />
+                        </svg>
+                        <span className="vote-count">{video.hops ?? 0}</span>
+                      </button>
+                      <span className="vote-sep" />
+                      <button
+                        className={isThumped ? "vote-btn down on" : "vote-btn down"}
+                        onClick={() => onReact("thump")}
+                        title="Thump it down"
+                        aria-label="Thump it down"
+                      >
+                        <svg
+                          className="vote-ico"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.4"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M6 10l6 6 6-6" />
+                        </svg>
+                        <span className="vote-count">{video.thumps ?? 0}</span>
+                      </button>
+                    </div>
                     {authed && (
                       <button
                         className={faved ? "btn-ghost saved" : "btn-ghost"}
-                        onClick={() => toggleFavorite(video.video_id)}
+                        onClick={() => toggleFavorite(vid)}
                       >
-                        {faved ? "♥ Saved" : "♡ Save"}
+                        {faved ? "✓ Stashed" : "Stash"}
                       </button>
                     )}
                     <button className="btn-ghost" onClick={copyLink}>
                       {copied ? "Copied ✓" : "Copy link"}
                     </button>
                     {canManage && (
-                      <button className="btn-ghost" onClick={startEdit}>
-                        Edit
-                      </button>
-                    )}
-                    {canManage && (
-                      <button className="btn-ghost danger-text" onClick={remove}>
-                        Delete
-                      </button>
+                      <div className="owner-menu">
+                        <button
+                          className="btn-ghost kebab"
+                          onClick={() => setMenuOpen((o) => !o)}
+                          aria-label="More actions"
+                        >
+                          ⋯
+                        </button>
+                        {menuOpen && (
+                          <>
+                            <div className="menu-backdrop" onClick={() => setMenuOpen(false)} />
+                            <div className="act-menu">
+                              <button
+                                className="menu-item"
+                                onClick={() => {
+                                  setMenuOpen(false);
+                                  startEdit();
+                                }}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                className="menu-item danger-text"
+                                onClick={() => {
+                                  setMenuOpen(false);
+                                  remove();
+                                }}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
                 {video.description && <p className="watch-desc">{video.description}</p>}
+                {video.tags && video.tags.length > 0 && (
+                  <div className="tag-row">
+                    {video.tags.map((t) => (
+                      <span className="tag" key={t}>
+                        #{t}
+                      </span>
+                    ))}
+                    {video.ai_generated && (
+                      <span className="tag ai-tag" title="Title, description, and tags auto-generated by AI from a video frame">
+                        ✦ auto
+                      </span>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </div>
 
-          <Comments videoId={video.video_id} />
+          <Comments videoId={vid} />
         </div>
 
         <aside className="watch-related">
-          <h3 className="related-head">Up next</h3>
+          {diveActive ? (
+            <button className="dive-cta diving" onClick={fallDeeper}>
+              <span className="dive-cta-big">Keep falling ▼</span>
+              <span className="dive-cta-sub">{diveDepth} {diveDepth === 1 ? "hole" : "holes"} deep</span>
+            </button>
+          ) : (
+            <button className="dive-cta" onClick={beginDive}>
+              <span className="dive-cta-big">▼ Down the rabbit hole</span>
+              <span className="dive-cta-sub">Auto-play a never-ending descent</span>
+            </button>
+          )}
+
+          <h3 className="related-head">Deeper</h3>
           {related.map((r) => (
             <Link to={`/watch/${r.video_id}`} className="related-item" key={r.video_id}>
               <div className="related-thumb">

@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { createUpload, displayTitle, uploadToS3 } from "./api";
+import { createUpload, uploadToS3 } from "./api";
 
 export function UploadModal({
   onClose,
@@ -18,7 +18,7 @@ export function UploadModal({
 
   function chooseFile(f: File | null) {
     setFile(f);
-    if (f && !title.trim()) setTitle(displayTitle({ filename: f.name }));
+    // Intentionally leave the title blank — an empty title lets the AI name it.
   }
 
   async function start() {
@@ -84,7 +84,7 @@ export function UploadModal({
           <div className="upload-fields">
             <input
               className="search wide"
-              placeholder="Title"
+              placeholder="Title — leave blank and the AI will name it ✦"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />

@@ -40,7 +40,7 @@ export function Comments({ videoId }: { videoId: string }) {
   return (
     <section className="comments">
       <h3 className="comments-head">
-        {comments.length} {comments.length === 1 ? "comment" : "comments"}
+        {comments.length} {comments.length === 1 ? "twitch" : "twitches"}
       </h3>
 
       {authed ? (
@@ -49,7 +49,7 @@ export function Comments({ videoId }: { videoId: string }) {
           <div className="comment-input-wrap">
             <input
               className="comment-input"
-              placeholder="Add a comment…"
+              placeholder="Give it a twitch…"
               value={text}
               maxLength={1000}
               onChange={(e) => setText(e.target.value)}
@@ -60,20 +60,20 @@ export function Comments({ videoId }: { videoId: string }) {
                 className="btn-primary"
                 disabled={!text.trim() || posting}
               >
-                {posting ? "Posting…" : "Comment"}
+                {posting ? "Twitching…" : "Twitch"}
               </button>
             </div>
           </div>
         </form>
       ) : (
         <button className="comment-signin" onClick={requireLogin}>
-          Sign in to join the conversation
+          Sign in to twitch back
         </button>
       )}
 
       <div className="comment-list">
         {comments.length === 0 && (
-          <p className="muted comment-empty">No comments yet — be the first.</p>
+          <p className="muted comment-empty">Not a whisker moving. Be the first twitch.</p>
         )}
         {comments.map((c) => {
           const canDelete = isAdmin || c.author === username;
