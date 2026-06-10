@@ -4,7 +4,6 @@ import { Link, useLocation } from "react-router-dom";
 export function Header({
   authed,
   username,
-  onToggleSidebar,
   onUpload,
   onLogin,
   onSignup,
@@ -14,7 +13,6 @@ export function Header({
 }: {
   authed: boolean;
   username: string | null;
-  onToggleSidebar: () => void;
   onUpload: () => void;
   onLogin: () => void;
   onSignup: () => void;
@@ -30,9 +28,6 @@ export function Header({
   return (
     <header className="topbar">
       <div className="topbar-left">
-        <button className="hamburger" onClick={onToggleSidebar} aria-label="Toggle menu">
-          ☰
-        </button>
         <Link to="/" className="logo">
           <img src="/RHRabbit.png?v=4" alt="" className="logo-bunny" />
           <img src="/RHWordmark.png?v=4" alt="RabbitHole" className="logo-wordmark" />

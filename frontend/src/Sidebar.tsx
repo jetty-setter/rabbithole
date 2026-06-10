@@ -1,5 +1,12 @@
 import { Link, useLocation } from "react-router-dom";
 
+const IconMenu = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
+    <rect x="3" y="4.5" width="18" height="15" rx="2.5" />
+    <path d="M9 4.5v15" />
+  </svg>
+);
+
 const IconWatch = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
     <circle cx="12" cy="12" r="9" />
@@ -40,23 +47,34 @@ export function Sidebar({
   open,
   authed,
   isAdmin,
+  onToggle,
 }: {
   open: boolean;
   authed: boolean;
   isAdmin: boolean;
+  onToggle: () => void;
 }) {
   const { pathname } = useLocation();
   const cls = (p: string) => (pathname === p ? "side-link active" : "side-link");
 
   return (
     <aside className={open ? "sidebar" : "sidebar collapsed"}>
+      <button
+        className="side-toggle"
+        onClick={onToggle}
+        aria-label={open ? "Collapse menu" : "Expand menu"}
+        title={open ? "Collapse menu" : "Expand menu"}
+      >
+        <IconMenu />
+      </button>
+
       <Link to="/" className={cls("/")}>
         <IconWatch />
-        Watch
+        <span className="side-text">Watch</span>
       </Link>
       <Link to="/trending" className={cls("/trending")}>
         <IconTrending />
-        Surfacing
+        <span className="side-text">Surfacing</span>
       </Link>
 
       {authed && (
@@ -65,16 +83,16 @@ export function Sidebar({
           <div className="side-label">Your warren</div>
           <Link to="/favorites" className={cls("/favorites")}>
             <IconHeart />
-            Burrow
+            <span className="side-text">Burrow</span>
           </Link>
           <Link to="/mine" className={cls("/mine")}>
             <IconVideo />
-            Your videos
+            <span className="side-text">Your videos</span>
           </Link>
           {isAdmin && (
             <Link to="/admin" className={cls("/admin")}>
               <IconAdmin />
-              Admin
+              <span className="side-text">Admin</span>
             </Link>
           )}
         </>

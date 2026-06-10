@@ -15,6 +15,41 @@ export function ThumpIcon({ className }: { className?: string }) {
   return <img src={`/thump.png?v=${ART_V}`} alt="" className={className} />;
 }
 
+// Small up/down chevrons for the feed-card vote counts (match the watch vote).
+export function UpIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M6 14l6-6 6 6" />
+    </svg>
+  );
+}
+
+export function DownIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M6 10l6 6 6-6" />
+    </svg>
+  );
+}
+
 // Tiny solid bunny silhouette — legible at small sizes (feed-card hop count).
 export function HopGlyph({ className }: { className?: string }) {
   return (

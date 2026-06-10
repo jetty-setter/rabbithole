@@ -1,5 +1,7 @@
 import { useRef, useState } from "react";
-import { createUpload, uploadToS3 } from "./api";
+import { createUpload, suggestMetadata, uploadToS3 } from "./api";
+import { extractFrames } from "./extractFrames";
+import { TagEditor } from "./TagEditor";
 
 export function UploadModal({
   onClose,
@@ -11,14 +13,37 @@ export function UploadModal({
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [drag, setDrag] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [suggesting, setSuggesting] = useState(false);
+  const [suggested, setSuggested] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  function chooseFile(f: File | null) {
+  async function chooseFile(f: File | null) {
     setFile(f);
-    // Intentionally leave the title blank — an empty title lets the AI name it.
+    setSuggested(false);
+    setTags([]);
+    if (!f) return;
+    // Show the AI's take up front so the user can keep or tweak it.
+    setSuggesting(true);
+    try {
+      const frames = await extractFrames(f);
+      if (frames.length) {
+        const s = await suggestMetadata(frames);
+        if (s) {
+          setTitle((t) => (t.trim() ? t : s.title));
+          setDescription((d) => (d.trim() ? d : s.description));
+          if (s.tags?.length) setTags(s.tags);
+          setSuggested(!!(s.title || s.description || s.tags?.length));
+        }
+      }
+    } catch {
+      /* fall back to the server-side auto-titler on publish */
+    } finally {
+      setSuggesting(false);
+    }
   }
 
   async function start() {
@@ -26,7 +51,13 @@ export function UploadModal({
     setError(null);
     setProgress(0);
     try {
-      const ticket = await createUpload(file.name, file.type || "video/mp4", title, description);
+      const ticket = await createUpload(
+        file.name,
+        file.type || "video/mp4",
+        title,
+        description,
+        tags,
+      );
       await uploadToS3(ticket.upload_url, file, setProgress);
       onUploaded();
       onClose();
@@ -82,6 +113,14 @@ export function UploadModal({
 
         {file && (
           <div className="upload-fields">
+            {suggesting && (
+              <div className="ai-suggest-note loading">
+                <span className="proc-spinner sm" /> Reading your video to suggest a title…
+              </div>
+            )}
+            {!suggesting && suggested && (
+              <div className="ai-suggest-note">✦ AI suggestion — edit anything you like</div>
+            )}
             <input
               className="search wide"
               placeholder="Title — leave blank and the AI will name it ✦"
@@ -95,6 +134,7 @@ export function UploadModal({
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
             />
+            <TagEditor tags={tags} setTags={setTags} />
           </div>
         )}
 

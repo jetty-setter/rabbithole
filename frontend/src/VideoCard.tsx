@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { displayTitle, formatDuration, relativeTime, type Video } from "./api";
 import { useApp } from "./App";
-import { HopGlyph } from "./Icons";
+import { UpIcon, DownIcon } from "./Icons";
 
 const PROC_LABEL: Record<string, string> = {
   pending_upload: "Queued…",
@@ -69,8 +69,15 @@ export function VideoCard({ v }: { v: Video }) {
             {v.hops ? (
               <>
                 {" · "}
-                <HopGlyph className="meta-ico" />
+                <UpIcon className="meta-ico" />
                 {v.hops}
+              </>
+            ) : null}
+            {v.thumps ? (
+              <>
+                {" · "}
+                <DownIcon className="meta-ico" />
+                {v.thumps}
               </>
             ) : null}
             {relativeTime(v.created_at) ? ` · ${relativeTime(v.created_at)}` : ""}

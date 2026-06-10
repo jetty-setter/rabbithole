@@ -259,7 +259,6 @@ function Layout() {
       <Header
         authed={authed}
         username={user?.username ?? null}
-        onToggleSidebar={() => setSidebarOpen((o) => !o)}
         onUpload={() => setUploadOpen(true)}
         onLogin={() => {
           setLoginMode("login");
@@ -274,7 +273,12 @@ function Layout() {
         setQuery={setQuery}
       />
       <div className="shell">
-        <Sidebar open={sidebarOpen} authed={authed} isAdmin={isAdmin} />
+        <Sidebar
+          open={sidebarOpen}
+          authed={authed}
+          isAdmin={isAdmin}
+          onToggle={() => setSidebarOpen((o) => !o)}
+        />
         <div className="main">
           <Outlet context={ctx} />
         </div>

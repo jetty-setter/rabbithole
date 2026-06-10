@@ -13,6 +13,7 @@ import {
 } from "./api";
 import { Player } from "./Player";
 import { Comments } from "./Comments";
+import { TagEditor } from "./TagEditor";
 
 export function WatchPage() {
   const { id } = useParams();
@@ -40,6 +41,7 @@ export function WatchPage() {
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
+  const [editTags, setEditTags] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [burst, setBurst] = useState<{ kind: "hop" | "thump"; id: number } | null>(null);
@@ -145,12 +147,13 @@ export function WatchPage() {
     if (!video) return;
     setTitle(displayTitle(video));
     setDesc(video.description || "");
+    setEditTags(video.tags || []);
     setEditing(true);
   }
 
   async function save() {
     if (!id) return;
-    const updated = await updateVideo(id, { title, description: desc });
+    const updated = await updateVideo(id, { title, description: desc, tags: editTags });
     setVideo(updated);
     setEditing(false);
     refresh();
@@ -212,6 +215,7 @@ export function WatchPage() {
                   placeholder="Description"
                   rows={4}
                 />
+                <TagEditor tags={editTags} setTags={setEditTags} />
                 <div className="row-gap">
                   <button className="btn-primary" onClick={save}>
                     Save
