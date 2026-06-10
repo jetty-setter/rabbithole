@@ -20,8 +20,12 @@ resource "aws_iam_role_policy" "scaleup" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect   = "Allow"
-        Action   = ["ecs:UpdateService", "ecs:DescribeServices"]
+        Effect = "Allow"
+        Action = [
+          "ecs:UpdateService", "ecs:DescribeServices",
+          "application-autoscaling:RegisterScalableTarget",
+          "application-autoscaling:DescribeScalableTargets",
+        ]
         Resource = "*"
       },
       {
@@ -44,8 +48,9 @@ resource "aws_lambda_function" "scaleup" {
 
   environment {
     variables = {
-      CLUSTER = aws_ecs_cluster.main.name
-      SERVICE = aws_ecs_service.worker.name
+      CLUSTER      = aws_ecs_cluster.main.name
+      SERVICE      = aws_ecs_service.worker.name
+      MAX_CAPACITY = tostring(var.worker_max_count)
     }
   }
 }

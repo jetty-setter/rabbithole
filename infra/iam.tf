@@ -50,6 +50,27 @@ resource "aws_iam_role_policy_attachment" "ecs_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+# Let the execution role pull the Anthropic key from SSM at task start.
+resource "aws_iam_role_policy" "ecs_execution_secrets" {
+  name = "${local.name}-ecs-exec-secrets"
+  role = aws_iam_role.ecs_execution.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["ssm:GetParameters"]
+        Resource = [local.anthropic_key_arn]
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["kms:Decrypt"]
+        Resource = "*" # AWS-managed alias/aws/ssm key
+      },
+    ]
+  })
+}
+
 # Task role: the worker's own least-privilege app permissions.
 data "aws_iam_policy_document" "worker" {
   statement {

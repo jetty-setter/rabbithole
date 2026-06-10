@@ -28,6 +28,11 @@ STREAMING_BUCKET = os.getenv("STREAMING_BUCKET", "")
 VIDEOS_TABLE = os.getenv("VIDEOS_TABLE", "rabbithole-dev-videos")
 POLL_WAIT_SECONDS = int(os.getenv("POLL_WAIT_SECONDS", "20"))
 
+# AI auto-metadata (optional). When ANTHROPIC_API_KEY is set, a vision model
+# names untitled uploads from their thumbnail. Absent key -> feature is dormant.
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+AI_MODEL = os.getenv("AI_MODEL", "claude-opus-4-8")
+
 # Fargate pricing inputs for the per-video cost estimate (us-east-1 defaults).
 FARGATE_CPU_UNITS = int(os.getenv("FARGATE_CPU_UNITS", "512"))
 FARGATE_MEMORY_MIB = int(os.getenv("FARGATE_MEMORY_MIB", "1024"))
@@ -86,6 +91,73 @@ def _estimate_cost(seconds: float) -> float:
     vcpu = FARGATE_CPU_UNITS / 1024
     gb = FARGATE_MEMORY_MIB / 1024
     return seconds / 3600 * (vcpu * FARGATE_VCPU_HOUR + gb * FARGATE_GB_HOUR)
+
+
+def _ai_metadata(thumb: Path, filename: str) -> dict | None:
+    """Auto-generate title/description/tags from a representative frame using
+    Claude vision. Best-effort: any failure returns None and the pipeline
+    proceeds untouched (the video still plays; it just stays manually-titled)."""
+    if not ANTHROPIC_API_KEY:
+        return None
+    try:
+        import base64
+
+        import anthropic
+
+        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+        img_b64 = base64.standard_b64encode(thumb.read_bytes()).decode()
+        hint = Path(filename).stem.replace("-", " ").replace("_", " ").strip()
+        resp = client.messages.create(
+            model=AI_MODEL,
+            max_tokens=400,
+            system=(
+                "You write metadata for short user-uploaded clips on RabbitHole, "
+                "a punchy, irreverent video site. Given one representative frame, "
+                "return a vivid but accurate title (max 60 chars, no quotes, no "
+                "trailing punctuation), a 1-2 sentence description, and 3-5 short "
+                "lowercase tags. Describe only what you can actually see — never "
+                "invent specifics. Respond with ONLY a JSON object of the form "
+                '{"title": str, "description": str, "tags": [str]}'
+            ),
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "image/jpeg",
+                                "data": img_b64,
+                            },
+                        },
+                        {
+                            "type": "text",
+                            "text": f"Filename hint (weak, may be meaningless): '{hint}'. "
+                            "Generate the metadata JSON.",
+                        },
+                    ],
+                }
+            ],
+        )
+        text = "".join(b.text for b in resp.content if b.type == "text").strip()
+        if "{" in text:  # tolerate stray prose / code fences around the JSON
+            text = text[text.find("{") : text.rfind("}") + 1]
+        data = json.loads(text)
+        title = (data.get("title") or "").strip().strip('"')[:120]
+        description = (data.get("description") or "").strip()[:1000]
+        tags = [str(t).strip().lower()[:30] for t in (data.get("tags") or []) if str(t).strip()][:5]
+        out: dict = {}
+        if title:
+            out["title"] = title
+        if description:
+            out["description"] = description
+        if tags:
+            out["tags"] = tags
+        return out or None
+    except Exception as exc:  # noqa: BLE001
+        print(f"ai metadata skipped for {filename}: {exc}")
+        return None
 
 
 def _ffmpeg(args: list[str]) -> None:
@@ -148,7 +220,8 @@ def process_record(bucket: str, key: str) -> None:
         return
 
     # Skip jobs whose video record no longer exists (deleted before processing).
-    if not _videos.get_item(Key={"video_id": video_id}).get("Item"):
+    item = _videos.get_item(Key={"video_id": video_id}).get("Item")
+    if not item:
         print(f"skip: no record for {video_id} (deleted)")
         return
 
@@ -181,13 +254,32 @@ def process_record(bucket: str, key: str) -> None:
             ExtraArgs={"ContentType": "image/jpeg"},
         )
 
-    elapsed = time.monotonic() - started
-    _set_status(video_id, "ready", {
+        # Timing covers transcode only — measure before the (network-bound) AI call.
+        elapsed = time.monotonic() - started
+
+        # Auto-name untitled uploads from the freshly-extracted frame.
+        ai_extra: dict = {}
+        if not (item.get("title") or "").strip():
+            meta = _ai_metadata(thumb, Path(key).name)
+            if meta:
+                if meta.get("title"):
+                    ai_extra["title"] = meta["title"]
+                if meta.get("description") and not (item.get("description") or "").strip():
+                    ai_extra["description"] = meta["description"]
+                if meta.get("tags"):
+                    ai_extra["tags"] = meta["tags"]
+                if ai_extra:
+                    ai_extra["ai_generated"] = True
+                    print(f"ai-titled {video_id}: {ai_extra.get('title')!r}")
+
+    extra = {
         "hls_key": f"{video_id}/hls/master.m3u8",
         "thumb_key": f"{video_id}/thumb.jpg",
         "duration_seconds": str(round(elapsed, 1)),
         "cost_usd": f"{_estimate_cost(elapsed):.4f}",
-    })
+    }
+    extra.update(ai_extra)
+    _set_status(video_id, "ready", extra)
     print(f"ready video_id={video_id} ({elapsed:.1f}s, ~${_estimate_cost(elapsed):.4f})")
 
 

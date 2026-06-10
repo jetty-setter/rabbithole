@@ -2,6 +2,16 @@ resource "aws_ecs_cluster" "main" {
   name = local.name
 }
 
+# Anthropic API key for AI auto-metadata. Stored out-of-band as an SSM
+# SecureString (so the secret never lands in Terraform state); injected into
+# the worker at runtime. Create it once with:
+#   aws ssm put-parameter --name /rabbithole-dev/anthropic-api-key \
+#     --type SecureString --value 'sk-ant-...' --profile rabbithole
+locals {
+  anthropic_key_param = "/${local.name}/anthropic-api-key"
+  anthropic_key_arn   = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter${local.anthropic_key_param}"
+}
+
 resource "aws_cloudwatch_log_group" "worker" {
   name              = "/ecs/${local.name}-worker"
   retention_in_days = 14
@@ -53,6 +63,12 @@ resource "aws_ecs_task_definition" "worker" {
         { name = "FARGATE_CPU_UNITS", value = var.worker_cpu },
         { name = "FARGATE_MEMORY_MIB", value = var.worker_memory },
         { name = "PYTHONUNBUFFERED", value = "1" },
+        { name = "AI_MODEL", value = var.ai_model },
+      ]
+
+      # Injected from SSM at task start (never stored in the task def or state).
+      secrets = [
+        { name = "ANTHROPIC_API_KEY", valueFrom = local.anthropic_key_arn },
       ]
 
       logConfiguration = {

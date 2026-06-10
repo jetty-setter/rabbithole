@@ -45,3 +45,9 @@ variable "worker_max_count" {
   type        = number
   default     = 4
 }
+
+variable "ai_model" {
+  description = "Claude model for AI auto-metadata. claude-haiku-4-5 is ~5x cheaper."
+  type        = string
+  default     = "claude-opus-4-8"
+}
