@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useApp } from "./App";
 import { VideoCard } from "./VideoCard";
+import { FeaturedCard } from "./FeaturedCard";
 import { displayTitle } from "./api";
 
 export function LibraryPage() {
@@ -27,6 +28,10 @@ export function LibraryPage() {
 
   const hasAny = mine.length + ready.length > 0;
 
+  // Editorial hero: the newest ready video, only when not searching.
+  const featured = !query.trim() && ready.length > 0 ? ready[0] : null;
+  const gridList = featured ? list.filter((v) => v.video_id !== featured.video_id) : list;
+
   return (
     <main className="page">
       {!hasAny ? (
@@ -40,11 +45,16 @@ export function LibraryPage() {
           <p>The rabbit came up empty{query ? ` for “${query}”` : ""}.</p>
         </div>
       ) : (
-        <div className="grid">
-          {list.map((v) => (
-            <VideoCard key={v.video_id} v={v} />
-          ))}
-        </div>
+        <>
+          {featured && <FeaturedCard v={featured} />}
+          {gridList.length > 0 && (
+            <div className="grid">
+              {gridList.map((v) => (
+                <VideoCard key={v.video_id} v={v} />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </main>
   );

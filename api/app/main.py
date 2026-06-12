@@ -18,7 +18,22 @@ from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 
 from . import aws, config
-from .auth import create_token, hash_password, is_admin, require_auth, verify_password
+from .auth import (
+    create_token,
+    hash_password,
+    is_admin,
+    optional_auth,
+    require_auth,
+    verify_password,
+)
+
+# Allowed visibility states. Anything else (incl. legacy records with no field)
+# is treated as "public".
+_VISIBILITIES = {"public", "unlisted"}
+
+
+def _norm_visibility(value: str | None) -> str:
+    return value if value in _VISIBILITIES else "public"
 from .models import (
     Comment,
     CommentCreate,
@@ -336,6 +351,7 @@ def create_upload(req: UploadRequest, user: str = Depends(require_auth)) -> Uplo
         "status": "pending_upload",
         "owner": user,
         "created_at": datetime.now(timezone.utc).isoformat(),
+        "visibility": _norm_visibility(req.visibility),
     }
     if req.title and req.title.strip():
         item["title"] = req.title.strip()[:200]
@@ -377,15 +393,29 @@ def _to_video(item: dict) -> Video:
         thumps=int(item.get("thumps") or 0),
         tags=[str(t) for t in (item.get("tags") or [])],
         ai_generated=bool(item.get("ai_generated") or False),
+        has_transcript=bool(item.get("has_transcript") or False),
+        transcribing=bool(item.get("transcribing") or False),
+        transcript_url=_cdn_url(item.get("transcript_key")),
+        captions_url=_cdn_url(item.get("vtt_key")),
+        visibility=_norm_visibility(item.get("visibility")),
     )
 
 
 @app.get("/videos", response_model=list[Video])
-def list_videos() -> list[Video]:
+def list_videos(viewer: str | None = Depends(optional_auth)) -> list[Video]:
     # Scan is fine at portfolio scale; a GSI on created_at would be the
     # production move once the table grows. (Noted in docs/architecture.md.)
     resp = aws.videos_table().scan(Limit=100)
     items = [i for i in resp.get("Items", []) if "video_id" in i]
+    # Unlisted videos are hidden from the feed for everyone except their owner
+    # (and the admin). Direct links still work — that's handled by get_video.
+    can_see_all = bool(viewer) and is_admin(viewer)
+    items = [
+        i for i in items
+        if _norm_visibility(i.get("visibility")) == "public"
+        or can_see_all
+        or (viewer is not None and i.get("owner") == viewer)
+    ]
     items.sort(key=lambda i: i.get("created_at", ""), reverse=True)
     return [_to_video(item) for item in items]
 
@@ -416,6 +446,8 @@ def update_video(video_id: str, body: UpdateVideo, user: str = Depends(require_a
         updates["tags"] = [
             t2 for t in body.tags if (t2 := str(t).strip().lstrip("#").lower()[:30])
         ][:8]
+    if body.visibility is not None:
+        updates["visibility"] = _norm_visibility(body.visibility)
     if updates:
         expr = "SET " + ", ".join(f"#{k} = :{k}" for k in updates)
         aws.videos_table().update_item(

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useApp } from "./App";
+import { Avatar } from "./Avatar";
 import {
   addComment,
   deleteComment,
@@ -45,7 +46,7 @@ export function Comments({ videoId }: { videoId: string }) {
 
       {authed ? (
         <form className="comment-form" onSubmit={submit}>
-          <span className="avatar">{(username?.[0] || "?").toUpperCase()}</span>
+          <Avatar name={username} />
           <div className="comment-input-wrap">
             <input
               className="comment-input"
@@ -79,7 +80,7 @@ export function Comments({ videoId }: { videoId: string }) {
           const canDelete = isAdmin || c.author === username;
           return (
             <div className="comment" key={c.comment_id}>
-              <span className="avatar">{(c.author?.[0] || "?").toUpperCase()}</span>
+              <Avatar name={c.author} />
               <div className="comment-body">
                 <div className="comment-meta">
                   <span className="comment-author">{c.author}</span>

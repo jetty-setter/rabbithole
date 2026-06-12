@@ -133,6 +133,29 @@ export interface Video {
   thumps?: number;
   tags?: string[];
   ai_generated?: boolean;
+  has_transcript?: boolean;
+  transcribing?: boolean;
+  transcript_url?: string | null;
+  captions_url?: string | null;
+  visibility?: string;
+}
+
+export interface Cue {
+  start: number;
+  end: number;
+  text: string;
+}
+
+/** Fetch the caption cues (served from the streaming CDN). Best-effort. */
+export async function fetchCues(url: string): Promise<Cue[]> {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
 }
 
 export type Reaction = "hop" | "thump" | null;
@@ -175,11 +198,19 @@ export async function createUpload(
   title?: string,
   description?: string,
   tags?: string[],
+  visibility?: string,
 ): Promise<UploadTicket> {
   const res = await fetch(`${API_URL}/uploads`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authHeaders() },
-    body: JSON.stringify({ filename, content_type: contentType, title, description, tags }),
+    body: JSON.stringify({
+      filename,
+      content_type: contentType,
+      title,
+      description,
+      tags,
+      visibility,
+    }),
   });
   if (!res.ok) throw new Error(`createUpload failed (${res.status})`);
   return res.json();
@@ -203,7 +234,8 @@ export async function suggestMetadata(frames: string[]): Promise<Suggestion | nu
 }
 
 export async function listVideos(): Promise<Video[]> {
-  const res = await fetch(`${API_URL}/videos`);
+  // Send auth when we have it so owners see their own unlisted videos in feeds.
+  const res = await fetch(`${API_URL}/videos`, { headers: { ...authHeaders() } });
   if (!res.ok) throw new Error(`listVideos failed (${res.status})`);
   return res.json();
 }
@@ -216,7 +248,7 @@ export async function getVideo(id: string): Promise<Video> {
 
 export async function updateVideo(
   id: string,
-  body: { title?: string; description?: string; tags?: string[] },
+  body: { title?: string; description?: string; tags?: string[]; visibility?: string },
 ): Promise<Video> {
   const res = await fetch(`${API_URL}/videos/${id}`, {
     method: "PATCH",

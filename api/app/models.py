@@ -12,12 +12,14 @@ class UploadRequest(BaseModel):
     title: str | None = None
     description: str | None = None
     tags: list[str] | None = None
+    visibility: str | None = None  # "public" | "unlisted"
 
 
 class UpdateVideo(BaseModel):
     title: str | None = None
     description: str | None = None
     tags: list[str] | None = None
+    visibility: str | None = None  # "public" | "unlisted"
 
 
 class UploadResponse(BaseModel):
@@ -73,3 +75,8 @@ class Video(BaseModel):
     thumps: int = 0
     tags: list[str] = []
     ai_generated: bool = False
+    has_transcript: bool = False
+    transcribing: bool = False
+    transcript_url: str | None = None
+    captions_url: str | None = None
+    visibility: str = "public"

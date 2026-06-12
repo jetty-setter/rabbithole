@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { displayTitle, formatDuration, relativeTime, type Video } from "./api";
 import { useApp } from "./App";
 import { UpIcon, DownIcon } from "./Icons";
+import { Avatar } from "./Avatar";
 
 const PROC_LABEL: Record<string, string> = {
   pending_upload: "Queued…",
@@ -13,7 +14,6 @@ const PROC_LABEL: Record<string, string> = {
 export function VideoCard({ v }: { v: Video }) {
   const { authed, favorites, toggleFavorite } = useApp();
   const ready = v.status === "ready" && !!v.playback_url;
-  const initial = (v.owner?.[0] || "R").toUpperCase();
 
   if (!ready) {
     const failed = v.status === "failed";
@@ -24,7 +24,7 @@ export function VideoCard({ v }: { v: Video }) {
           <span className="proc-label">{PROC_LABEL[v.status] ?? "Processing…"}</span>
         </div>
         <div className="vcard-row">
-          <span className="avatar">{initial}</span>
+          <Avatar name={v.owner || "RabbitHole"} />
           <div className="vcard-info">
             <span className="vtitle">{displayTitle(v)}</span>
             <span className="vchannel">{v.owner || "RabbitHole"}</span>
@@ -60,7 +60,7 @@ export function VideoCard({ v }: { v: Video }) {
         )}
       </div>
       <div className="vcard-row">
-        <span className="avatar">{initial}</span>
+        <Avatar name={v.owner || "RabbitHole"} />
         <div className="vcard-info">
           <span className="vtitle">{displayTitle(v)}</span>
           <span className="vchannel">{v.owner || "RabbitHole"}</span>

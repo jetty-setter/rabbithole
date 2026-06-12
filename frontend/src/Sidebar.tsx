@@ -7,6 +7,16 @@ const IconMenu = () => (
   </svg>
 );
 
+const IconShuffle = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 3h5v5" />
+    <path d="M4 20 21 3" />
+    <path d="M21 16v5h-5" />
+    <path d="M15 15l6 6" />
+    <path d="M4 4l5 5" />
+  </svg>
+);
+
 const IconWatch = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
     <circle cx="12" cy="12" r="9" />
@@ -48,11 +58,13 @@ export function Sidebar({
   authed,
   isAdmin,
   onToggle,
+  onTumble,
 }: {
   open: boolean;
   authed: boolean;
   isAdmin: boolean;
   onToggle: () => void;
+  onTumble: () => void;
 }) {
   const { pathname } = useLocation();
   const cls = (p: string) => (pathname === p ? "side-link active" : "side-link");
@@ -97,6 +109,15 @@ export function Sidebar({
           )}
         </>
       )}
+
+      <button
+        className="side-tumble"
+        onClick={onTumble}
+        title="Jump to a random video"
+      >
+        <IconShuffle />
+        <span className="side-text">Tumble</span>
+      </button>
     </aside>
   );
 }

@@ -4,16 +4,26 @@ import { useApp } from "./App";
 import {
   deleteVideo,
   displayTitle,
+  fetchCues,
   formatDuration,
   getVideo,
   incrementView,
   relativeTime,
   updateVideo,
+  type Cue,
   type Video,
 } from "./api";
 import { Player } from "./Player";
 import { Comments } from "./Comments";
 import { TagEditor } from "./TagEditor";
+import { Avatar } from "./Avatar";
+
+/** Seconds → m:ss for cue timestamps. */
+function fmtTime(s: number): string {
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2, "0")}`;
+}
 
 export function WatchPage() {
   const { id } = useParams();
@@ -31,7 +41,6 @@ export function WatchPage() {
     react,
     diveActive,
     diveDepth,
-    startDive,
     stopDive,
     nextDive,
   } = useApp();
@@ -42,10 +51,19 @@ export function WatchPage() {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [editTags, setEditTags] = useState<string[]>([]);
+  const [editVis, setEditVis] = useState<"public" | "unlisted">("public");
   const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [burst, setBurst] = useState<{ kind: "hop" | "thump"; id: number } | null>(null);
   const burstTimer = useRef<number>();
+
+  // Transcript: the <video> element (so cues can seek it), the cues themselves,
+  // an in-video search box, and the cue currently playing.
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const cuesRef = useRef<HTMLDivElement>(null);
+  const [cues, setCues] = useState<Cue[]>([]);
+  const [cueQuery, setCueQuery] = useState("");
+  const [activeCue, setActiveCue] = useState(-1);
 
   useEffect(() => () => window.clearTimeout(burstTimer.current), []);
 
@@ -73,6 +91,54 @@ export function WatchPage() {
         .slice(0, 12),
     [videos, id],
   );
+
+  // Pull the caption cues once the video record says it has a transcript.
+  useEffect(() => {
+    setCues([]);
+    setCueQuery("");
+    setActiveCue(-1);
+    if (video?.has_transcript && video.transcript_url) {
+      fetchCues(video.transcript_url).then(setCues);
+    }
+  }, [video?.video_id, video?.has_transcript, video?.transcript_url]);
+
+  // Follow playback: highlight the cue currently being spoken.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || cues.length === 0) return;
+    const onTime = () => {
+      const t = v.currentTime;
+      let idx = -1;
+      for (let i = 0; i < cues.length; i++) {
+        if (cues[i].start <= t + 0.15) idx = i;
+        else break;
+      }
+      setActiveCue(idx);
+    };
+    v.addEventListener("timeupdate", onTime);
+    return () => v.removeEventListener("timeupdate", onTime);
+  }, [cues]);
+
+  // Keep the active line in view (but don't fight the user while they search).
+  useEffect(() => {
+    if (cueQuery || activeCue < 0 || !cuesRef.current) return;
+    const el = cuesRef.current.querySelector(".cue.active") as HTMLElement | null;
+    el?.scrollIntoView({ block: "nearest" });
+  }, [activeCue, cueQuery]);
+
+  const shownCues = useMemo(() => {
+    const q = cueQuery.trim().toLowerCase();
+    return cues
+      .map((c, i) => ({ ...c, i }))
+      .filter((c) => !q || c.text.toLowerCase().includes(q));
+  }, [cues, cueQuery]);
+
+  function seekTo(t: number) {
+    const v = videoRef.current;
+    if (!v) return;
+    v.currentTime = Math.max(0, t);
+    v.play().catch(() => {});
+  }
 
   if (notFound) {
     return (
@@ -127,12 +193,6 @@ export function WatchPage() {
     else stopDive();
   }
 
-  function beginDive() {
-    startDive(vid);
-    const n = nextDive(vid);
-    if (n) navigate(`/watch/${n}`);
-  }
-
   function onEnded() {
     if (diveActive) fallDeeper();
   }
@@ -148,12 +208,18 @@ export function WatchPage() {
     setTitle(displayTitle(video));
     setDesc(video.description || "");
     setEditTags(video.tags || []);
+    setEditVis(video.visibility === "unlisted" ? "unlisted" : "public");
     setEditing(true);
   }
 
   async function save() {
     if (!id) return;
-    const updated = await updateVideo(id, { title, description: desc, tags: editTags });
+    const updated = await updateVideo(id, {
+      title,
+      description: desc,
+      tags: editTags,
+      visibility: editVis,
+    });
     setVideo(updated);
     setEditing(false);
     refresh();
@@ -189,7 +255,12 @@ export function WatchPage() {
           <div className="player-stage">
             {video.playback_url && (
               <div className={burst?.kind === "thump" ? "player-wrap shake" : "player-wrap"}>
-                <Player src={video.playback_url} onEnded={onEnded} />
+                <Player
+                  src={video.playback_url}
+                  onEnded={onEnded}
+                  videoRef={videoRef}
+                  captionsSrc={video.captions_url}
+                />
               </div>
             )}
             {burst && (
@@ -216,6 +287,29 @@ export function WatchPage() {
                   rows={4}
                 />
                 <TagEditor tags={editTags} setTags={setEditTags} />
+                <div className="vis-row">
+                  <div className="vis-toggle">
+                    <button
+                      type="button"
+                      className={editVis === "public" ? "vis-opt active" : "vis-opt"}
+                      onClick={() => setEditVis("public")}
+                    >
+                      Public
+                    </button>
+                    <button
+                      type="button"
+                      className={editVis === "unlisted" ? "vis-opt active" : "vis-opt"}
+                      onClick={() => setEditVis("unlisted")}
+                    >
+                      Unlisted
+                    </button>
+                  </div>
+                  <span className="vis-hint">
+                    {editVis === "public"
+                      ? "Shows up in the feed and search."
+                      : "Hidden from the feed — only people with the link can watch."}
+                  </span>
+                </div>
                 <div className="row-gap">
                   <button className="btn-primary" onClick={save}>
                     Save
@@ -227,9 +321,16 @@ export function WatchPage() {
               </div>
             ) : (
               <>
-                <h1 className="watch-title">{displayTitle(video)}</h1>
+                <h1 className="watch-title">
+                  {displayTitle(video)}
+                  {video.visibility === "unlisted" && (
+                    <span className="unlisted-badge" title="Hidden from the feed — only people with the link can watch">
+                      Unlisted
+                    </span>
+                  )}
+                </h1>
                 <div className="watch-sub">
-                  <span className="avatar">{(video.owner?.[0] || "R").toUpperCase()}</span>
+                  <Avatar name={video.owner || "RabbitHole"} />
                   <div className="watch-by">
                     <div className="watch-channel">{video.owner || "RabbitHole"}</div>
                     <div className="watch-stats">
@@ -346,22 +447,50 @@ export function WatchPage() {
             )}
           </div>
 
+          {(video.has_transcript || video.transcribing) && (
+            <section className="transcript">
+              <div className="transcript-head">
+                <h3 className="related-head">Transcript</h3>
+                {cues.length > 0 && (
+                  <input
+                    className="transcript-search"
+                    placeholder="Search this video…"
+                    value={cueQuery}
+                    onChange={(e) => setCueQuery(e.target.value)}
+                  />
+                )}
+              </div>
+              {video.transcribing && cues.length === 0 ? (
+                <p className="muted transcript-note">
+                  <span className="proc-spinner sm" /> Transcribing audio…
+                </p>
+              ) : cues.length === 0 ? (
+                <p className="muted transcript-note">No speech detected in this clip.</p>
+              ) : (
+                <div className="transcript-cues" ref={cuesRef}>
+                  {shownCues.length === 0 ? (
+                    <p className="muted transcript-note">No lines match “{cueQuery}”.</p>
+                  ) : (
+                    shownCues.map((c) => (
+                      <button
+                        key={c.i}
+                        className={c.i === activeCue ? "cue active" : "cue"}
+                        onClick={() => seekTo(c.start)}
+                      >
+                        <span className="cue-time">{fmtTime(c.start)}</span>
+                        <span className="cue-text">{c.text}</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </section>
+          )}
+
           <Comments videoId={vid} />
         </div>
 
         <aside className="watch-related">
-          {diveActive ? (
-            <button className="dive-cta diving" onClick={fallDeeper}>
-              <span className="dive-cta-big">Keep falling ▼</span>
-              <span className="dive-cta-sub">{diveDepth} {diveDepth === 1 ? "hole" : "holes"} deep</span>
-            </button>
-          ) : (
-            <button className="dive-cta" onClick={beginDive}>
-              <span className="dive-cta-big">▼ Down the rabbit hole</span>
-              <span className="dive-cta-sub">Auto-play a never-ending descent</span>
-            </button>
-          )}
-
           <h3 className="related-head">Deeper</h3>
           {related.map((r) => (
             <Link to={`/watch/${r.video_id}`} className="related-item" key={r.video_id}>

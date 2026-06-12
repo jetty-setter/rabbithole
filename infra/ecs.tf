@@ -64,6 +64,7 @@ resource "aws_ecs_task_definition" "worker" {
         { name = "FARGATE_MEMORY_MIB", value = var.worker_memory },
         { name = "PYTHONUNBUFFERED", value = "1" },
         { name = "AI_MODEL", value = var.ai_model },
+        { name = "TRANSCRIBE_ROLE_ARN", value = aws_iam_role.transcribe.arn },
       ]
 
       # Injected from SSM at task start (never stored in the task def or state).
