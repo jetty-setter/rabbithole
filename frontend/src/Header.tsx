@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { Avatar } from "./Avatar";
 
 export function Header({
   authed,
@@ -23,7 +24,6 @@ export function Header({
   const { pathname } = useLocation();
   const onFeed = pathname === "/";
   const [menuOpen, setMenuOpen] = useState(false);
-  const initial = username?.[0]?.toUpperCase() ?? "U";
 
   return (
     <header className="topbar">
@@ -51,12 +51,12 @@ export function Header({
             </button>
             <div className="account">
               <button
-                className="avatar-sm"
+                className="avatar-btn"
                 onClick={() => setMenuOpen((o) => !o)}
                 title={username ?? ""}
                 aria-label="Account menu"
               >
-                {initial}
+                <Avatar name={username} />
               </button>
               {menuOpen && (
                 <>

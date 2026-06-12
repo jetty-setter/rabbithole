@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Routes, Route, Outlet, useOutletContext } from "react-router-dom";
+import { Routes, Route, Outlet, useNavigate, useLocation, useOutletContext } from "react-router-dom";
 import {
   getMe,
   setToken,
@@ -69,6 +69,8 @@ function saveAnonVote(id: string, r: "hop" | "thump" | null) {
 }
 
 function Layout() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [videos, setVideos] = useState<Video[]>([]);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
@@ -84,6 +86,7 @@ function Layout() {
   const [diveActive, setDiveActive] = useState(false);
   const [diveDepth, setDiveDepth] = useState(0);
   const visitedRef = useRef<Set<string>>(new Set());
+  const tumbleHistoryRef = useRef<Set<string>>(new Set());
 
   const authed = !!user;
   const isAdmin = !!user?.is_admin;
@@ -230,6 +233,44 @@ function Layout() {
     return pick.video_id;
   }
 
+  // Serendipitous "tumble down the hole" — but intentional, not random-random:
+  // never lands on the current video, won't repeat until you've seen everything,
+  // and leans toward videos sharing a tag with whatever you're watching.
+  function tumble() {
+    const ready = videos.filter((v) => v.status === "ready" && !!v.playback_url);
+    if (!ready.length) return;
+
+    const match = location.pathname.match(/^\/watch\/(.+)$/);
+    const currentId = match ? match[1] : null;
+    const current = currentId ? ready.find((v) => v.video_id === currentId) : null;
+
+    // Everything except where we already are.
+    const pool = ready.filter((v) => v.video_id !== currentId);
+    if (!pool.length) return;
+
+    // No-repeat: skip videos we've already tumbled to; once the well runs dry,
+    // reset history (keeping the current video out) so we cycle fresh.
+    let fresh = pool.filter((v) => !tumbleHistoryRef.current.has(v.video_id));
+    if (!fresh.length) {
+      tumbleHistoryRef.current = new Set(currentId ? [currentId] : []);
+      fresh = pool;
+    }
+
+    // Bias toward videos sharing a tag with the current one (when we have any).
+    let candidates = fresh;
+    const curTags = new Set((current?.tags || []).map((t) => t.toLowerCase()));
+    if (curTags.size) {
+      const related = fresh.filter((v) =>
+        (v.tags || []).some((t) => curTags.has(t.toLowerCase())),
+      );
+      if (related.length && Math.random() < 0.7) candidates = related;
+    }
+
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    tumbleHistoryRef.current.add(pick.video_id);
+    navigate(`/watch/${pick.video_id}`);
+  }
+
   const ctx: AppCtx = {
     videos,
     refresh,
@@ -273,15 +314,16 @@ function Layout() {
         setQuery={setQuery}
       />
       <div className="shell">
+        <div className="main">
+          <Outlet context={ctx} />
+        </div>
         <Sidebar
           open={sidebarOpen}
           authed={authed}
           isAdmin={isAdmin}
           onToggle={() => setSidebarOpen((o) => !o)}
+          onTumble={tumble}
         />
-        <div className="main">
-          <Outlet context={ctx} />
-        </div>
       </div>
       {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} onUploaded={refresh} />}
       {loginOpen && (

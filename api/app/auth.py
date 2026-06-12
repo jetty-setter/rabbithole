@@ -45,3 +45,15 @@ def require_auth(cred: HTTPAuthorizationCredentials | None = Depends(_bearer)) -
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="invalid or expired token")
     return str(payload.get("sub", ""))
+
+
+def optional_auth(cred: HTTPAuthorizationCredentials | None = Depends(_bearer)) -> str | None:
+    """Like require_auth but never raises — returns the username if a valid token
+    is present, else None. Lets public endpoints tailor what an owner sees."""
+    if cred is None:
+        return None
+    try:
+        payload = jwt.decode(cred.credentials, config.JWT_SECRET, algorithms=["HS256"])
+    except jwt.PyJWTError:
+        return None
+    return str(payload.get("sub", "")) or None

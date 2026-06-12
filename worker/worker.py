@@ -33,6 +33,11 @@ POLL_WAIT_SECONDS = int(os.getenv("POLL_WAIT_SECONDS", "20"))
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 AI_MODEL = os.getenv("AI_MODEL", "claude-opus-4-8")
 
+# Speech-to-text (optional). When TRANSCRIBE_ROLE_ARN is set, the worker extracts
+# audio and kicks off an AWS Transcribe job after transcode; a post-processor
+# Lambda turns the result into caption cues. Absent the role -> feature dormant.
+TRANSCRIBE_ROLE_ARN = os.getenv("TRANSCRIBE_ROLE_ARN", "")
+
 # Kept in sync with the API's upload-time suggester (api/app/main.py).
 _AI_SYSTEM = (
     "You title videos for RabbitHole, a fun, irreverent, internet-native video "
@@ -74,6 +79,7 @@ RENDITIONS = [
 _session = boto3.session.Session(region_name=AWS_REGION)
 sqs = _session.client("sqs")
 s3 = _session.client("s3")
+transcribe = _session.client("transcribe")
 _videos = _session.resource("dynamodb").Table(VIDEOS_TABLE)
 
 
@@ -266,6 +272,46 @@ def _upload_tree(local_dir: Path, bucket: str, prefix: str) -> None:
             )
 
 
+def _start_transcription(video_id: str, src: Path, workdir: Path) -> bool:
+    """Extract a mono 16 kHz FLAC track and fire an async AWS Transcribe job.
+
+    Best-effort: a clip with no speech (or no audio stream at all) just yields
+    nothing useful, so any failure is swallowed and the video proceeds normally.
+    The job writes its raw result to the streaming bucket; an EventBridge-driven
+    Lambda turns that into caption cues (see lambdas/transcribe)."""
+    if not TRANSCRIBE_ROLE_ARN:
+        return False
+    audio = workdir / "audio.flac"
+    try:
+        # -vn drop video, mono, 16 kHz — Transcribe's sweet spot and a tiny file.
+        _ffmpeg(["-i", str(src), "-vn", "-ac", "1", "-ar", "16000",
+                 "-c:a", "flac", str(audio)])
+    except subprocess.CalledProcessError:
+        print(f"no audio track for {video_id}; skipping transcription")
+        return False
+    if not audio.exists() or audio.stat().st_size == 0:
+        return False
+    try:
+        audio_key = f"{video_id}/audio.flac"
+        s3.upload_file(str(audio), STREAMING_BUCKET, audio_key,
+                       ExtraArgs={"ContentType": "audio/flac"})
+        job = f"rh-{video_id}-{int(time.time())}"
+        transcribe.start_transcription_job(
+            TranscriptionJobName=job,
+            Media={"MediaFileUri": f"s3://{STREAMING_BUCKET}/{audio_key}"},
+            MediaFormat="flac",
+            IdentifyLanguage=True,
+            OutputBucketName=STREAMING_BUCKET,
+            OutputKey=f"{video_id}/transcribe-raw.json",
+            DataAccessRoleArn=TRANSCRIBE_ROLE_ARN,
+        )
+        print(f"transcription started for {video_id}: job={job}")
+        return True
+    except Exception as exc:  # noqa: BLE001
+        print(f"transcription start skipped for {video_id}: {exc}")
+        return False
+
+
 def process_record(bucket: str, key: str) -> None:
     video_id = _video_id_from_key(key)
     if not video_id:
@@ -310,6 +356,10 @@ def process_record(bucket: str, key: str) -> None:
         # Timing covers transcode only — measure before the (network-bound) AI call.
         elapsed = time.monotonic() - started
 
+        # Kick off speech-to-text while the source is still on local disk. The
+        # job runs async; the post-processor Lambda flips has_transcript later.
+        transcribing = _start_transcription(video_id, src, workdir)
+
         # Auto-name untitled uploads from the freshly-extracted frame.
         ai_extra: dict = {}
         if not (item.get("title") or "").strip():
@@ -331,6 +381,8 @@ def process_record(bucket: str, key: str) -> None:
         "thumb_key": f"{video_id}/thumb.jpg",
         "duration_seconds": str(round(elapsed, 1)),
         "cost_usd": f"{_estimate_cost(elapsed):.4f}",
+        # True until the post-processor Lambda writes cues (or gives up).
+        "transcribing": transcribing,
     }
     extra.update(ai_extra)
     _set_status(video_id, "ready", extra)

@@ -14,6 +14,7 @@ export function UploadModal({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState<string[]>([]);
+  const [visibility, setVisibility] = useState<"public" | "unlisted">("public");
   const [drag, setDrag] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -24,6 +25,10 @@ export function UploadModal({
   async function chooseFile(f: File | null) {
     setFile(f);
     setSuggested(false);
+    // Reset ALL fields on a new file so a previous file's title/description
+    // can't carry over (the suggestion only fills empty fields).
+    setTitle("");
+    setDescription("");
     setTags([]);
     if (!f) return;
     // Show the AI's take up front so the user can keep or tweak it.
@@ -57,6 +62,7 @@ export function UploadModal({
         title,
         description,
         tags,
+        visibility,
       );
       await uploadToS3(ticket.upload_url, file, setProgress);
       onUploaded();
@@ -135,6 +141,29 @@ export function UploadModal({
               rows={3}
             />
             <TagEditor tags={tags} setTags={setTags} />
+            <div className="vis-row">
+              <div className="vis-toggle">
+                <button
+                  type="button"
+                  className={visibility === "public" ? "vis-opt active" : "vis-opt"}
+                  onClick={() => setVisibility("public")}
+                >
+                  Public
+                </button>
+                <button
+                  type="button"
+                  className={visibility === "unlisted" ? "vis-opt active" : "vis-opt"}
+                  onClick={() => setVisibility("unlisted")}
+                >
+                  Unlisted
+                </button>
+              </div>
+              <span className="vis-hint">
+                {visibility === "public"
+                  ? "Shows up in the feed and search."
+                  : "Hidden from the feed — only people with the link can watch."}
+              </span>
+            </div>
           </div>
         )}
 

@@ -1,10 +1,23 @@
 import Hls from "hls.js";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 
 /** Adaptive HLS player. Uses native HLS on Safari, hls.js everywhere else.
- *  Auto-starts on mount (best-effort — browsers may block autoplay with sound). */
-export function Player({ src, onEnded }: { src: string; onEnded?: () => void }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
+ *  Auto-starts on mount (best-effort — browsers may block autoplay with sound).
+ *  Optionally accepts an external `videoRef` (so a parent can seek the element)
+ *  and a WebVTT `captionsSrc` for closed captions. */
+export function Player({
+  src,
+  onEnded,
+  videoRef: externalRef,
+  captionsSrc,
+}: {
+  src: string;
+  onEnded?: () => void;
+  videoRef?: RefObject<HTMLVideoElement>;
+  captionsSrc?: string | null;
+}) {
+  const internalRef = useRef<HTMLVideoElement>(null);
+  const videoRef = externalRef ?? internalRef;
 
   useEffect(() => {
     const video = videoRef.current;
@@ -30,7 +43,7 @@ export function Player({ src, onEnded }: { src: string; onEnded?: () => void }) 
       hls.on(Hls.Events.MANIFEST_PARSED, tryPlay);
       return () => hls.destroy();
     }
-  }, [src]);
+  }, [src, videoRef]);
 
   return (
     <video
@@ -38,8 +51,16 @@ export function Player({ src, onEnded }: { src: string; onEnded?: () => void }) 
       controls
       playsInline
       autoPlay
+      // Only opt into anonymous CORS when we actually have a caption track to
+      // load. Setting it unconditionally can break native-HLS playback (Safari),
+      // so videos without captions behave exactly as before.
+      crossOrigin={captionsSrc ? "anonymous" : undefined}
       className="player"
       onEnded={onEnded}
-    />
+    >
+      {captionsSrc && (
+        <track kind="captions" src={captionsSrc} srcLang="en" label="English" default />
+      )}
+    </video>
   );
 }
