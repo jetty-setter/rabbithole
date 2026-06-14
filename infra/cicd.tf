@@ -11,8 +11,8 @@ locals {
 }
 
 resource "aws_iam_openid_connect_provider" "github" {
-  url             = "https://token.actions.githubusercontent.com"
-  client_id_list  = ["sts.amazonaws.com"]
+  url            = "https://token.actions.githubusercontent.com"
+  client_id_list = ["sts.amazonaws.com"]
   # GitHub's OIDC root CA thumbprints (AWS no longer verifies these, but the
   # argument is still required).
   thumbprint_list = [
@@ -70,7 +70,7 @@ data "aws_iam_policy_document" "deploy" {
   # Roll out the new API image.
   statement {
     sid       = "LambdaDeploy"
-    actions   = ["lambda:UpdateFunctionCode", "lambda:GetFunction"]
+    actions   = ["lambda:UpdateFunctionCode", "lambda:GetFunction", "lambda:GetFunctionConfiguration"]
     resources = [aws_lambda_function.api.arn]
   }
 
