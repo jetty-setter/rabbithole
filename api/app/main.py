@@ -27,8 +27,7 @@ from .auth import (
     verify_password,
 )
 
-# Allowed visibility states. Anything else (incl. legacy records with no field)
-# is treated as "public".
+# Allowed visibility states. Anything else is treated as "public".
 _VISIBILITIES = {"public", "unlisted"}
 
 
@@ -64,8 +63,7 @@ def _safe_filename(name: str) -> str:
     return cleaned or "video.mp4"
 
 
-# Shared with the worker's auto-titler so upload-time suggestions and the
-# server-side fallback read identically.
+# Shared with the worker's auto-titler .
 _AI_SYSTEM = (
     "You title videos for RabbitHole, a fun, irreverent, internet-native video "
     "site. You're given a few frames sampled in chronological order across one "
@@ -164,8 +162,7 @@ def health() -> dict:
 @app.post("/auth/signup")
 def signup(req: Credentials) -> dict:
     username = req.username.strip().lower()
-    # The creator account is provisioned out-of-band; reserving the name closes
-    # the "sign up as admin to become admin" hole (is_admin is name-based).
+    # The creator account is provisioned out-of-band
     if username == config.CREATOR_USERNAME.strip().lower():
         raise HTTPException(status_code=409, detail="username already taken")
     item = {
@@ -225,7 +222,6 @@ def remove_favorite(video_id: str, user: str = Depends(require_auth)) -> Respons
 
 
 # ── Rabbit reactions: Hop (approve) / Thump (disapprove) ───
-# A bunny thumps its foot to signal displeasure — so a thump is our downvote.
 # One reaction per user per video; switching sides moves the counts atomically.
 
 def _bump(video_id: str, attr: str, delta: int) -> None:
@@ -408,11 +404,11 @@ def _to_video(item: dict) -> Video:
 @app.get("/videos", response_model=list[Video])
 def list_videos(viewer: str | None = Depends(optional_auth)) -> list[Video]:
     # Scan is fine at portfolio scale; a GSI on created_at would be the
-    # production move once the table grows. (Noted in docs/architecture.md.)
+    # production move once the table grows
     resp = aws.videos_table().scan(Limit=100)
     items = [i for i in resp.get("Items", []) if "video_id" in i]
     # Unlisted videos are hidden from the feed for everyone except their owner
-    # (and the admin). Direct links still work — that's handled by get_video.
+    # (and the admin). Direct links still work.
     can_see_all = bool(viewer) and is_admin(viewer)
     items = [
         i for i in items

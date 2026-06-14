@@ -1,5 +1,5 @@
-"""Shared boto3 clients. Created at import time — no AWS calls happen here,
-so this is safe to import without credentials (e.g. in CI)."""
+"""Shared boto3 clients. Created at import time (no AWS calls happen),
+Safe to import without credentials (e.g. in CI)."""
 
 import boto3
 
