@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/jetty-setter/rabbithole/actions/workflows/ci.yml/badge.svg)](https://github.com/jetty-setter/rabbithole/actions/workflows/ci.yml)
 [![Deploy](https://github.com/jetty-setter/rabbithole/actions/workflows/deploy.yml/badge.svg)](https://github.com/jetty-setter/rabbithole/actions/workflows/deploy.yml)
+[![Terraform](https://github.com/jetty-setter/rabbithole/actions/workflows/terraform.yml/badge.svg)](https://github.com/jetty-setter/rabbithole/actions/workflows/terraform.yml)
 ![coverage](https://img.shields.io/badge/coverage-82%25-brightgreen)
 ![python](https://img.shields.io/badge/python-3.12-blue)
 ![terraform](https://img.shields.io/badge/IaC-Terraform-7B42BC)
@@ -164,12 +165,15 @@ end-to-end on deploy rather than unit-tested.
 
 ### Deployment
 
-Application deploys are automated: a push to `main` triggers the **Deploy** workflow,
-which assumes a least-privilege AWS role via **GitHub OIDC** (no static keys) and
-builds/pushes the API + worker images, rolls out the Lambda and Fargate service, and
-publishes the frontend with a CDN invalidation. Infrastructure is applied manually
-(`terraform apply`) since state is local — moving it to a remote S3 backend is the
-prerequisite for automating infra changes too.
+Everything runs through GitHub Actions via **OIDC-assumed roles** — no static AWS keys.
+
+- **App** — a push to `main` triggers the **Deploy** workflow: build/push the API +
+  worker images, roll out the Lambda and Fargate service, publish the frontend + invalidate the CDN.
+- **Infra** — Terraform state lives in a **versioned, encrypted S3 bucket with native
+  state locking**. The **Terraform** workflow auto-runs `plan` on a merge that touches
+  `infra/` (visibility) and runs `apply` via a **manual dispatch** — auto-applying infra
+  on every merge is deliberately avoided (blast radius). Each role's OIDC trust is scoped
+  to this repo's `main` branch, so fork PRs can't assume them.
 
 The AI features are optional and degrade gracefully: set the Anthropic key once as an SSM
 SecureString (`/rabbithole-dev/anthropic-api-key`) to enable auto-metadata; the Transcribe
@@ -187,7 +191,8 @@ still transcode and stream normally.
 - [x] **P9** — public/unlisted visibility; UI cohesion + responsive + loading skeletons
 - [x] **P10** — test suite + coverage-gated CI; security hardening (scoped CORS, rate limiting, reserved admin)
 - [x] **P11** — OIDC-based CD: build/push images, roll out Lambda + Fargate, publish frontend on merge
-- [ ] **Next** — remote Terraform state → infra CD; CloudWatch dashboard + X-Ray tracing; cross-video semantic search; real multi-user auth
+- [x] **P12** — remote Terraform state (S3 + native locking) + infra-through-CI (plan on merge, gated apply)
+- [ ] **Next** — CloudWatch dashboard + X-Ray tracing; cross-video semantic search; real multi-user auth
 
 ## What I'd change at scale
 
