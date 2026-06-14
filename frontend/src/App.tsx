@@ -21,6 +21,10 @@ import { UploadModal } from "./UploadModal";
 import { LoginModal } from "./LoginModal";
 import { LibraryPage } from "./LibraryPage";
 import { TrendingPage } from "./TrendingPage";
+import { FreshPage } from "./FreshPage";
+import { TunnelsPage } from "./TunnelsPage";
+import { TrailPage } from "./TrailPage";
+import { DenPage } from "./DenPage";
 import { FavoritesPage } from "./FavoritesPage";
 import { MyVideosPage } from "./MyVideosPage";
 import { WatchPage } from "./WatchPage";
@@ -28,6 +32,7 @@ import { AdminPage } from "./AdminPage";
 
 export interface AppCtx {
   videos: Video[];
+  loading: boolean;
   refresh: () => void;
   live: boolean;
   authed: boolean;
@@ -46,6 +51,10 @@ export interface AppCtx {
   startDive: (fromId: string) => void;
   stopDive: () => void;
   nextDive: (currentId: string) => string | null;
+  // Trail — the local watch history (most-recent-first video ids)
+  trail: string[];
+  recordTrail: (id: string) => void;
+  clearTrail: () => void;
 }
 
 export const useApp = () => useOutletContext<AppCtx>();
@@ -61,6 +70,17 @@ function loadAnonVotes(): AnonVotes {
     return {};
   }
 }
+// Watch history ("Trail") — local-only, most-recent-first video ids. Works
+// signed-out and never leaves the browser.
+const TRAIL_KEY = "rh_trail";
+function loadTrail(): string[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(TRAIL_KEY) || "[]");
+    return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
+  } catch {
+    return [];
+  }
+}
 function saveAnonVote(id: string, r: "hop" | "thump" | null) {
   const m = loadAnonVotes();
   if (r) m[id] = r;
@@ -72,6 +92,7 @@ function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [videos, setVideos] = useState<Video[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMode, setLoginMode] = useState<"login" | "signup">("login");
@@ -82,6 +103,7 @@ function Layout() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [hopped, setHopped] = useState<Set<string>>(new Set());
   const [thumped, setThumped] = useState<Set<string>>(new Set());
+  const [trail, setTrail] = useState<string[]>(loadTrail);
 
   const [diveActive, setDiveActive] = useState(false);
   const [diveDepth, setDiveDepth] = useState(0);
@@ -96,6 +118,8 @@ function Layout() {
       setVideos(await listVideos());
     } catch {
       /* keep last good list */
+    } finally {
+      setLoaded(true);
     }
   }
 
@@ -233,6 +257,19 @@ function Layout() {
     return pick.video_id;
   }
 
+  function recordTrail(id: string) {
+    setTrail((prev) => {
+      const next = [id, ...prev.filter((x) => x !== id)].slice(0, 60);
+      localStorage.setItem(TRAIL_KEY, JSON.stringify(next));
+      return next;
+    });
+  }
+
+  function clearTrail() {
+    localStorage.removeItem(TRAIL_KEY);
+    setTrail([]);
+  }
+
   // Serendipitous "tumble down the hole" — but intentional, not random-random:
   // never lands on the current video, won't repeat until you've seen everything,
   // and leans toward videos sharing a tag with whatever you're watching.
@@ -273,6 +310,7 @@ function Layout() {
 
   const ctx: AppCtx = {
     videos,
+    loading: !loaded,
     refresh,
     live,
     authed,
@@ -293,6 +331,9 @@ function Layout() {
     startDive,
     stopDive,
     nextDive,
+    trail,
+    recordTrail,
+    clearTrail,
   };
 
   return (
@@ -315,7 +356,10 @@ function Layout() {
       />
       <div className="shell">
         <div className="main">
-          <Outlet context={ctx} />
+          {/* key on path → gentle fade/slide each navigation */}
+          <div className="route-fade" key={location.pathname}>
+            <Outlet context={ctx} />
+          </div>
         </div>
         <Sidebar
           open={sidebarOpen}
@@ -346,7 +390,12 @@ export default function App() {
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<LibraryPage />} />
+        <Route path="/fresh" element={<FreshPage />} />
         <Route path="/trending" element={<TrendingPage />} />
+        <Route path="/tunnels" element={<TunnelsPage />} />
+        <Route path="/tunnels/:tag" element={<TunnelsPage />} />
+        <Route path="/trail" element={<TrailPage />} />
+        <Route path="/den" element={<DenPage />} />
         <Route path="/favorites" element={<FavoritesPage />} />
         <Route path="/mine" element={<MyVideosPage />} />
         <Route path="/watch/:id" element={<WatchPage />} />

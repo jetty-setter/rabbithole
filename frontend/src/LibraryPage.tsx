@@ -2,10 +2,11 @@ import { useMemo } from "react";
 import { useApp } from "./App";
 import { VideoCard } from "./VideoCard";
 import { FeaturedCard } from "./FeaturedCard";
+import { SkeletonFeed } from "./Skeleton";
 import { displayTitle } from "./api";
 
 export function LibraryPage() {
-  const { videos, authed, username, query } = useApp();
+  const { videos, loading, authed, username, query } = useApp();
 
   // The signed-in user's own in-progress uploads (so they get live feedback).
   const mine = useMemo(
@@ -31,6 +32,9 @@ export function LibraryPage() {
   // Editorial hero: the newest ready video, only when not searching.
   const featured = !query.trim() && ready.length > 0 ? ready[0] : null;
   const gridList = featured ? list.filter((v) => v.video_id !== featured.video_id) : list;
+
+  // First load with nothing cached yet → shimmer instead of a flash of "empty".
+  if (loading && !hasAny) return <SkeletonFeed />;
 
   return (
     <main className="page">

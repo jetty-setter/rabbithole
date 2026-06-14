@@ -1,0 +1,10 @@
+[run]
+omit =
+    */tests/*
+    */test_*.py
+    */.venv/*
+
+[report]
+exclude_also =
+    if __name__ == .__main__.:
+    raise NotImplementedError
