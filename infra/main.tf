@@ -11,6 +11,14 @@ locals {
   name = "${var.project}-${var.environment}"
   # S3 bucket names are globally unique; suffix with the account ID.
   bucket_suffix = data.aws_caller_identity.current.account_id
+  # The app is served from a custom domain (managed on the frontend distribution)
+  # and the default CloudFront domain; both are valid browser origins for CORS.
+  frontend_custom_domain = "rabbithole.stephsimmons.dev"
+  frontend_acm_cert_arn  = "arn:aws:acm:us-east-1:936922781601:certificate/37dec03b-9b1d-44f7-b099-4993542d302c"
+  frontend_origins = [
+    "https://${local.frontend_custom_domain}",
+    "https://${aws_cloudfront_distribution.frontend.domain_name}",
+  ]
 }
 
 # Raw uploads land here (presigned PUT from the browser).
@@ -45,7 +53,8 @@ resource "aws_s3_bucket_cors_configuration" "uploads" {
 
   cors_rule {
     allowed_methods = ["PUT", "GET"]
-    allowed_origins = ["*"] # tighten to the frontend origin before prod
+    # Scoped to the deployed frontend(s) + local dev — no longer a wildcard.
+    allowed_origins = concat(local.frontend_origins, ["http://localhost:5173"])
     allowed_headers = ["*"]
     max_age_seconds = 3000
   }
