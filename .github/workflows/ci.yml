@@ -6,19 +6,33 @@ on:
   pull_request:
 
 jobs:
-  api:
-    name: API (lint + import)
+  tests:
+    name: Python tests + coverage
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: api
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -r requirements.txt
-      - run: python -c "import app.main"
+      - run: pip install -r api/requirements-dev.txt
+      # Runs api + worker + transcribe-lambda suites (see pytest.ini). The
+      # coverage gate is enforced on the testable business logic (API + caption pipeline).
+      - run: pytest --cov=app --cov=handler --cov-report=term-missing --cov-fail-under=70
+
+  frontend:
+    name: Frontend (test + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - run: npm run test
+      - run: npm run build
 
   worker:
     name: Worker (build image)

@@ -13,7 +13,9 @@ import {
   type Cue,
   type Video,
 } from "./api";
+import { activeCueIndex } from "./cues";
 import { Player } from "./Player";
+import { SkeletonWatch } from "./Skeleton";
 import { Comments } from "./Comments";
 import { TagEditor } from "./TagEditor";
 import { Avatar } from "./Avatar";
@@ -43,6 +45,7 @@ export function WatchPage() {
     diveDepth,
     stopDive,
     nextDive,
+    recordTrail,
   } = useApp();
 
   const [video, setVideo] = useState<Video | null>(null);
@@ -80,6 +83,7 @@ export function WatchPage() {
       .then((v) => {
         setVideo(v);
         incrementView(id).catch(() => {});
+        recordTrail(id);
       })
       .catch(() => setNotFound(true));
   }, [id]);
@@ -106,15 +110,7 @@ export function WatchPage() {
   useEffect(() => {
     const v = videoRef.current;
     if (!v || cues.length === 0) return;
-    const onTime = () => {
-      const t = v.currentTime;
-      let idx = -1;
-      for (let i = 0; i < cues.length; i++) {
-        if (cues[i].start <= t + 0.15) idx = i;
-        else break;
-      }
-      setActiveCue(idx);
-    };
+    const onTime = () => setActiveCue(activeCueIndex(cues, v.currentTime));
     v.addEventListener("timeupdate", onTime);
     return () => v.removeEventListener("timeupdate", onTime);
   }, [cues]);
@@ -154,11 +150,7 @@ export function WatchPage() {
     );
   }
   if (!video) {
-    return (
-      <main className="page">
-        <p className="muted">Digging it up…</p>
-      </main>
-    );
+    return <SkeletonWatch />;
   }
 
   const vid = video.video_id;

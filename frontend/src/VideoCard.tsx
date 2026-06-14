@@ -44,6 +44,14 @@ export function VideoCard({ v }: { v: Video }) {
       <div className="thumb">
         {v.thumbnail_url ? <img src={v.thumbnail_url} alt="" /> : <span className="thumb-ph">🐇</span>}
         <span className="play-badge">▶</span>
+        <div className="card-badges">
+          {v.has_transcript && (
+            <span className="mini-badge cc" title="Captions available">CC</span>
+          )}
+          {v.visibility === "unlisted" && (
+            <span className="mini-badge" title="Unlisted — link only">Unlisted</span>
+          )}
+        </div>
         {v.duration_seconds && <span className="dur-badge">{formatDuration(v.duration_seconds)}</span>}
         {authed && (
           <button
