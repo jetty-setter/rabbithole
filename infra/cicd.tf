@@ -103,3 +103,42 @@ resource "aws_iam_role_policy" "deploy" {
 output "deploy_role_arn" {
   value = aws_iam_role.deploy.arn
 }
+
+# ── Terraform role (infra plan/apply via CI) ───────────────────
+# Managing infra inherently needs broad rights (it creates IAM, Lambda, ECS,
+# CloudFront, …), so this role carries AdministratorAccess. The control is the
+# tight OIDC trust — only this repo's main branch can assume it — plus the
+# workflow design: plan runs automatically, apply is a manual dispatch.
+data "aws_iam_policy_document" "terraform_assume" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.github.arn]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+    condition {
+      test     = "StringLike"
+      variable = "token.actions.githubusercontent.com:sub"
+      values   = ["repo:${local.github_repo}:ref:refs/heads/main"]
+    }
+  }
+}
+
+resource "aws_iam_role" "terraform" {
+  name               = "${local.name}-terraform"
+  assume_role_policy = data.aws_iam_policy_document.terraform_assume.json
+}
+
+resource "aws_iam_role_policy_attachment" "terraform_admin" {
+  role       = aws_iam_role.terraform.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+}
+
+output "terraform_role_arn" {
+  value = aws_iam_role.terraform.arn
+}

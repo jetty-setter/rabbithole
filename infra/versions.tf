@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.6"
+  required_version = ">= 1.10"
 
   required_providers {
     aws = {
@@ -16,14 +16,17 @@ terraform {
     }
   }
 
-  # P0: local state. Switch to an S3 backend + DynamoDB lock before team/CI use.
-  # backend "s3" {
-  #   bucket         = "rabbithole-tfstate"
-  #   key            = "global/terraform.tfstate"
-  #   region         = "us-east-1"
-  #   dynamodb_table = "rabbithole-tflock"
-  #   encrypt        = true
-  # }
+  # Remote state: versioned/encrypted S3 with native S3 state locking
+  # (use_lockfile, Terraform >= 1.10 — no DynamoDB table needed). Bootstrapped
+  # out-of-band since a backend can't manage the bucket it lives in. No `profile`
+  # here — creds come from the environment (local AWS_PROFILE, or OIDC in CI).
+  backend "s3" {
+    bucket       = "rabbithole-dev-tfstate-936922781601"
+    key          = "rabbithole-dev/terraform.tfstate"
+    region       = "us-east-1"
+    encrypt      = true
+    use_lockfile = true
+  }
 }
 
 provider "aws" {
