@@ -164,6 +164,10 @@ def health() -> dict:
 @app.post("/auth/signup")
 def signup(req: Credentials) -> dict:
     username = req.username.strip().lower()
+    # The creator account is provisioned out-of-band; reserving the name closes
+    # the "sign up as admin to become admin" hole (is_admin is name-based).
+    if username == config.CREATOR_USERNAME.strip().lower():
+        raise HTTPException(status_code=409, detail="username already taken")
     item = {
         "username": username,
         "password_hash": hash_password(req.password),

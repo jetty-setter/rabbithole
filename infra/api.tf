@@ -89,7 +89,7 @@ resource "aws_lambda_function" "api" {
       CLOUDFRONT_DOMAIN      = aws_cloudfront_distribution.streaming.domain_name
       CREATOR_USERNAME       = "admin"
       JWT_SECRET             = random_password.jwt.result
-      ALLOWED_ORIGINS        = "*"
+      ALLOWED_ORIGINS        = join(",", local.frontend_origins)
       PRESIGN_EXPIRY_SECONDS = "900"
     }
   }
@@ -119,6 +119,12 @@ resource "aws_apigatewayv2_stage" "api" {
   api_id      = aws_apigatewayv2_api.http.id
   name        = "$default"
   auto_deploy = true
+
+  # Account-wide throttle so a single client can't hammer the API.
+  default_route_settings {
+    throttling_rate_limit  = 20 # steady-state requests/sec
+    throttling_burst_limit = 40 # short bursts
+  }
 }
 
 resource "aws_lambda_permission" "api_gw" {

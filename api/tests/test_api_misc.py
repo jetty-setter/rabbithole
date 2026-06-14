@@ -35,9 +35,16 @@ def test_login_wrong_password(client):
     assert r.status_code == 401
 
 
-def test_admin_username_is_admin(client):
+def test_cannot_signup_as_reserved_admin(client):
+    # The creator name is reserved — nobody can register it to gain admin.
     r = client.post("/auth/signup", json={"username": "admin", "password": "secret123"})
-    assert r.json()["is_admin"] is True
+    assert r.status_code == 409
+
+
+def test_admin_token_is_admin(client):
+    # is_admin is name-based; a token for the creator name reports admin.
+    me = client.get("/auth/me", headers=auth("admin"))
+    assert me.json()["is_admin"] is True
 
 
 # ── Favorites ───────────────────────────────────────────────────────

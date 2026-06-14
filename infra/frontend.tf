@@ -26,6 +26,10 @@ resource "aws_cloudfront_distribution" "frontend" {
   comment             = "${local.name} frontend"
   price_class         = "PriceClass_100"
 
+  # Custom domain (set up out-of-band; now managed in IaC so a future apply
+  # can't clobber it or downgrade TLS).
+  aliases = [local.frontend_custom_domain]
+
   origin {
     domain_name              = aws_s3_bucket.frontend.bucket_regional_domain_name
     origin_id                = "frontend-s3"
@@ -60,7 +64,9 @@ resource "aws_cloudfront_distribution" "frontend" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn      = local.frontend_acm_cert_arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
   }
 }
 

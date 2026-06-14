@@ -76,6 +76,7 @@ data "archive_file" "transcribe_post" {
   type        = "zip"
   source_dir  = "${path.module}/../lambdas/transcribe"
   output_path = "${path.module}/build/transcribe.zip"
+  excludes    = ["test_handler.py", "__pycache__"]
 }
 
 resource "aws_iam_role" "transcribe_post" {
