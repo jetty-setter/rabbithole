@@ -1,6 +1,7 @@
 # RabbitHole 🐇
 
 [![CI](https://github.com/jetty-setter/rabbithole/actions/workflows/ci.yml/badge.svg)](https://github.com/jetty-setter/rabbithole/actions/workflows/ci.yml)
+[![Deploy](https://github.com/jetty-setter/rabbithole/actions/workflows/deploy.yml/badge.svg)](https://github.com/jetty-setter/rabbithole/actions/workflows/deploy.yml)
 ![coverage](https://img.shields.io/badge/coverage-82%25-brightgreen)
 ![python](https://img.shields.io/badge/python-3.12-blue)
 ![terraform](https://img.shields.io/badge/IaC-Terraform-7B42BC)
@@ -110,6 +111,7 @@ solve — which makes it a real demonstration of architectural judgment, not jus
 | IaC | Terraform |
 | Tests | pytest + moto (API + caption pipeline, 82% on tested sources), Vitest (frontend logic) |
 | CI | GitHub Actions — tests + coverage gate, image build, `terraform validate` |
+| CD | GitHub Actions on merge → OIDC role (no static keys) → build/push images, roll out Lambda + Fargate, publish frontend + invalidate CDN |
 
 ## Repo layout
 
@@ -160,6 +162,15 @@ CI runs both suites on every push/PR and fails under a 70% coverage floor on the
 testable business logic. The transcode worker is ffmpeg/AWS orchestration, validated
 end-to-end on deploy rather than unit-tested.
 
+### Deployment
+
+Application deploys are automated: a push to `main` triggers the **Deploy** workflow,
+which assumes a least-privilege AWS role via **GitHub OIDC** (no static keys) and
+builds/pushes the API + worker images, rolls out the Lambda and Fargate service, and
+publishes the frontend with a CDN invalidation. Infrastructure is applied manually
+(`terraform apply`) since state is local — moving it to a remote S3 backend is the
+prerequisite for automating infra changes too.
+
 The AI features are optional and degrade gracefully: set the Anthropic key once as an SSM
 SecureString (`/rabbithole-dev/anthropic-api-key`) to enable auto-metadata; the Transcribe
 pipeline activates automatically once its IAM role is provisioned. Without either, uploads
@@ -174,7 +185,9 @@ still transcode and stream normally.
 - [x] **P7** — AI auto-metadata (Claude vision, multi-frame, accuracy-guarded)
 - [x] **P8** — speech-to-text pipeline + searchable transcript + WebVTT captions
 - [x] **P9** — public/unlisted visibility; UI cohesion + responsive + loading skeletons
-- [ ] **Next** — CI→CD (deploy on merge), test suite + coverage, CloudWatch dashboard + tracing, real multi-user auth, cross-video semantic search
+- [x] **P10** — test suite + coverage-gated CI; security hardening (scoped CORS, rate limiting, reserved admin)
+- [x] **P11** — OIDC-based CD: build/push images, roll out Lambda + Fargate, publish frontend on merge
+- [ ] **Next** — remote Terraform state → infra CD; CloudWatch dashboard + X-Ray tracing; cross-video semantic search; real multi-user auth
 
 ## What I'd change at scale
 
