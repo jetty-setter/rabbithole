@@ -19,6 +19,11 @@ resource "aws_iam_role" "api" {
   assume_role_policy = data.aws_iam_policy_document.lambda_assume.json
 }
 
+resource "aws_iam_role_policy_attachment" "api_xray" {
+  role       = aws_iam_role.api.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
+}
+
 resource "aws_iam_role_policy" "api_lambda" {
   name = "${local.name}-api-lambda"
   role = aws_iam_role.api.id
@@ -76,6 +81,11 @@ resource "aws_lambda_function" "api" {
   architectures = ["arm64"]
   timeout       = 30
   memory_size   = 512
+
+  # Distributed tracing — request traces + a service map (API → S3/DynamoDB).
+  tracing_config {
+    mode = "Active"
+  }
 
   environment {
     variables = {

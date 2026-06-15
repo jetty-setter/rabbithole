@@ -80,7 +80,10 @@ _session = boto3.session.Session(region_name=AWS_REGION)
 sqs = _session.client("sqs")
 s3 = _session.client("s3")
 transcribe = _session.client("transcribe")
+cloudwatch = _session.client("cloudwatch")
 _videos = _session.resource("dynamodb").Table(VIDEOS_TABLE)
+
+METRIC_NAMESPACE = "RabbitHole/Transcode"
 
 
 def _video_id_from_key(key: str) -> str | None:
@@ -272,6 +275,22 @@ def _upload_tree(local_dir: Path, bucket: str, prefix: str) -> None:
             )
 
 
+def _emit_metrics(seconds: float, cost: float) -> None:
+    """Publish transcode throughput + cost so the CloudWatch dashboard can show
+    jobs/hour and $/day. Best-effort — telemetry never fails a job."""
+    try:
+        cloudwatch.put_metric_data(
+            Namespace=METRIC_NAMESPACE,
+            MetricData=[
+                {"MetricName": "TranscodeCount", "Value": 1, "Unit": "Count"},
+                {"MetricName": "TranscodeSeconds", "Value": seconds, "Unit": "Seconds"},
+                {"MetricName": "TranscodeCostUSD", "Value": cost, "Unit": "None"},
+            ],
+        )
+    except Exception as exc:  # noqa: BLE001
+        print(f"metric emit skipped: {exc}")
+
+
 def _start_transcription(video_id: str, src: Path, workdir: Path) -> bool:
     """Extract a mono 16 kHz FLAC track and fire an async AWS Transcribe job.
 
@@ -386,6 +405,7 @@ def process_record(bucket: str, key: str) -> None:
     }
     extra.update(ai_extra)
     _set_status(video_id, "ready", extra)
+    _emit_metrics(elapsed, _estimate_cost(elapsed))
     print(f"ready video_id={video_id} ({elapsed:.1f}s, ~${_estimate_cost(elapsed):.4f})")
 
 

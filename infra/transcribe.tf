@@ -124,12 +124,21 @@ resource "aws_lambda_function" "transcribe_post" {
   timeout          = 60
   memory_size      = 256
 
+  tracing_config {
+    mode = "Active"
+  }
+
   environment {
     variables = {
       STREAMING_BUCKET = aws_s3_bucket.streaming.bucket
       VIDEOS_TABLE     = aws_dynamodb_table.videos.name
     }
   }
+}
+
+resource "aws_iam_role_policy_attachment" "transcribe_post_xray" {
+  role       = aws_iam_role.transcribe_post.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
 }
 
 # Fire when a Transcribe job finishes (either way — the Lambda branches on status).

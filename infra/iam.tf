@@ -96,6 +96,17 @@ data "aws_iam_policy_document" "worker" {
     actions   = ["dynamodb:UpdateItem", "dynamodb:GetItem"]
     resources = [aws_dynamodb_table.videos.arn]
   }
+
+  statement {
+    sid       = "PublishMetrics"
+    actions   = ["cloudwatch:PutMetricData"]
+    resources = ["*"] # PutMetricData has no resource scope; restrict by namespace
+    condition {
+      test     = "StringEquals"
+      variable = "cloudwatch:namespace"
+      values   = ["RabbitHole/Transcode"]
+    }
+  }
 }
 
 resource "aws_iam_role" "worker" {

@@ -113,6 +113,7 @@ solve — which makes it a real demonstration of architectural judgment, not jus
 | Tests | pytest + moto (API + caption pipeline, 82% on tested sources), Vitest (frontend logic) |
 | CI | GitHub Actions — tests + coverage gate, image build, `terraform validate` |
 | CD | GitHub Actions on merge → OIDC role (no static keys) → build/push images, roll out Lambda + Fargate, publish frontend + invalidate CDN |
+| Observability | CloudWatch dashboard (pipeline + worker + API + **$/day** via a custom worker metric); X-Ray tracing on the serverless path |
 
 ## Repo layout
 
@@ -175,6 +176,15 @@ Everything runs through GitHub Actions via **OIDC-assumed roles** — no static 
   on every merge is deliberately avoided (blast radius). Each role's OIDC trust is scoped
   to this repo's `main` branch, so fork PRs can't assume them.
 
+### Observability
+
+A CloudWatch **dashboard** (`rabbithole-dev-ops`) makes the pipeline legible at a glance:
+queue depth + oldest-message age + DLQ, worker CPU/memory, API invocations/errors/**p95**/throttles,
+and a **FinOps** row — transcodes, **$ spent**, and average transcode time — driven by a custom
+metric the worker emits per job (`RabbitHole/Transcode`). **X-Ray** active tracing on the API and
+transcription Lambdas gives request traces + a service map across their AWS calls. (Worker-level
+tracing would add a Fargate X-Ray sidecar — a noted follow-up.)
+
 The AI features are optional and degrade gracefully: set the Anthropic key once as an SSM
 SecureString (`/rabbithole-dev/anthropic-api-key`) to enable auto-metadata; the Transcribe
 pipeline activates automatically once its IAM role is provisioned. Without either, uploads
@@ -192,7 +202,8 @@ still transcode and stream normally.
 - [x] **P10** — test suite + coverage-gated CI; security hardening (scoped CORS, rate limiting, reserved admin)
 - [x] **P11** — OIDC-based CD: build/push images, roll out Lambda + Fargate, publish frontend on merge
 - [x] **P12** — remote Terraform state (S3 + native locking) + infra-through-CI (plan on merge, gated apply)
-- [ ] **Next** — CloudWatch dashboard + X-Ray tracing; cross-video semantic search; real multi-user auth
+- [x] **P13** — observability: CloudWatch dashboard (pipeline, worker, API, **$/day**) + X-Ray tracing on the serverless path
+- [ ] **Next** — cross-video semantic search; real multi-user auth; worker-level (Fargate) X-Ray sidecar
 
 ## What I'd change at scale
 
