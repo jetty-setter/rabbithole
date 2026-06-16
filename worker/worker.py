@@ -315,6 +315,9 @@ def _start_transcription(video_id: str, src: Path, workdir: Path) -> bool:
         s3.upload_file(str(audio), STREAMING_BUCKET, audio_key,
                        ExtraArgs={"ContentType": "audio/flac"})
         job = f"rh-{video_id}-{int(time.time())}"
+        # No DataAccessRoleArn: for same-account buckets Transcribe uses the
+        # caller's (worker role's) S3 permissions, which already cover streaming.
+        # (TRANSCRIBE_ROLE_ARN stays as the feature on/off flag, checked above.)
         transcribe.start_transcription_job(
             TranscriptionJobName=job,
             Media={"MediaFileUri": f"s3://{STREAMING_BUCKET}/{audio_key}"},
@@ -322,7 +325,6 @@ def _start_transcription(video_id: str, src: Path, workdir: Path) -> bool:
             IdentifyLanguage=True,
             OutputBucketName=STREAMING_BUCKET,
             OutputKey=f"{video_id}/transcribe-raw.json",
-            DataAccessRoleArn=TRANSCRIBE_ROLE_ARN,
         )
         print(f"transcription started for {video_id}: job={job}")
         return True
