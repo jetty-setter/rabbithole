@@ -233,6 +233,21 @@ export async function suggestMetadata(frames: string[]): Promise<Suggestion | nu
   return res.json();
 }
 
+export interface SearchMoment {
+  video: Video;
+  start: number;
+  snippet: string;
+  score: number;
+}
+
+/** Cross-video semantic search — best moment per matching video. */
+export async function searchMoments(q: string): Promise<SearchMoment[]> {
+  const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(q)}`);
+  if (!res.ok) return [];
+  const data = await res.json();
+  return Array.isArray(data.results) ? data.results : [];
+}
+
 export async function listVideos(): Promise<Video[]> {
   // Send auth when we have it so owners see their own unlisted videos in feeds.
   const res = await fetch(`${API_URL}/videos`, { headers: { ...authHeaders() } });

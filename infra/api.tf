@@ -49,6 +49,7 @@ resource "aws_iam_role_policy" "api_lambda" {
           aws_dynamodb_table.videos.arn,
           aws_dynamodb_table.users.arn,
           aws_dynamodb_table.comments.arn,
+          aws_dynamodb_table.embeddings.arn,
         ]
       },
       {
@@ -79,8 +80,9 @@ resource "aws_lambda_function" "api" {
   package_type  = "Image"
   image_uri     = "${aws_ecr_repository.api.repository_url}:latest"
   architectures = ["arm64"]
-  timeout       = 30
-  memory_size   = 512
+  # Headroom for the in-process embedding model (semantic search).
+  timeout     = 60
+  memory_size = 2048
 
   # Distributed tracing — request traces + a service map (API → S3/DynamoDB).
   tracing_config {
@@ -94,6 +96,7 @@ resource "aws_lambda_function" "api" {
       VIDEOS_TABLE           = aws_dynamodb_table.videos.name
       USERS_TABLE            = aws_dynamodb_table.users.name
       COMMENTS_TABLE         = aws_dynamodb_table.comments.name
+      EMBEDDINGS_TABLE       = aws_dynamodb_table.embeddings.name
       ANTHROPIC_KEY_PARAM    = local.anthropic_key_param
       AI_MODEL               = var.ai_model
       CLOUDFRONT_DOMAIN      = aws_cloudfront_distribution.streaming.domain_name

@@ -12,6 +12,10 @@ STREAMING_BUCKET = os.getenv("STREAMING_BUCKET", "")
 VIDEOS_TABLE = os.getenv("VIDEOS_TABLE", "rabbithole-dev-videos")
 USERS_TABLE = os.getenv("USERS_TABLE", "rabbithole-dev-users")
 COMMENTS_TABLE = os.getenv("COMMENTS_TABLE", "rabbithole-dev-comments")
+EMBEDDINGS_TABLE = os.getenv("EMBEDDINGS_TABLE", "rabbithole-dev-embeddings")
+# Local sentence-embedding model (bundled in the image) for semantic search.
+EMBED_MODEL = os.getenv("EMBED_MODEL", "BAAI/bge-small-en-v1.5")
+EMBED_CACHE_DIR = os.getenv("EMBED_CACHE_DIR", "/opt/models")
 # AI title/description suggestions at upload time.
 ANTHROPIC_KEY_PARAM = os.getenv("ANTHROPIC_KEY_PARAM", "")
 AI_MODEL = os.getenv("AI_MODEL", "claude-opus-4-8")

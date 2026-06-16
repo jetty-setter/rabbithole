@@ -31,6 +31,9 @@ and **fullstack** engineering end to end.
   clip and writes a punchy, accuracy-guarded title, description, and tags.
 - **Speech-to-text + in-video search** — AWS Transcribe turns audio into caption cues; the
   watch page gets a searchable transcript (click a line to jump) and real WebVTT captions.
+- **Cross-video semantic search** — a local embedding model (bge-small / ONNX, baked into the
+  API) indexes every transcript; search a phrase and it ranks the **best moment in each video
+  across the whole library** by meaning, then deep-links the player to that timestamp.
 - **Real-time status** — `Queued → Transcoding → Ready` updates live via WebSocket, no polling.
 - **Engagement** — hop/thump reactions (anonymous voting), comments, favorites ("Stash").
 - **Visibility** — publish **public** or **unlisted** (hidden from feeds, link still works),
@@ -103,7 +106,7 @@ solve — which makes it a real demonstration of architectural judgment, not jus
 | Frontend | React + TypeScript (Vite), `hls.js` → S3 + CloudFront |
 | API | FastAPI on Lambda (container image) + API Gateway (HTTP) |
 | Workers | ECS Fargate + ffmpeg/ffprobe (ARM64/Graviton), autoscaling on SQS depth (min 0) |
-| AI / ML | Claude vision (auto-metadata) · AWS Transcribe (captions + search) |
+| AI / ML | Claude vision (auto-metadata) · AWS Transcribe (captions) · local embeddings (bge-small/ONNX) for cross-video semantic search |
 | Real-time | DynamoDB Streams → Lambda → API Gateway WebSocket |
 | Messaging | SQS + DLQ, EventBridge (S3 + Transcribe events) |
 | Data | S3 (uploads + streaming), DynamoDB |
@@ -203,7 +206,8 @@ still transcode and stream normally.
 - [x] **P11** — OIDC-based CD: build/push images, roll out Lambda + Fargate, publish frontend on merge
 - [x] **P12** — remote Terraform state (S3 + native locking) + infra-through-CI (plan on merge, gated apply)
 - [x] **P13** — observability: CloudWatch dashboard (pipeline, worker, API, **$/day**) + X-Ray tracing on the serverless path
-- [ ] **Next** — cross-video semantic search; real multi-user auth; worker-level (Fargate) X-Ray sidecar
+- [x] **P14** — cross-video semantic search: local embedding model + brute-force vector search + jump-to-moment deep links
+- [ ] **Next** — real multi-user auth; worker-level (Fargate) X-Ray sidecar; gated infra-apply via remote state
 
 ## What I'd change at scale
 

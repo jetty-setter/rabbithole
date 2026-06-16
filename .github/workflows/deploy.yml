@@ -37,7 +37,9 @@ env:
 jobs:
   deploy:
     name: Build + deploy
-    runs-on: ubuntu-latest
+    # Native ARM64 runner (free for public repos) — builds the Graviton images
+    # without QEMU emulation, which matters now the API bakes an ONNX model.
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
 
@@ -48,8 +50,6 @@ jobs:
 
       - uses: aws-actions/amazon-ecr-login@v2
 
-      # ARM64/Graviton images (matches the Fargate + Lambda architecture).
-      - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
 
       # API — container Lambda. --provenance=false: Lambda rejects OCI manifest lists.

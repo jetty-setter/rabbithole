@@ -22,3 +22,7 @@ def users_table():
 
 def comments_table():
     return _dynamodb.Table(config.COMMENTS_TABLE)
+
+
+def embeddings_table():
+    return _dynamodb.Table(config.EMBEDDINGS_TABLE)

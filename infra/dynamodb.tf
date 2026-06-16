@@ -60,3 +60,27 @@ resource "aws_dynamodb_table" "comments" {
 output "comments_table" {
   value = aws_dynamodb_table.comments.name
 }
+
+# Transcript-chunk embeddings for cross-video semantic search. One row per
+# passage: partitioned by video (so a video's chunks Query/delete together),
+# sorted by chunk index. The vector is a base64 float32 blob.
+resource "aws_dynamodb_table" "embeddings" {
+  name         = "${local.name}-embeddings"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "video_id"
+  range_key    = "chunk"
+
+  attribute {
+    name = "video_id"
+    type = "S"
+  }
+
+  attribute {
+    name = "chunk"
+    type = "S"
+  }
+}
+
+output "embeddings_table" {
+  value = aws_dynamodb_table.embeddings.name
+}
