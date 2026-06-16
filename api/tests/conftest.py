@@ -20,6 +20,7 @@ os.environ["AWS_REGION"] = "us-east-1"
 os.environ["VIDEOS_TABLE"] = "test-videos"
 os.environ["USERS_TABLE"] = "test-users"
 os.environ["COMMENTS_TABLE"] = "test-comments"
+os.environ["EMBEDDINGS_TABLE"] = "test-embeddings"
 os.environ["UPLOADS_BUCKET"] = "test-uploads"
 os.environ["STREAMING_BUCKET"] = "test-streaming"
 os.environ["CLOUDFRONT_DOMAIN"] = "cdn.example.com"
@@ -56,6 +57,18 @@ def aws_stack():
             AttributeDefinitions=[
                 {"AttributeName": "video_id", "AttributeType": "S"},
                 {"AttributeName": "comment_id", "AttributeType": "S"},
+            ],
+            BillingMode="PAY_PER_REQUEST",
+        )
+        ddb.create_table(
+            TableName="test-embeddings",
+            KeySchema=[
+                {"AttributeName": "video_id", "KeyType": "HASH"},
+                {"AttributeName": "chunk", "KeyType": "RANGE"},
+            ],
+            AttributeDefinitions=[
+                {"AttributeName": "video_id", "AttributeType": "S"},
+                {"AttributeName": "chunk", "AttributeType": "S"},
             ],
             BillingMode="PAY_PER_REQUEST",
         )

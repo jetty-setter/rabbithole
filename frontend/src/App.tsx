@@ -25,6 +25,7 @@ import { FreshPage } from "./FreshPage";
 import { TunnelsPage } from "./TunnelsPage";
 import { TrailPage } from "./TrailPage";
 import { DenPage } from "./DenPage";
+import { SearchPage } from "./SearchPage";
 import { FavoritesPage } from "./FavoritesPage";
 import { MyVideosPage } from "./MyVideosPage";
 import { WatchPage } from "./WatchPage";
@@ -395,6 +396,7 @@ export default function App() {
         <Route path="/tunnels" element={<TunnelsPage />} />
         <Route path="/tunnels/:tag" element={<TunnelsPage />} />
         <Route path="/trail" element={<TrailPage />} />
+        <Route path="/search" element={<SearchPage />} />
         <Route path="/den" element={<DenPage />} />
         <Route path="/favorites" element={<FavoritesPage />} />
         <Route path="/mine" element={<MyVideosPage />} />

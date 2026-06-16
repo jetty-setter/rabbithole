@@ -429,6 +429,40 @@ def get_video(video_id: str) -> Video:
     return _to_video(item)
 
 
+@app.get("/search")
+def semantic_search(q: str = "") -> dict:
+    """Cross-video semantic search — returns the best moment per matching video,
+    each with a start time so the player can jump straight to it. Public-only."""
+    q = (q or "").strip()
+    if not q:
+        return {"query": "", "results": []}
+    from . import search as search_mod  # lazy: keeps the model off non-search paths
+
+    results = []
+    for hit in search_mod.search(q):
+        item = aws.videos_table().get_item(Key={"video_id": hit["video_id"]}).get("Item")
+        if not item or _norm_visibility(item.get("visibility")) != "public":
+            continue
+        results.append(
+            {
+                "video": _to_video(item),
+                "start": hit["start"],
+                "snippet": hit["text"],
+                "score": hit["score"],
+            }
+        )
+    return {"query": q, "results": results}
+
+
+@app.post("/search/reindex")
+def search_reindex(user: str = Depends(require_auth)) -> dict:
+    if not is_admin(user):
+        raise HTTPException(status_code=403, detail="not allowed")
+    from . import search as search_mod
+
+    return {"indexed_chunks": search_mod.reindex_all()}
+
+
 @app.patch("/videos/{video_id}", response_model=Video)
 def update_video(video_id: str, body: UpdateVideo, user: str = Depends(require_auth)) -> Video:
     item = aws.videos_table().get_item(Key={"video_id": video_id}).get("Item")

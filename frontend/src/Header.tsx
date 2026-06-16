@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Avatar } from "./Avatar";
 
 export function Header({
@@ -21,9 +21,14 @@ export function Header({
   query: string;
   setQuery: (s: string) => void;
 }) {
-  const { pathname } = useLocation();
-  const onFeed = pathname === "/";
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  function submitSearch(e: FormEvent) {
+    e.preventDefault();
+    const term = query.trim();
+    if (term) navigate(`/search?q=${encodeURIComponent(term)}`);
+  }
 
   return (
     <header className="topbar">
@@ -34,14 +39,14 @@ export function Header({
         </Link>
       </div>
 
-      {onFeed && (
+      <form className="nav-search-form" onSubmit={submitSearch} role="search">
         <input
           className="nav-search"
-          placeholder="Search videos…"
+          placeholder="Search what's said…  ↵"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-      )}
+      </form>
 
       <nav className="topnav">
         {authed ? (

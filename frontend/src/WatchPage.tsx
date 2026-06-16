@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useApp } from "./App";
 import {
   deleteVideo,
@@ -30,6 +30,8 @@ function fmtTime(s: number): string {
 export function WatchPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const startAt = Number(searchParams.get("t") || 0);
   const {
     videos,
     authed,
@@ -87,6 +89,19 @@ export function WatchPage() {
       })
       .catch(() => setNotFound(true));
   }, [id]);
+
+  // Deep-link from search → jump the player to ?t= once it has metadata.
+  useEffect(() => {
+    if (!startAt || !video) return;
+    const v = videoRef.current;
+    if (!v) return;
+    const seek = () => {
+      v.currentTime = startAt;
+    };
+    if (v.readyState >= 1) seek();
+    else v.addEventListener("loadedmetadata", seek, { once: true });
+    return () => v.removeEventListener("loadedmetadata", seek);
+  }, [startAt, video]);
 
   const related = useMemo(
     () =>
