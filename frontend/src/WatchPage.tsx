@@ -1,24 +1,20 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useApp } from "./App";
 import {
   deleteVideo,
   displayTitle,
-  fetchCues,
   formatDuration,
-  getVideo,
-  incrementView,
   relativeTime,
   updateVideo,
-  type Cue,
-  type Video,
 } from "./api";
-import { activeCueIndex } from "./cues";
 import { Player } from "./Player";
 import { SkeletonWatch } from "./Skeleton";
 import { Comments } from "./Comments";
-import { TagEditor } from "./TagEditor";
 import { Avatar } from "./Avatar";
+import { EditForm } from "./components/EditForm";
+import { useVideoData } from "./hooks/useVideoData";
+import { useTranscript } from "./hooks/useTranscript";
 
 /** Seconds → m:ss for cue timestamps. */
 function fmtTime(s: number): string {
@@ -50,8 +46,13 @@ export function WatchPage() {
     recordTrail,
   } = useApp();
 
-  const [video, setVideo] = useState<Video | null>(null);
-  const [notFound, setNotFound] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const { video, setVideo, notFound } = useVideoData(id, recordTrail);
+  const { cues, cuesRef, cueQuery, setCueQuery, activeCue, shownCues } = useTranscript(
+    video,
+    videoRef,
+  );
+
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
@@ -62,14 +63,6 @@ export function WatchPage() {
   const [burst, setBurst] = useState<{ kind: "hop" | "thump"; id: number } | null>(null);
   const burstTimer = useRef<number>();
 
-  // Transcript: the <video> element (so cues can seek it), the cues themselves,
-  // an in-video search box, and the cue currently playing.
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const cuesRef = useRef<HTMLDivElement>(null);
-  const [cues, setCues] = useState<Cue[]>([]);
-  const [cueQuery, setCueQuery] = useState("");
-  const [activeCue, setActiveCue] = useState(-1);
-
   useEffect(() => () => window.clearTimeout(burstTimer.current), []);
 
   function fireBurst(kind: "hop" | "thump") {
@@ -77,18 +70,6 @@ export function WatchPage() {
     window.clearTimeout(burstTimer.current);
     burstTimer.current = window.setTimeout(() => setBurst(null), 1100);
   }
-
-  useEffect(() => {
-    if (!id) return;
-    setNotFound(false);
-    getVideo(id)
-      .then((v) => {
-        setVideo(v);
-        incrementView(id).catch(() => {});
-        recordTrail(id);
-      })
-      .catch(() => setNotFound(true));
-  }, [id]);
 
   // Deep-link from search → jump the player to ?t= once it has metadata.
   useEffect(() => {
@@ -111,39 +92,6 @@ export function WatchPage() {
     [videos, id],
   );
 
-  // Pull the caption cues once the video record says it has a transcript.
-  useEffect(() => {
-    setCues([]);
-    setCueQuery("");
-    setActiveCue(-1);
-    if (video?.has_transcript && video.transcript_url) {
-      fetchCues(video.transcript_url).then(setCues);
-    }
-  }, [video?.video_id, video?.has_transcript, video?.transcript_url]);
-
-  // Follow playback: highlight the cue currently being spoken.
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v || cues.length === 0) return;
-    const onTime = () => setActiveCue(activeCueIndex(cues, v.currentTime));
-    v.addEventListener("timeupdate", onTime);
-    return () => v.removeEventListener("timeupdate", onTime);
-  }, [cues]);
-
-  // Keep the active line in view (but don't fight the user while they search).
-  useEffect(() => {
-    if (cueQuery || activeCue < 0 || !cuesRef.current) return;
-    const el = cuesRef.current.querySelector(".cue.active") as HTMLElement | null;
-    el?.scrollIntoView({ block: "nearest" });
-  }, [activeCue, cueQuery]);
-
-  const shownCues = useMemo(() => {
-    const q = cueQuery.trim().toLowerCase();
-    return cues
-      .map((c, i) => ({ ...c, i }))
-      .filter((c) => !q || c.text.toLowerCase().includes(q));
-  }, [cues, cueQuery]);
-
   function seekTo(t: number) {
     const v = videoRef.current;
     if (!v) return;
@@ -151,34 +99,12 @@ export function WatchPage() {
     v.play().catch(() => {});
   }
 
-  if (notFound) {
-    return (
-      <main className="page">
-        <div className="empty">
-          <h3>Lost down the hole</h3>
-          <p className="muted">That video isn't here.</p>
-          <Link to="/" className="btn-primary">
-            Back to the surface
-          </Link>
-        </div>
-      </main>
-    );
-  }
-  if (!video) {
-    return <SkeletonWatch />;
-  }
-
-  const vid = video.video_id;
-  const canManage = isAdmin || (!!username && video.owner === username);
-  const faved = favorites.has(vid);
-  const isHopped = hopped.has(vid);
-  const isThumped = thumped.has(vid);
-
   function onReact(kind: "hop" | "thump") {
+    if (!video) return;
+    const vid = video.video_id;
     const wasHop = hopped.has(vid);
     const wasThump = thumped.has(vid);
-    const next =
-      kind === "hop" ? (wasHop ? null : "hop") : wasThump ? null : "thump";
+    const next = kind === "hop" ? (wasHop ? null : "hop") : wasThump ? null : "thump";
     react(vid, kind);
     if (next === kind) fireBurst(kind);
     const dHop = (next === "hop" ? 1 : 0) - (wasHop ? 1 : 0);
@@ -195,7 +121,8 @@ export function WatchPage() {
   }
 
   function fallDeeper() {
-    const n = nextDive(vid);
+    if (!video) return;
+    const n = nextDive(video.video_id);
     if (n) navigate(`/watch/${n}`);
     else stopDive();
   }
@@ -240,6 +167,29 @@ export function WatchPage() {
     navigate("/");
   }
 
+  if (notFound) {
+    return (
+      <main className="page">
+        <div className="empty">
+          <h3>Lost down the hole</h3>
+          <p className="muted">That video isn't here.</p>
+          <Link to="/" className="btn-primary">
+            Back to the surface
+          </Link>
+        </div>
+      </main>
+    );
+  }
+  if (!video) {
+    return <SkeletonWatch />;
+  }
+
+  const vid = video.video_id;
+  const canManage = isAdmin || (!!username && video.owner === username);
+  const faved = favorites.has(vid);
+  const isHopped = hopped.has(vid);
+  const isThumped = thumped.has(vid);
+
   return (
     <main className="page watch">
       {diveActive && (
@@ -279,53 +229,18 @@ export function WatchPage() {
 
           <div className="watch-meta">
             {editing ? (
-              <div className="edit-form">
-                <input
-                  className="search wide"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Title"
-                />
-                <textarea
-                  className="search wide ta"
-                  value={desc}
-                  onChange={(e) => setDesc(e.target.value)}
-                  placeholder="Description"
-                  rows={4}
-                />
-                <TagEditor tags={editTags} setTags={setEditTags} />
-                <div className="vis-row">
-                  <div className="vis-toggle">
-                    <button
-                      type="button"
-                      className={editVis === "public" ? "vis-opt active" : "vis-opt"}
-                      onClick={() => setEditVis("public")}
-                    >
-                      Public
-                    </button>
-                    <button
-                      type="button"
-                      className={editVis === "unlisted" ? "vis-opt active" : "vis-opt"}
-                      onClick={() => setEditVis("unlisted")}
-                    >
-                      Unlisted
-                    </button>
-                  </div>
-                  <span className="vis-hint">
-                    {editVis === "public"
-                      ? "Shows up in the feed and search."
-                      : "Hidden from the feed — only people with the link can watch."}
-                  </span>
-                </div>
-                <div className="row-gap">
-                  <button className="btn-primary" onClick={save}>
-                    Save
-                  </button>
-                  <button className="btn-ghost" onClick={() => setEditing(false)}>
-                    Cancel
-                  </button>
-                </div>
-              </div>
+              <EditForm
+                title={title}
+                setTitle={setTitle}
+                desc={desc}
+                setDesc={setDesc}
+                editTags={editTags}
+                setEditTags={setEditTags}
+                editVis={editVis}
+                setEditVis={setEditVis}
+                onSave={save}
+                onCancel={() => setEditing(false)}
+              />
             ) : (
               <>
                 <h1 className="watch-title">
@@ -476,7 +391,7 @@ export function WatchPage() {
               ) : (
                 <div className="transcript-cues" ref={cuesRef}>
                   {shownCues.length === 0 ? (
-                    <p className="muted transcript-note">No lines match “{cueQuery}”.</p>
+                    <p className="muted transcript-note">No lines match "{cueQuery}".</p>
                   ) : (
                     shownCues.map((c) => (
                       <button

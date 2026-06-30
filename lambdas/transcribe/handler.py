@@ -15,9 +15,15 @@ from the job's input media URI, so a deleted record can never be resurrected.
 
 import json
 import os
+import sys
+from pathlib import Path
 
 import boto3
 from botocore.exceptions import ClientError
+
+# shared/ lives two levels up from this file (rabbithole/shared)
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+from shared.captions import build_cues, to_vtt  # noqa: E402
 
 STREAMING_BUCKET = os.environ["STREAMING_BUCKET"]
 VIDEOS_TABLE = os.environ["VIDEOS_TABLE"]
@@ -25,13 +31,6 @@ VIDEOS_TABLE = os.environ["VIDEOS_TABLE"]
 s3 = boto3.client("s3")
 transcribe = boto3.client("transcribe")
 _videos = boto3.resource("dynamodb").Table(VIDEOS_TABLE)
-
-# Cue shaping: start a fresh line on a sentence end, a noticeable pause, or once
-# a line gets long enough to read comfortably on screen.
-MAX_CHARS = 42
-MAX_WORDS = 12
-PAUSE_GAP = 0.8  # seconds of silence that forces a new cue
-SENTENCE_END = {".", "!", "?"}
 
 
 def handler(event, _context):
@@ -54,7 +53,7 @@ def handler(event, _context):
         return {"ok": True, "status": status}
 
     raw = _read_json(f"{video_id}/transcribe-raw.json")
-    cues = _build_cues(raw) if raw else []
+    cues = build_cues(raw) if raw else []
 
     if not cues:
         print(f"{video_id}: no speech detected")
@@ -63,7 +62,7 @@ def handler(event, _context):
         return {"ok": True, "cues": 0}
 
     _put(f"{video_id}/cues.json", json.dumps(cues), "application/json")
-    _put(f"{video_id}/captions.vtt", _to_vtt(cues), "text/vtt")
+    _put(f"{video_id}/captions.vtt", to_vtt(cues), "text/vtt")
     _mark(
         video_id,
         has_transcript=True,
@@ -97,82 +96,6 @@ def _read_json(key: str) -> dict | None:
     except ClientError as exc:
         print(f"could not read {key}: {exc}")
         return None
-
-
-def _build_cues(raw: dict) -> list[dict]:
-    items = raw.get("results", {}).get("items", [])
-    cues: list[dict] = []
-    words: list[str] = []
-    start: float | None = None
-    end: float | None = None
-    last_end: float | None = None
-
-    def flush():
-        nonlocal words, start, end
-        if words and start is not None:
-            cues.append({
-                "start": round(start, 2),
-                "end": round(end if end is not None else start, 2),
-                "text": " ".join(words).strip(),
-            })
-        words = []
-        start = end = None
-
-    for it in items:
-        kind = it.get("type")
-        content = (it.get("alternatives") or [{}])[0].get("content", "")
-        if not content:
-            continue
-
-        if kind == "punctuation":
-            if words:
-                words[-1] = words[-1] + content
-            if content in SENTENCE_END:
-                flush()
-            continue
-
-        s = _f(it.get("start_time"))
-        e = _f(it.get("end_time"))
-        # Force a break on a long silence before this word.
-        if last_end is not None and s is not None and s - last_end > PAUSE_GAP:
-            flush()
-
-        if start is None:
-            start = s
-        words.append(content)
-        end = e if e is not None else end
-        last_end = e if e is not None else last_end
-
-        line = " ".join(words)
-        if len(words) >= MAX_WORDS or len(line) >= MAX_CHARS:
-            flush()
-
-    flush()
-    return cues
-
-
-def _f(v) -> float | None:
-    try:
-        return float(v)
-    except (TypeError, ValueError):
-        return None
-
-
-def _ts(seconds: float) -> str:
-    ms = int(round(seconds * 1000))
-    h, ms = divmod(ms, 3_600_000)
-    m, ms = divmod(ms, 60_000)
-    s, ms = divmod(ms, 1000)
-    return f"{h:02d}:{m:02d}:{s:02d}.{ms:03d}"
-
-
-def _to_vtt(cues: list[dict]) -> str:
-    lines = ["WEBVTT", ""]
-    for c in cues:
-        lines.append(f"{_ts(c['start'])} --> {_ts(c['end'])}")
-        lines.append(c["text"])
-        lines.append("")
-    return "\n".join(lines)
 
 
 def _put(key: str, body: str, content_type: str) -> None:

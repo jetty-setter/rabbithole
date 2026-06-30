@@ -6,10 +6,15 @@ Runs locally as a normal FastAPI app (uvicorn) and on AWS Lambda via Mangum.
 from __future__ import annotations
 
 import functools
-import json
 import re
+import sys
 import uuid
 from datetime import datetime, timezone
+from pathlib import Path
+
+# shared/ lives at the repo root — two levels up from api/app/
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+from shared.ai_utils import AI_SYSTEM_PROMPT, parse_ai_metadata  # noqa: E402
 
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
@@ -63,30 +68,6 @@ def _safe_filename(name: str) -> str:
     return cleaned or "video.mp4"
 
 
-# Shared with the worker's auto-titler .
-_AI_SYSTEM = (
-    "You title videos for RabbitHole, a fun, irreverent, internet-native video "
-    "site. You're given a few frames sampled in chronological order across one "
-    "short clip. Read them as a SEQUENCE and find the hook — the funniest, most "
-    "surprising, or most satisfying beat. Return JSON with: "
-    "(1) \"title\": a SHORT, punchy, scroll-stopping title — aim for 4-8 words, "
-    "max 60 chars, no quotes, no end punctuation. Write it like a clip built to "
-    "go viral: bold, playful, a little cheeky, with vivid active verbs and "
-    "attitude; lead with the hook or a funny angle. Examples of the VIBE (never "
-    "reuse): 'Zoomies Activated: Dog vs The Entire Agility Course', 'This Dog Has "
-    "Zero Chill at the Beach', 'He Fully Committed to the Bit'. Avoid flat "
-    "captions ('Dog in water') and lazy hype ('Amazing video'). "
-    "(2) \"description\": a lively 1-2 sentence description of what actually "
-    "happens. (3) \"tags\": 3-5 short lowercase tags. "
-    "Be bold in VOICE but strictly accurate about what's on screen: never invent "
-    "subjects or events that aren't clearly visible — do not add extra people or "
-    "animals, do not state a specific breed, name, or place unless obvious, and "
-    "count subjects conservatively (if you can't tell how many, say 'a dog', not "
-    "'two dogs'). The comedy comes from framing and word choice, not made-up "
-    'facts. Respond with ONLY a JSON object: {"title": str, "description": str, '
-    '"tags": [str]}'
-)
-
 
 @functools.lru_cache(maxsize=1)
 def _anthropic_key() -> str:
@@ -123,7 +104,7 @@ def ai_suggest(body: SuggestRequest, user: str = Depends(require_auth)) -> dict:
         resp = client.messages.create(
             model=config.AI_MODEL,
             max_tokens=400,
-            system=_AI_SYSTEM,
+            system=AI_SYSTEM_PROMPT,
             messages=[
                 {
                     "role": "user",
@@ -139,19 +120,11 @@ def ai_suggest(body: SuggestRequest, user: str = Depends(require_auth)) -> dict:
             ],
         )
         text = "".join(b.text for b in resp.content if b.type == "text").strip()
-        if "{" in text:
-            text = text[text.find("{") : text.rfind("}") + 1]
-        data = json.loads(text)
+        meta = parse_ai_metadata(text)
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=502, detail="AI suggestion failed") from exc
 
-    return {
-        "title": (data.get("title") or "").strip().strip('"')[:120],
-        "description": (data.get("description") or "").strip()[:1000],
-        "tags": [
-            str(t).strip().lower()[:30] for t in (data.get("tags") or []) if str(t).strip()
-        ][:5],
-    }
+    return meta or {}
 
 
 @app.get("/health")
