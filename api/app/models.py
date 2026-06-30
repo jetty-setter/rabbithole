@@ -65,7 +65,7 @@ class Video(BaseModel):
     created_at: str
     playback_url: str | None = None
     thumbnail_url: str | None = None
-    duration_seconds: str | None = None
+    duration_seconds: float | None = None
     cost_usd: str | None = None
     owner: str | None = None
     title: str | None = None

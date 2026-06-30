@@ -20,7 +20,20 @@ import time
 from pathlib import Path
 
 import boto3
-from botocore.exceptions import ClientError
+
+from .metrics import emit_metrics, estimate_cost
+from .status import set_status, video_id_from_key
+from .storage import upload_tree
+from .transcoder import _ffmpeg, sample_frames, transcode_hls
+
+# Try to import from shared package; fall back to a relative path for Docker
+# environments where the repo root may not be on sys.path.
+try:
+    from shared.ai_utils import AI_SYSTEM_PROMPT, parse_ai_metadata
+except ImportError:
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    from shared.ai_utils import AI_SYSTEM_PROMPT, parse_ai_metadata  # noqa: F401
 
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 QUEUE_URL = os.getenv("JOB_QUEUE_URL", "")
@@ -38,125 +51,11 @@ AI_MODEL = os.getenv("AI_MODEL", "claude-opus-4-8")
 # Lambda turns the result into caption cues. Absent the role -> feature dormant.
 TRANSCRIBE_ROLE_ARN = os.getenv("TRANSCRIBE_ROLE_ARN", "")
 
-# Kept in sync with the API's upload-time suggester (api/app/main.py).
-_AI_SYSTEM = (
-    "You title videos for RabbitHole, a fun, irreverent, internet-native video "
-    "site. You're given a few frames sampled in chronological order across one "
-    "short clip. Read them as a SEQUENCE and find the hook — the funniest, most "
-    "surprising, or most satisfying beat. Return JSON with: "
-    "(1) \"title\": a SHORT, punchy, scroll-stopping title — aim for 4-8 words, "
-    "max 60 chars, no quotes, no end punctuation. Write it like a clip built to "
-    "go viral: bold, playful, a little cheeky, with vivid active verbs and "
-    "attitude; lead with the hook or a funny angle. Examples of the VIBE (never "
-    "reuse): 'Zoomies Activated: Dog vs The Entire Agility Course', 'This Dog Has "
-    "Zero Chill at the Beach', 'He Fully Committed to the Bit'. Avoid flat "
-    "captions ('Dog in water') and lazy hype ('Amazing video'). "
-    "(2) \"description\": a lively 1-2 sentence description of what actually "
-    "happens. (3) \"tags\": 3-5 short lowercase tags. "
-    "Be bold in VOICE but strictly accurate about what's on screen: never invent "
-    "subjects or events that aren't clearly visible — do not add extra people or "
-    "animals, do not state a specific breed, name, or place unless obvious, and "
-    "count subjects conservatively (if you can't tell how many, say 'a dog', not "
-    "'two dogs'). The comedy comes from framing and word choice, not made-up "
-    'facts. Respond with ONLY a JSON object: {"title": str, "description": str, '
-    '"tags": [str]}'
-)
-
-# Fargate pricing inputs for the per-video cost estimate (us-east-1 defaults).
-FARGATE_CPU_UNITS = int(os.getenv("FARGATE_CPU_UNITS", "512"))
-FARGATE_MEMORY_MIB = int(os.getenv("FARGATE_MEMORY_MIB", "1024"))
-FARGATE_VCPU_HOUR = float(os.getenv("FARGATE_VCPU_HOUR", "0.04048"))
-FARGATE_GB_HOUR = float(os.getenv("FARGATE_GB_HOUR", "0.004445"))
-
-# HLS rendition ladder. (width/resolution are advertised in the master playlist
-# for the player's ABR logic; -2 height scaling preserves the real aspect ratio.)
-RENDITIONS = [
-    {"name": "480p", "height": 480, "width": 854, "bv": "1400k", "maxrate": "1498k", "bufsize": "2100k", "bandwidth": 1400000},
-    {"name": "720p", "height": 720, "width": 1280, "bv": "2800k", "maxrate": "2996k", "bufsize": "4200k", "bandwidth": 2800000},
-    {"name": "1080p", "height": 1080, "width": 1920, "bv": "5000k", "maxrate": "5350k", "bufsize": "7500k", "bandwidth": 5000000},
-]
-
 _session = boto3.session.Session(region_name=AWS_REGION)
 sqs = _session.client("sqs")
 s3 = _session.client("s3")
 transcribe = _session.client("transcribe")
-cloudwatch = _session.client("cloudwatch")
 _videos = _session.resource("dynamodb").Table(VIDEOS_TABLE)
-
-METRIC_NAMESPACE = "RabbitHole/Transcode"
-
-
-def _video_id_from_key(key: str) -> str | None:
-    # keys look like: uploads/{video_id}/{filename}
-    parts = key.split("/")
-    if len(parts) >= 3 and parts[0] == "uploads":
-        return parts[1]
-    return None
-
-
-def _set_status(video_id: str, status: str, extra: dict | None = None) -> None:
-    expr = "SET #s = :s"
-    names = {"#s": "status"}
-    values: dict = {":s": status}
-    for i, (field, value) in enumerate((extra or {}).items()):
-        expr += f", #k{i} = :v{i}"
-        names[f"#k{i}"] = field
-        values[f":v{i}"] = value
-    try:
-        _videos.update_item(
-            Key={"video_id": video_id},
-            UpdateExpression=expr,
-            ExpressionAttributeNames=names,
-            ExpressionAttributeValues=values,
-            # Never create a record — only update an existing one. Prevents the
-            # "phantom untitled video" bug when a job runs for a deleted video.
-            ConditionExpression="attribute_exists(video_id)",
-        )
-    except ClientError as exc:
-        if exc.response["Error"]["Code"] == "ConditionalCheckFailedException":
-            print(f"record {video_id} no longer exists; skipping status update")
-            return
-        raise
-
-
-def _estimate_cost(seconds: float) -> float:
-    """Estimated Fargate compute cost for `seconds` of processing."""
-    vcpu = FARGATE_CPU_UNITS / 1024
-    gb = FARGATE_MEMORY_MIB / 1024
-    return seconds / 3600 * (vcpu * FARGATE_VCPU_HOUR + gb * FARGATE_GB_HOUR)
-
-
-def _duration_seconds(src: Path) -> float:
-    """Probe the source duration (seconds). 0.0 if it can't be read."""
-    try:
-        out = subprocess.run(
-            ["ffprobe", "-v", "error", "-show_entries", "format=duration",
-             "-of", "default=noprint_wrappers=1:nokey=1", str(src)],
-            capture_output=True, text=True, check=True,
-        )
-        return float(out.stdout.strip())
-    except Exception:  # noqa: BLE001
-        return 0.0
-
-
-def _sample_frames(src: Path, outdir: Path, n: int = 4) -> list[Path]:
-    """Grab N frames spread across the clip so the AI sees the action and the
-    payoff — not just a static opening frame. Falls back to one early frame."""
-    outdir.mkdir(parents=True, exist_ok=True)
-    dur = _duration_seconds(src)
-    fracs = [0.1, 0.37, 0.63, 0.9][:n] if dur > 0 else [0.0]
-    frames: list[Path] = []
-    for i, fr in enumerate(fracs):
-        f = outdir / f"f{i}.jpg"
-        ts = f"{dur * fr:.2f}" if dur > 0 else "00:00:01"
-        try:
-            _ffmpeg(["-ss", ts, "-i", str(src), "-vframes", "1",
-                     "-vf", "scale=512:-2", str(f)])
-            if f.exists():
-                frames.append(f)
-        except subprocess.CalledProcessError:
-            pass
-    return frames
 
 
 def _ai_metadata(frames: list[Path], filename: str) -> dict | None:
@@ -186,7 +85,7 @@ def _ai_metadata(frames: list[Path], filename: str) -> dict | None:
         resp = client.messages.create(
             model=AI_MODEL,
             max_tokens=400,
-            system=_AI_SYSTEM,
+            system=AI_SYSTEM_PROMPT,
             messages=[
                 {
                     "role": "user",
@@ -203,92 +102,10 @@ def _ai_metadata(frames: list[Path], filename: str) -> dict | None:
             ],
         )
         text = "".join(b.text for b in resp.content if b.type == "text").strip()
-        if "{" in text:  # tolerate stray prose / code fences around the JSON
-            text = text[text.find("{") : text.rfind("}") + 1]
-        data = json.loads(text)
-        title = (data.get("title") or "").strip().strip('"')[:120]
-        description = (data.get("description") or "").strip()[:1000]
-        tags = [str(t).strip().lower()[:30] for t in (data.get("tags") or []) if str(t).strip()][:5]
-        out: dict = {}
-        if title:
-            out["title"] = title
-        if description:
-            out["description"] = description
-        if tags:
-            out["tags"] = tags
-        return out or None
+        return parse_ai_metadata(text)
     except Exception as exc:  # noqa: BLE001
         print(f"ai metadata skipped for {filename}: {exc}")
         return None
-
-
-def _ffmpeg(args: list[str]) -> None:
-    subprocess.run(["ffmpeg", "-y", *args], check=True, capture_output=True)
-
-
-def transcode_hls(src: Path, outdir: Path) -> None:
-    """Build an HLS ladder: one playlist + segments per rendition, plus a master."""
-    for r in RENDITIONS:
-        rendition_dir = outdir / r["name"]
-        rendition_dir.mkdir(parents=True, exist_ok=True)
-        _ffmpeg([
-            "-i", str(src),
-            "-vf", f"scale=-2:{r['height']}",
-            "-c:v", "libx264", "-preset", "veryfast",
-            "-b:v", r["bv"], "-maxrate", r["maxrate"], "-bufsize", r["bufsize"],
-            "-c:a", "aac", "-b:a", "128k", "-ac", "2",
-            # closed GOP every 2s (48 frames @ 24fps) so renditions are segment-aligned
-            "-g", "48", "-keyint_min", "48", "-sc_threshold", "0",
-            "-hls_time", "4", "-hls_playlist_type", "vod",
-            "-hls_segment_filename", str(rendition_dir / "seg_%03d.ts"),
-            str(rendition_dir / "index.m3u8"),
-        ])
-    _write_master(outdir)
-
-
-def _write_master(outdir: Path) -> None:
-    lines = ["#EXTM3U", "#EXT-X-VERSION:3"]
-    for r in RENDITIONS:
-        lines.append(
-            f"#EXT-X-STREAM-INF:BANDWIDTH={r['bandwidth']},"
-            f"RESOLUTION={r['width']}x{r['height']}"
-        )
-        lines.append(f"{r['name']}/index.m3u8")
-    (outdir / "master.m3u8").write_text("\n".join(lines) + "\n")
-
-
-def _content_type(path: Path) -> str:
-    return {
-        ".m3u8": "application/vnd.apple.mpegurl",
-        ".ts": "video/mp2t",
-        ".jpg": "image/jpeg",
-    }.get(path.suffix, "application/octet-stream")
-
-
-def _upload_tree(local_dir: Path, bucket: str, prefix: str) -> None:
-    for path in local_dir.rglob("*"):
-        if path.is_file():
-            rel = path.relative_to(local_dir).as_posix()
-            s3.upload_file(
-                str(path), bucket, f"{prefix}/{rel}",
-                ExtraArgs={"ContentType": _content_type(path)},
-            )
-
-
-def _emit_metrics(seconds: float, cost: float) -> None:
-    """Publish transcode throughput + cost so the CloudWatch dashboard can show
-    jobs/hour and $/day. Best-effort — telemetry never fails a job."""
-    try:
-        cloudwatch.put_metric_data(
-            Namespace=METRIC_NAMESPACE,
-            MetricData=[
-                {"MetricName": "TranscodeCount", "Value": 1, "Unit": "Count"},
-                {"MetricName": "TranscodeSeconds", "Value": seconds, "Unit": "Seconds"},
-                {"MetricName": "TranscodeCostUSD", "Value": cost, "Unit": "None"},
-            ],
-        )
-    except Exception as exc:  # noqa: BLE001
-        print(f"metric emit skipped: {exc}")
 
 
 def _start_transcription(video_id: str, src: Path, workdir: Path) -> bool:
@@ -333,20 +150,29 @@ def _start_transcription(video_id: str, src: Path, workdir: Path) -> bool:
         return False
 
 
-def process_record(bucket: str, key: str) -> None:
-    video_id = _video_id_from_key(key)
+def _resolve_video(key: str) -> tuple[str, dict] | None:
+    """Parse video_id from the S3 key and look up the DynamoDB record.
+
+    Returns (video_id, item) or None if the record is missing/deleted."""
+    video_id = video_id_from_key(key)
     if not video_id:
         print(f"skip: unrecognized key {key}")
-        return
-
-    # Skip jobs whose video record no longer exists (deleted before processing).
+        return None
     item = _videos.get_item(Key={"video_id": video_id}).get("Item")
     if not item:
         print(f"skip: no record for {video_id} (deleted)")
+        return None
+    return video_id, item
+
+
+def process_record(bucket: str, key: str) -> None:
+    resolved = _resolve_video(key)
+    if not resolved:
         return
+    video_id, item = resolved
 
     print(f"processing video_id={video_id} key={key}")
-    _set_status(video_id, "processing")
+    set_status(video_id, "processing")
     started = time.monotonic()
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -365,10 +191,10 @@ def process_record(bucket: str, key: str) -> None:
         except subprocess.CalledProcessError as exc:
             tail = exc.stderr.decode(errors="ignore")[-500:] if exc.stderr else ""
             print(f"ffmpeg failed for {video_id}: {tail}")
-            _set_status(video_id, "failed")
+            set_status(video_id, "failed")
             raise
 
-        _upload_tree(hls_dir, STREAMING_BUCKET, f"{video_id}/hls")
+        upload_tree(hls_dir, STREAMING_BUCKET, f"{video_id}/hls", s3_client=s3)
         s3.upload_file(
             str(thumb), STREAMING_BUCKET, f"{video_id}/thumb.jpg",
             ExtraArgs={"ContentType": "image/jpeg"},
@@ -384,7 +210,7 @@ def process_record(bucket: str, key: str) -> None:
         # Auto-name untitled uploads from the freshly-extracted frame.
         ai_extra: dict = {}
         if not (item.get("title") or "").strip():
-            frames = _sample_frames(src, workdir / "frames")
+            frames = sample_frames(src, workdir / "frames")
             meta = _ai_metadata(frames, Path(key).name)
             if meta:
                 if meta.get("title"):
@@ -400,15 +226,15 @@ def process_record(bucket: str, key: str) -> None:
     extra = {
         "hls_key": f"{video_id}/hls/master.m3u8",
         "thumb_key": f"{video_id}/thumb.jpg",
-        "duration_seconds": str(round(elapsed, 1)),
-        "cost_usd": f"{_estimate_cost(elapsed):.4f}",
+        "duration_seconds": round(elapsed, 2),
+        "cost_usd": f"{estimate_cost(elapsed):.4f}",
         # True until the post-processor Lambda writes cues (or gives up).
         "transcribing": transcribing,
     }
     extra.update(ai_extra)
-    _set_status(video_id, "ready", extra)
-    _emit_metrics(elapsed, _estimate_cost(elapsed))
-    print(f"ready video_id={video_id} ({elapsed:.1f}s, ~${_estimate_cost(elapsed):.4f})")
+    set_status(video_id, "ready", extra)
+    emit_metrics(elapsed, estimate_cost(elapsed))
+    print(f"ready video_id={video_id} ({elapsed:.1f}s, ~${estimate_cost(elapsed):.4f})")
 
 
 def handle_message(body: str) -> None:

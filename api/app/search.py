@@ -14,10 +14,17 @@ import base64
 import functools
 import json
 import struct
+import sys
+from pathlib import Path
 
+import numpy as np
 from boto3.dynamodb.conditions import Attr, Key
 
 from . import aws, config
+
+# shared/ lives at the repo root — two levels up from api/app/
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+from shared.captions import chunk_cues  # noqa: E402, F401 (re-exported)
 
 
 # ── Embedding model (lazy: never loaded by tests or non-search calls) ──
@@ -43,32 +50,9 @@ def unpack_vector(blob: str) -> list[float]:
 
 
 def cosine(a: list[float], b: list[float]) -> float:
-    dot = sum(x * y for x, y in zip(a, b))
-    na = sum(x * x for x in a) ** 0.5
-    nb = sum(y * y for y in b) ** 0.5
-    return dot / (na * nb) if na and nb else 0.0
-
-
-# ── Chunking: group caption cues into searchable passages ──────────────
-def chunk_cues(cues: list[dict], max_chars: int = 350) -> list[dict]:
-    """Group consecutive cues into ~few-sentence passages, each tagged with the
-    start time of its first cue so a hit can jump straight to the moment."""
-    passages: list[dict] = []
-    buf: list[str] = []
-    start: float | None = None
-    for c in cues:
-        text = (c.get("text") or "").strip()
-        if not text:
-            continue
-        if start is None:
-            start = float(c.get("start") or 0.0)
-        buf.append(text)
-        if sum(len(t) for t in buf) >= max_chars:
-            passages.append({"start": start, "text": " ".join(buf)})
-            buf, start = [], None
-    if buf:
-        passages.append({"start": start or 0.0, "text": " ".join(buf)})
-    return passages
+    av, bv = np.array(a), np.array(b)
+    denom = np.linalg.norm(av) * np.linalg.norm(bv)
+    return float(np.dot(av, bv) / denom) if denom else 0.0
 
 
 # ── Indexing ───────────────────────────────────────────────────────────
@@ -110,18 +94,24 @@ def index_video(video_id: str) -> int:
 
 def _ensure_indexed() -> None:
     """Index any ready video that has a transcript but no chunks yet."""
-    resp = aws.videos_table().scan(
+    # Get all videos with transcripts
+    video_resp = aws.videos_table().scan(
         FilterExpression=Attr("has_transcript").eq(True),
         ProjectionExpression="video_id",
     )
-    for item in resp.get("Items", []):
-        vid = item.get("video_id")
-        if vid and not _is_indexed(vid):
-            try:
-                n = index_video(vid)
-                print(f"indexed {vid}: {n} chunks")
-            except Exception as exc:  # noqa: BLE001
-                print(f"index failed for {vid}: {exc}")
+    video_ids = {i["video_id"] for i in video_resp.get("Items", []) if i.get("video_id")}
+
+    # Get all already-indexed video_ids in one scan (avoids N+1 DynamoDB queries)
+    chunk_resp = aws.embeddings_table().scan(ProjectionExpression="video_id")
+    indexed_ids = {i["video_id"] for i in chunk_resp.get("Items", []) if i.get("video_id")}
+
+    # Only index the difference
+    for vid in video_ids - indexed_ids:
+        try:
+            n = index_video(vid)
+            print(f"indexed {vid}: {n} chunks")
+        except Exception as exc:  # noqa: BLE001
+            print(f"index failed for {vid}: {exc}")
 
 
 def reindex_all() -> int:
