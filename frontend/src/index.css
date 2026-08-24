@@ -3176,6 +3176,27 @@ body::after {
   display: contents;
 }
 
+.trail-banner {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  max-width: 860px;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-2);
+}
+.trail-banner-label {
+  font-family: var(--display);
+  font-size: 18px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--green);
+}
+.trail-banner-stats {
+  font-size: 13px;
+  color: var(--muted);
+}
+
 .search-results {
   display: flex;
   flex-direction: column;
