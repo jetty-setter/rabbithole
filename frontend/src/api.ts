@@ -300,6 +300,29 @@ export async function getVideo(id: string): Promise<Video> {
   return res.json();
 }
 
+export interface Topic {
+  tag: string;
+  count: number;
+}
+
+export interface Creator {
+  username: string;
+  joined?: string | null;
+  video_count: number;
+  total_views: number;
+  total_hops: number;
+  topics: Topic[];
+  videos: Video[];
+}
+
+/** A creator's public profile — their videos, aggregate stats, and topics
+ * derived from the tags across their own videos. Returns null on 404. */
+export async function getCreator(username: string): Promise<Creator | null> {
+  const res = await fetch(`${API_URL}/creators/${encodeURIComponent(username)}`);
+  if (!res.ok) return null;
+  return res.json();
+}
+
 export async function updateVideo(
   id: string,
   body: { title?: string; description?: string; tags?: string[]; visibility?: string },

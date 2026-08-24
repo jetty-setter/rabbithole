@@ -44,7 +44,7 @@ def parse_ai_metadata(text: str) -> dict | None:
         out["tags"] = tags
     return out or None
 
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 from fastapi import Depends, FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -70,6 +70,7 @@ from .models import (
     AskRequest,
     Comment,
     CommentCreate,
+    Creator,
     Credentials,
     ReactionRequest,
     SuggestRequest,
@@ -442,6 +443,40 @@ def get_video(video_id: str) -> Video:
     if not item:
         raise HTTPException(status_code=404, detail="video not found")
     return _to_video(item)
+
+
+@app.get("/creators/{username}", response_model=Creator)
+def get_creator(username: str) -> Creator:
+    """A creator's public profile: their videos, aggregate stats, and an
+    "expertise" topic list built by counting tags across their own videos --
+    no separate topic model needed, since tags are already curated (by the
+    creator or by AI suggestion) per video."""
+    from collections import Counter
+
+    username = username.strip().lower()
+    resp = aws.videos_table().scan(FilterExpression=Attr("owner").eq(username))
+    videos = [
+        _to_video(item)
+        for item in resp.get("Items", [])
+        if _norm_visibility(item.get("visibility")) == "public"
+    ]
+    user_item = aws.users_table().get_item(Key={"username": username}).get("Item")
+    if not videos and not user_item:
+        raise HTTPException(status_code=404, detail="creator not found")
+
+    videos.sort(key=lambda v: v.created_at, reverse=True)
+    tag_counts = Counter(t for v in videos for t in v.tags)
+    topics = [{"tag": tag, "count": n} for tag, n in tag_counts.most_common(8)]
+
+    return Creator(
+        username=username,
+        joined=(user_item or {}).get("created_at"),
+        video_count=len(videos),
+        total_views=sum(v.views for v in videos),
+        total_hops=sum(v.hops for v in videos),
+        topics=topics,
+        videos=videos,
+    )
 
 
 @app.get("/search")

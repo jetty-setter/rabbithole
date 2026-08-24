@@ -84,3 +84,18 @@ class Video(BaseModel):
     transcript_url: str | None = None
     captions_url: str | None = None
     visibility: str = "public"
+
+
+class Topic(BaseModel):
+    tag: str
+    count: int
+
+
+class Creator(BaseModel):
+    username: str
+    joined: str | None = None
+    video_count: int
+    total_views: int
+    total_hops: int
+    topics: list[Topic]
+    videos: list[Video]

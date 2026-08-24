@@ -116,3 +116,51 @@ def test_invalid_visibility_normalizes_to_public(client, videos_table):
     seed_video(videos_table, video_id="v", visibility="public", owner="alice")
     r = client.patch("/videos/v", json={"visibility": "haxor"}, headers=auth("alice"))
     assert r.json()["visibility"] == "public"
+
+
+# ── /creators/{username} ──────────────────────────────────────────────
+def test_creator_profile_aggregates_stats_and_topics(client, videos_table):
+    seed_video(
+        videos_table,
+        video_id="v1",
+        owner="alice",
+        views=10,
+        hops=3,
+        tags=["dogs", "beach"],
+        created_at="2026-01-01T00:00:00+00:00",
+    )
+    seed_video(
+        videos_table,
+        video_id="v2",
+        owner="alice",
+        views=5,
+        hops=2,
+        tags=["dogs"],
+        created_at="2026-01-02T00:00:00+00:00",
+    )
+    r = client.get("/creators/alice")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["video_count"] == 2
+    assert body["total_views"] == 15
+    assert body["total_hops"] == 5
+    assert body["topics"][0] == {"tag": "dogs", "count": 2}
+    # Most-recent video first.
+    assert [v["video_id"] for v in body["videos"]] == ["v2", "v1"]
+
+
+def test_creator_profile_excludes_unlisted_and_other_owners(client, videos_table):
+    seed_video(videos_table, video_id="pub", owner="alice", visibility="public")
+    seed_video(videos_table, video_id="unl", owner="alice", visibility="unlisted")
+    seed_video(videos_table, video_id="bobs", owner="bob", visibility="public")
+    body = client.get("/creators/alice").json()
+    assert [v["video_id"] for v in body["videos"]] == ["pub"]
+
+
+def test_creator_profile_not_found(client):
+    assert client.get("/creators/nobody").status_code == 404
+
+
+def test_creator_profile_uses_username_case_insensitively(client, videos_table):
+    seed_video(videos_table, video_id="v1", owner="alice", visibility="public")
+    assert client.get("/creators/ALICE").json()["username"] == "alice"

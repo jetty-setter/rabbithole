@@ -1794,6 +1794,16 @@ body {
   color: var(--muted);
 }
 
+.vchannel-link {
+  display: inline-block;
+  width: fit-content;
+  text-decoration: none;
+}
+.vchannel-link:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
 .vcard-actions {
   display: flex;
   gap: 6px;
@@ -2218,8 +2228,14 @@ body {
 }
 
 .watch-channel {
+  display: inline-block;
   font-weight: 600;
   font-size: 14px;
+  color: var(--text);
+  text-decoration: none;
+}
+.watch-channel:hover {
+  text-decoration: underline;
 }
 
 .watch-stats {
@@ -3226,6 +3242,66 @@ body::after {
   background: rgba(155, 232, 11, 0.12);
   padding: 1px 8px;
   border-radius: 999px;
+}
+
+/* ── Creator profile ────────────────────────────────────────── */
+.creator-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.avatar.lg {
+  width: 64px;
+  height: 64px;
+}
+
+.creator-id h1 {
+  font-family: var(--display);
+  font-size: clamp(26px, 4vw, 38px);
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.creator-id p {
+  margin: 4px 0 0;
+  font-size: 13.5px;
+}
+
+.creator-stats {
+  display: flex;
+  gap: 28px;
+  margin-bottom: 26px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--border);
+}
+
+.creator-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.creator-stat-n {
+  font-family: var(--display);
+  font-size: 22px;
+  letter-spacing: 0.5px;
+}
+
+.creator-stat-label {
+  font-size: 12.5px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.creator-topics {
+  margin-bottom: 30px;
+}
+
+.creator-videos-head {
+  margin-bottom: 16px;
 }
 
 /* ── Trail header (title + clear button) ───────────────────── */
