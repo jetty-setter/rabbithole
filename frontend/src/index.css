@@ -2025,6 +2025,21 @@ body {
   color: var(--muted);
 }
 
+.deeper-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin: -6px 0 12px;
+}
+.deeper-snippet {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .dur-badge {
   position: absolute;
   bottom: 8px;

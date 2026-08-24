@@ -6,7 +6,9 @@ import {
   displayTitle,
   formatDuration,
   relativeTime,
+  searchMoments,
   updateVideo,
+  type SearchMoment,
 } from "./api";
 import { Player } from "./Player";
 import { SkeletonWatch } from "./Skeleton";
@@ -91,6 +93,24 @@ export function WatchPage() {
         .slice(0, 12),
     [videos, id],
   );
+
+  // "Go deeper" — semantically related moments in OTHER videos, seeded by
+  // this video's own title. Reuses the same cross-video search endpoint the
+  // Search page uses; no separate topic/relation model needed.
+  const [deeperMoments, setDeeperMoments] = useState<SearchMoment[] | null>(null);
+  useEffect(() => {
+    setDeeperMoments(null);
+    if (!video || !video.has_transcript) return;
+    const seed = displayTitle(video);
+    let live = true;
+    searchMoments(seed).then((results) => {
+      if (!live) return;
+      setDeeperMoments(results.filter((r) => r.video.video_id !== video.video_id));
+    });
+    return () => {
+      live = false;
+    };
+  }, [video?.video_id, video?.has_transcript]);
 
   function seekTo(t: number) {
     const v = videoRef.current;
@@ -413,24 +433,53 @@ export function WatchPage() {
         </div>
 
         <aside className="watch-related">
-          <h3 className="related-head">Deeper</h3>
-          {related.map((r) => (
-            <Link to={`/watch/${r.video_id}`} className="related-item" key={r.video_id}>
-              <div className="related-thumb">
-                {r.thumbnail_url ? <img src={r.thumbnail_url} alt="" /> : <span>🐇</span>}
-                {r.duration_seconds && (
-                  <span className="dur-badge">{formatDuration(r.duration_seconds)}</span>
-                )}
-              </div>
-              <div className="related-info">
-                <span className="related-title">{displayTitle(r)}</span>
-                <span className="related-meta">{r.owner || "RabbitHole"}</span>
-                <span className="related-meta">
-                  {r.views ?? 0} views · {relativeTime(r.created_at)}
-                </span>
-              </div>
-            </Link>
-          ))}
+          {deeperMoments && deeperMoments.length > 0 ? (
+            <>
+              <h3 className="related-head">Go deeper</h3>
+              <p className="deeper-sub">Related moments, elsewhere in the library.</p>
+              {deeperMoments.map((r) => (
+                <Link
+                  to={`/watch/${r.video.video_id}?t=${Math.floor(r.start)}`}
+                  className="related-item deeper-moment"
+                  key={r.video.video_id}
+                >
+                  <div className="related-thumb">
+                    {r.video.thumbnail_url ? (
+                      <img src={r.video.thumbnail_url} alt="" />
+                    ) : (
+                      <span>🐇</span>
+                    )}
+                    <span className="dur-badge">{fmtTime(r.start)}</span>
+                  </div>
+                  <div className="related-info">
+                    <span className="related-title">{displayTitle(r.video)}</span>
+                    <span className="deeper-snippet">“…{r.snippet}…”</span>
+                  </div>
+                </Link>
+              ))}
+            </>
+          ) : (
+            <>
+              <h3 className="related-head">Deeper</h3>
+              {related.map((r) => (
+                <Link to={`/watch/${r.video_id}`} className="related-item" key={r.video_id}>
+                  <div className="related-thumb">
+                    {r.thumbnail_url ? <img src={r.thumbnail_url} alt="" /> : <span>🐇</span>}
+                    {r.duration_seconds && (
+                      <span className="dur-badge">{formatDuration(r.duration_seconds)}</span>
+                    )}
+                  </div>
+                  <div className="related-info">
+                    <span className="related-title">{displayTitle(r)}</span>
+                    <span className="related-meta">{r.owner || "RabbitHole"}</span>
+                    <span className="related-meta">
+                      {r.views ?? 0} views · {relativeTime(r.created_at)}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </>
+          )}
         </aside>
       </div>
     </main>
