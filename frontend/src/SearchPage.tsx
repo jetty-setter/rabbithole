@@ -36,7 +36,7 @@ export function SearchPage() {
         <p>
           {q
             ? `Moments matching “${q}” — semantic, across every transcript.`
-            : "Type a phrase up top and hit enter."}
+            : "Search what was actually said. RabbitHole reads every video's transcript and jumps you straight to the matching moment — not just titles and tags."}
         </p>
       </div>
 
@@ -46,7 +46,11 @@ export function SearchPage() {
         </p>
       ) : results.length === 0 ? (
         <div className="empty">
-          <p>{q ? `No spoken moments matched “${q}”.` : "Nothing to search yet."}</p>
+          <p>
+            {q
+              ? `No spoken moments matched “${q}”.`
+              : "Try a phrase someone might have actually said on camera — search runs across every video's transcript, by meaning, not just keywords."}
+          </p>
         </div>
       ) : (
         <div className="search-results">
