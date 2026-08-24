@@ -46,6 +46,10 @@ class SuggestRequest(BaseModel):
     frames: list[str] = Field(default_factory=list)
 
 
+class AskRequest(BaseModel):
+    question: str = Field(min_length=1, max_length=500)
+
+
 class CommentCreate(BaseModel):
     text: str = Field(min_length=1, max_length=1000)
 
