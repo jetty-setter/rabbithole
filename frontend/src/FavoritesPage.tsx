@@ -15,7 +15,7 @@ export function FavoritesPage() {
       <main className="page">
         <div className="empty">
           <h3>Saved</h3>
-          <p>Sign in to stash videos and dig them up later.</p>
+          <p>Sign in to save videos and find them later.</p>
           <button className="btn-primary" onClick={requireLogin}>
             Sign in
           </button>
@@ -28,13 +28,13 @@ export function FavoritesPage() {
     <main className="page">
       <div className="feed-head">
         <h1>Saved</h1>
-        <p>Your burrow — everything you've stashed away.</p>
+        <p>Everything you've saved, in one place.</p>
       </div>
       {list.length === 0 ? (
         <div className="empty">
           <span className="empty-heart">🐇</span>
-          <h3>Your burrow's empty</h3>
-          <p>Tap the heart on any video to stash it here.</p>
+          <h3>Nothing saved yet</h3>
+          <p>Tap the heart on any video to save it here.</p>
         </div>
       ) : (
         <div className="grid">

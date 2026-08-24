@@ -372,21 +372,12 @@ export function WatchPage() {
                         className={faved ? "btn-ghost saved" : "btn-ghost"}
                         onClick={() => toggleFavorite(vid)}
                       >
-                        {faved ? "✓ Stashed" : "Stash"}
+                        {faved ? "✓ Saved" : "Save"}
                       </button>
                     )}
                     <button className="btn-ghost" onClick={copyLink}>
                       {copied ? "Copied ✓" : "Copy link"}
                     </button>
-                    {diveActive ? (
-                      <button className="btn-ghost" onClick={stopDive}>
-                        Surface ▲
-                      </button>
-                    ) : (
-                      <button className="btn-ghost" onClick={() => startDive(vid)}>
-                        🕳️ Dive
-                      </button>
-                    )}
                     {canManage && (
                       <div className="owner-menu">
                         <button
@@ -444,49 +435,10 @@ export function WatchPage() {
             )}
           </div>
 
-          {(video.has_transcript || video.transcribing) && (
-            <section className="transcript">
-              <div className="transcript-head">
-                <h3 className="related-head">Transcript</h3>
-                {cues.length > 0 && (
-                  <input
-                    className="transcript-search"
-                    placeholder="Search this video…"
-                    value={cueQuery}
-                    onChange={(e) => setCueQuery(e.target.value)}
-                  />
-                )}
-              </div>
-              {video.transcribing && cues.length === 0 ? (
-                <p className="muted transcript-note">
-                  <span className="proc-spinner sm" /> Transcribing audio…
-                </p>
-              ) : cues.length === 0 ? (
-                <p className="muted transcript-note">No speech detected in this clip.</p>
-              ) : (
-                <div className="transcript-cues" ref={cuesRef}>
-                  {shownCues.length === 0 ? (
-                    <p className="muted transcript-note">No lines match "{cueQuery}".</p>
-                  ) : (
-                    shownCues.map((c) => (
-                      <button
-                        key={c.i}
-                        className={c.i === activeCue ? "cue active" : "cue"}
-                        onClick={() => seekTo(c.start)}
-                      >
-                        <span className="cue-time">{fmtTime(c.start)}</span>
-                        <span className="cue-text">{c.text}</span>
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
-            </section>
-          )}
-
           {video.has_transcript && (
-            <section className="ask-video">
-              <h3 className="related-head">Ask this video</h3>
+            <section className="feature-panel ask-video">
+              <span className="feature-kicker">AI · grounded in this video's transcript</span>
+              <h2 className="feature-head">Ask this video</h2>
               <form className="ask-form" onSubmit={submitAsk}>
                 <input
                   className="ask-input"
@@ -528,19 +480,65 @@ export function WatchPage() {
             </section>
           )}
 
+          {(video.has_transcript || video.transcribing) && (
+            <section className="transcript">
+              <div className="transcript-head">
+                <h3 className="related-head">Transcript</h3>
+                {cues.length > 0 && (
+                  <input
+                    className="transcript-search"
+                    placeholder="Search this video…"
+                    value={cueQuery}
+                    onChange={(e) => setCueQuery(e.target.value)}
+                  />
+                )}
+              </div>
+              {video.transcribing && cues.length === 0 ? (
+                <p className="muted transcript-note">
+                  <span className="proc-spinner sm" /> Transcribing audio…
+                </p>
+              ) : cues.length === 0 ? (
+                <p className="muted transcript-note">No speech detected in this clip.</p>
+              ) : (
+                <div className="transcript-cues" ref={cuesRef}>
+                  {shownCues.length === 0 ? (
+                    <p className="muted transcript-note">No lines match "{cueQuery}".</p>
+                  ) : (
+                    shownCues.map((c) => (
+                      <button
+                        key={c.i}
+                        className={c.i === activeCue ? "cue active" : "cue"}
+                        onClick={() => seekTo(c.start)}
+                      >
+                        <span className="cue-time">{fmtTime(c.start)}</span>
+                        <span className="cue-text">{c.text}</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </section>
+          )}
+
           <Comments videoId={vid} />
         </div>
 
-        <aside className="watch-related">
+        <aside className="watch-related feature-panel">
           {diveActive ? (
             <>
-              <h3 className="related-head">{diveDepth === 0 ? "Where to dive" : "Go deeper"}</h3>
+              <span className="feature-kicker">Branching exploration</span>
+              <div className="feature-head-row">
+                <h2 className="feature-head">{diveDepth === 0 ? "Where to dive" : "Go deeper"}</h2>
+                <button className="btn-dive surfacing" onClick={stopDive}>
+                  Surface ▲
+                </button>
+              </div>
+              <span className="dive-depth-inline">
+                🕳️ {diveDepth} {diveDepth === 1 ? "hole" : "holes"} deep
+              </span>
               {diveCandidates.length === 0 ? (
                 <div className="empty dive-dead-end">
                   <p>No closer moments to dive into from here.</p>
-                  <button className="btn-ghost" onClick={stopDive}>
-                    Surface ▲
-                  </button>
                 </div>
               ) : (
                 <>
@@ -581,7 +579,13 @@ export function WatchPage() {
             </>
           ) : deeperMoments && deeperMoments.length > 0 ? (
             <>
-              <h3 className="related-head">Go deeper</h3>
+              <span className="feature-kicker">Semantic exploration</span>
+              <div className="feature-head-row">
+                <h2 className="feature-head">Go deeper</h2>
+                <button className="btn-dive" onClick={() => startDive(vid)}>
+                  🕳️ Dive
+                </button>
+              </div>
               <p className="deeper-sub">Related moments, elsewhere in the library.</p>
               {deeperMoments.map((r) => (
                 <Link
@@ -606,7 +610,14 @@ export function WatchPage() {
             </>
           ) : (
             <>
-              <h3 className="related-head">Deeper</h3>
+              <div className="feature-head-row">
+                <h2 className="feature-head">Deeper</h2>
+                {related.length > 0 && (
+                  <button className="btn-dive" onClick={() => startDive(vid)}>
+                    🕳️ Dive
+                  </button>
+                )}
+              </div>
               {related.map((r) => (
                 <Link to={`/watch/${r.video_id}`} className="related-item" key={r.video_id}>
                   <div className="related-thumb">

@@ -38,14 +38,28 @@ export function SearchPage() {
 
   return (
     <main className="page">
-      <div className="feed-head">
-        <h1>Search</h1>
-        <p>
-          {q
-            ? `Moments matching “${q}” — semantic, across every transcript.`
-            : "Search what was actually said. RabbitHole reads every video's transcript and jumps you straight to the matching moment — not just titles and tags."}
-        </p>
-      </div>
+      {q ? (
+        <div className="feed-head search-head">
+          <h1 className="search-query-title">“{q}”</h1>
+          {(results === null || (results && results.length > 0)) && (
+            <p className="search-trail-line">
+              {results === null
+                ? "Building a trail…"
+                : trailStats
+                  ? `A trail through ${trailStats.moments} moments · ${trailStats.videos} videos · ${trailStats.creators} ${trailStats.creators === 1 ? "creator" : "creators"}`
+                  : "A trail through 1 moment"}
+            </p>
+          )}
+        </div>
+      ) : (
+        <div className="feed-head">
+          <h1>Search</h1>
+          <p>
+            Search what was actually said. RabbitHole reads every video's transcript and
+            jumps you straight to the matching moment — not just titles and tags.
+          </p>
+        </div>
+      )}
 
       {results === null ? (
         <p className="muted transcript-note">
@@ -60,17 +74,7 @@ export function SearchPage() {
           </p>
         </div>
       ) : (
-        <>
-          {trailStats && (
-            <div className="trail-banner">
-              <span className="trail-banner-label">Trail</span>
-              <span className="trail-banner-stats">
-                {trailStats.moments} moments · {trailStats.videos} videos ·{" "}
-                {trailStats.creators} {trailStats.creators === 1 ? "creator" : "creators"}
-              </span>
-            </div>
-          )}
-          <div className="search-results">
+        <div className="search-results">
           {results.map((r) => (
             <Link
               key={r.video.video_id}
@@ -97,8 +101,7 @@ export function SearchPage() {
               </div>
             </Link>
           ))}
-          </div>
-        </>
+        </div>
       )}
     </main>
   );
