@@ -119,7 +119,7 @@ export function Header({
                   <div className="account-menu">
                     <div className="menu-user">@{username}</div>
                     <Link to="/favorites" className="menu-item" onClick={() => setMenuOpen(false)}>
-                      Your Burrow
+                      Saved
                     </Link>
                     <button
                       className="menu-item"

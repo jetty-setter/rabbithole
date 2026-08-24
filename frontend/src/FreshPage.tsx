@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useApp } from "./App";
 import { VideoCard } from "./VideoCard";
 
-/** Newest drops, strictly chronological — the "what's new" feed (vs Surfacing,
+/** Newest drops, strictly chronological — the "what's new" feed (vs Trending,
  *  which ranks by views). */
 export function FreshPage() {
   const { videos } = useApp();
