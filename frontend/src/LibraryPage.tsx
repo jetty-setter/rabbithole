@@ -8,7 +8,6 @@ import { displayTitle } from "./api";
 export function LibraryPage() {
   const { videos, loading, authed, username, query } = useApp();
 
-  // The signed-in user's own in-progress uploads (so they get live feedback).
   const mine = useMemo(
     () => (authed ? videos.filter((v) => v.owner === username && v.status !== "ready") : []),
     [videos, authed, username],
@@ -29,11 +28,9 @@ export function LibraryPage() {
 
   const hasAny = mine.length + ready.length > 0;
 
-  // Editorial hero: the newest ready video, only when not searching.
   const featured = !query.trim() && ready.length > 0 ? ready[0] : null;
   const gridList = featured ? list.filter((v) => v.video_id !== featured.video_id) : list;
 
-  // First load with nothing cached yet → shimmer instead of a flash of "empty".
   if (loading && !hasAny) return <SkeletonFeed />;
 
   return (

@@ -27,6 +27,9 @@ CREATOR_USERNAME = os.getenv("CREATOR_USERNAME", "admin")
 CREATOR_PASSWORD = os.getenv("CREATOR_PASSWORD", "")
 JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-change-me")
 JWT_TTL = int(os.getenv("JWT_TTL", "86400"))
+
+# Demo / portfolio visitor auto-login
+DEMO_USERNAME = os.getenv("DEMO_USERNAME", "visitor")
 ALLOWED_ORIGINS = [
     o.strip()
     for o in os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")

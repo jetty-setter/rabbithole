@@ -21,10 +21,10 @@ from pathlib import Path
 
 import boto3
 
-from .metrics import emit_metrics, estimate_cost
-from .status import set_status, video_id_from_key
-from .storage import upload_tree
-from .transcoder import _ffmpeg, sample_frames, transcode_hls
+from metrics import emit_metrics, estimate_cost
+from status import set_status, video_id_from_key
+from storage import upload_tree
+from transcoder import _ffmpeg, sample_frames, transcode_hls
 
 # Try to import from shared package; fall back to a relative path for Docker
 # environments where the repo root may not be on sys.path.

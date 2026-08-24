@@ -44,13 +44,11 @@ export interface AppCtx {
   hopped: Set<string>;
   thumped: Set<string>;
   react: (id: string, reaction: "hop" | "thump") => void;
-  // Dive mode — "down the rabbit hole"
   diveActive: boolean;
   diveDepth: number;
   startDive: (fromId: string) => void;
   stopDive: () => void;
   nextDive: (currentId: string) => string | null;
-  // Trail — the local watch history (most-recent-first video ids)
   trail: string[];
   recordTrail: (id: string) => void;
   clearTrail: () => void;
@@ -159,8 +157,6 @@ function Layout() {
     });
   }
 
-  // Hop = approve, Thump = disapprove. Mutually exclusive; clicking the
-  // active one clears it. Counts update optimistically.
   function react(id: string, reaction: "hop" | "thump") {
     reactCore(id, reaction, authed, setVideos);
   }
@@ -176,7 +172,6 @@ function Layout() {
     setDiveDepth(0);
   }
 
-  // Pick the next video to fall into — prefers ones you haven't seen this dive.
   function nextDive(currentId: string): string | null {
     visitedRef.current.add(currentId);
     const ready = videos.filter(
@@ -203,9 +198,8 @@ function Layout() {
     setTrail([]);
   }
 
-  // Serendipitous "tumble down the hole" — but intentional, not random-random:
-  // never lands on the current video, won't repeat until you've seen everything,
-  // and leans toward videos sharing a tag with whatever you're watching.
+  // Intentional not random-random: never repeats until you've seen everything,
+  // and biases toward videos sharing a tag with the current one.
   function tumble() {
     const ready = videos.filter((v) => v.status === "ready" && !!v.playback_url);
     if (!ready.length) return;
@@ -214,19 +208,15 @@ function Layout() {
     const currentId = match ? match[1] : null;
     const current = currentId ? ready.find((v) => v.video_id === currentId) : null;
 
-    // Everything except where we already are.
     const pool = ready.filter((v) => v.video_id !== currentId);
     if (!pool.length) return;
 
-    // No-repeat: skip videos we've already tumbled to; once the well runs dry,
-    // reset history (keeping the current video out) so we cycle fresh.
     let fresh = pool.filter((v) => !tumbleHistoryRef.current.has(v.video_id));
     if (!fresh.length) {
       tumbleHistoryRef.current = new Set(currentId ? [currentId] : []);
       fresh = pool;
     }
 
-    // Bias toward videos sharing a tag with the current one (when we have any).
     let candidates = fresh;
     const curTags = new Set((current?.tags || []).map((t) => t.toLowerCase()));
     if (curTags.size) {
@@ -289,7 +279,6 @@ function Layout() {
       />
       <div className="shell">
         <div className="main">
-          {/* key on path → gentle fade/slide each navigation */}
           <div className="route-fade" key={location.pathname}>
             <Outlet context={ctx} />
           </div>

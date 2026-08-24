@@ -25,7 +25,10 @@ def transcode_hls(src: Path, outdir: Path) -> None:
         rendition_dir.mkdir(parents=True, exist_ok=True)
         _ffmpeg([
             "-i", str(src),
-            "-vf", f"scale=-2:{r['height']}",
+            "-vf", (
+                f"scale={r['width']}:{r['height']}:force_original_aspect_ratio=decrease,"
+                f"pad={r['width']}:{r['height']}:(ow-iw)/2:(oh-ih)/2,setsar=1"
+            ),
             "-c:v", "libx264", "-preset", "veryfast",
             "-b:v", r["bv"], "-maxrate", r["maxrate"], "-bufsize", r["bufsize"],
             "-c:a", "aac", "-b:a", "128k", "-ac", "2",

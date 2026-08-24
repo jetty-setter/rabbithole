@@ -6,15 +6,43 @@ Runs locally as a normal FastAPI app (uvicorn) and on AWS Lambda via Mangum.
 from __future__ import annotations
 
 import functools
+import json
 import re
-import sys
 import uuid
 from datetime import datetime, timezone
-from pathlib import Path
 
-# shared/ lives at the repo root — two levels up from api/app/
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from shared.ai_utils import AI_SYSTEM_PROMPT, parse_ai_metadata  # noqa: E402
+AI_SYSTEM_PROMPT = (
+    "You title videos for RabbitHole, a fun, irreverent, internet-native video "
+    "site. You're given a few frames sampled in chronological order across one "
+    "short clip. Read them as a SEQUENCE and find the hook — the funniest, most "
+    "surprising, or most satisfying beat. Return JSON with: "
+    "(1) \"title\": a SHORT, punchy, scroll-stopping title — aim for 4-8 words, "
+    "max 60 chars, no quotes, no end punctuation. "
+    "(2) \"description\": a lively 1-2 sentence description of what actually "
+    "happens. (3) \"tags\": 3-5 short lowercase tags. "
+    'Respond with ONLY a JSON object: {"title": str, "description": str, "tags": [str]}'
+)
+
+
+def parse_ai_metadata(text: str) -> dict | None:
+    if "{" not in text:
+        return None
+    text = text[text.find("{"):text.rfind("}") + 1]
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        return None
+    title = (data.get("title") or "").strip().strip('"')[:120]
+    description = (data.get("description") or "").strip()[:1000]
+    tags = [str(t).strip().lower()[:30] for t in (data.get("tags") or []) if str(t).strip()][:5]
+    out: dict = {}
+    if title:
+        out["title"] = title
+    if description:
+        out["description"] = description
+    if tags:
+        out["tags"] = tags
+    return out or None
 
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
@@ -166,6 +194,19 @@ def login(req: Credentials) -> dict:
 @app.get("/auth/me")
 def me(user: str = Depends(require_auth)) -> dict:
     return {"username": user, "is_admin": is_admin(user)}
+
+
+@app.get("/auth/demo")
+def demo_login() -> dict:
+    """Return a read-only viewer token for the demo/portfolio user.
+
+    The token is a normal short-lived JWT — it grants the same access as any
+    signed-in viewer (favorites, reactions) but not admin/upload privileges.
+    Called automatically by the frontend on first load so visitors arrive
+    already signed in as the demo account.
+    """
+    username = config.DEMO_USERNAME
+    return {"token": create_token(username), "username": username, "is_admin": False}
 
 
 @app.get("/favorites")
