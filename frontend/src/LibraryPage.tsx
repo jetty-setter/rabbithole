@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { useMemo, useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import { useApp } from "./App";
 import { VideoCard } from "./VideoCard";
 import { FeaturedCard } from "./FeaturedCard";
@@ -7,6 +8,14 @@ import { displayTitle } from "./api";
 
 export function LibraryPage() {
   const { videos, loading, authed, username, query } = useApp();
+  const navigate = useNavigate();
+  const [homeQuery, setHomeQuery] = useState("");
+
+  function submitHomeSearch(e: FormEvent) {
+    e.preventDefault();
+    const term = homeQuery.trim();
+    if (term) navigate(`/search?q=${encodeURIComponent(term)}`);
+  }
 
   const mine = useMemo(
     () => (authed ? videos.filter((v) => v.owner === username && v.status !== "ready") : []),
@@ -47,6 +56,26 @@ export function LibraryPage() {
         </div>
       ) : (
         <>
+          {featured && (
+            <div className="home-hero">
+              <h1>What are you curious about?</h1>
+              <form className="home-search-form" onSubmit={submitHomeSearch}>
+                <input
+                  className="home-search-input"
+                  placeholder="Search what was actually said…"
+                  value={homeQuery}
+                  onChange={(e) => setHomeQuery(e.target.value)}
+                />
+                <button type="submit" className="home-search-btn" aria-label="Search">
+                  ↵
+                </button>
+              </form>
+              <p className="home-hero-sub">
+                RabbitHole reads every video's transcript and jumps you straight to the
+                moment — not just titles and tags.
+              </p>
+            </div>
+          )}
           {featured && <FeaturedCard v={featured} />}
           {gridList.length > 0 && (
             <div className="grid">

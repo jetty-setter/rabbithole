@@ -16,7 +16,7 @@ export function TrendingPage() {
   return (
     <main className="page">
       <div className="feed-head">
-        <h1>Surfacing</h1>
+        <h1>Trending</h1>
         <p>What's clawing its way up the hole right now.</p>
       </div>
       {list.length === 0 ? (

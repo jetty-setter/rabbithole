@@ -209,6 +209,56 @@ body {
   font-size: 15px;
 }
 
+.home-hero {
+  margin-bottom: 36px;
+  max-width: 640px;
+}
+.home-hero h1 {
+  font-family: var(--display);
+  font-size: clamp(28px, 4.4vw, 42px);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin: 0 0 16px;
+}
+.home-search-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 2px solid var(--green);
+  padding-bottom: 10px;
+}
+.home-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 20px;
+  min-width: 0;
+}
+.home-search-input:focus {
+  outline: none;
+}
+.home-search-input::placeholder {
+  color: var(--muted);
+}
+.home-search-btn {
+  background: none;
+  border: none;
+  color: var(--green);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+.home-hero-sub {
+  margin: 14px 0 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  max-width: 480px;
+}
+
 .login-form {
   display: flex;
   flex-direction: column;

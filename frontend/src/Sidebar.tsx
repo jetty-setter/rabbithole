@@ -124,7 +124,7 @@ export function Sidebar({
       </Link>
       <Link to="/trending" className={cls("/trending")}>
         <IconTrending />
-        <span className="side-text">Surfacing</span>
+        <span className="side-text">Trending</span>
       </Link>
       <Link to="/tunnels" className={clsPrefix("/tunnels")}>
         <IconTunnels />
@@ -141,11 +141,11 @@ export function Sidebar({
           <div className="side-label">Your warren</div>
           <Link to="/den" className={cls("/den")}>
             <IconDen />
-            <span className="side-text">Den</span>
+            <span className="side-text">Dashboard</span>
           </Link>
           <Link to="/favorites" className={cls("/favorites")}>
             <IconHeart />
-            <span className="side-text">Burrow</span>
+            <span className="side-text">Saved</span>
           </Link>
           <Link to="/mine" className={cls("/mine")}>
             <IconVideo />

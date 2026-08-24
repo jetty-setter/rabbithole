@@ -14,7 +14,7 @@ export function FavoritesPage() {
     return (
       <main className="page">
         <div className="empty">
-          <h3>Your Burrow</h3>
+          <h3>Saved</h3>
           <p>Sign in to stash videos and dig them up later.</p>
           <button className="btn-primary" onClick={requireLogin}>
             Sign in
@@ -27,8 +27,8 @@ export function FavoritesPage() {
   return (
     <main className="page">
       <div className="feed-head">
-        <h1>Your Burrow</h1>
-        <p>Everything you've stashed away.</p>
+        <h1>Saved</h1>
+        <p>Your burrow — everything you've stashed away.</p>
       </div>
       {list.length === 0 ? (
         <div className="empty">
