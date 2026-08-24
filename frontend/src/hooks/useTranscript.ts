@@ -8,7 +8,6 @@ export function useTranscript(video: Video | null, videoRef: React.RefObject<HTM
   const [cueQuery, setCueQuery] = useState("");
   const [activeCue, setActiveCue] = useState(-1);
 
-  // Fetch cues when the video record indicates a transcript is available.
   useEffect(() => {
     setCues([]);
     setCueQuery("");
@@ -18,7 +17,6 @@ export function useTranscript(video: Video | null, videoRef: React.RefObject<HTM
     }
   }, [video?.video_id, video?.has_transcript, video?.transcript_url]);
 
-  // Highlight the cue currently being spoken.
   useEffect(() => {
     const v = videoRef.current;
     if (!v || cues.length === 0) return;
@@ -27,7 +25,7 @@ export function useTranscript(video: Video | null, videoRef: React.RefObject<HTM
     return () => v.removeEventListener("timeupdate", onTime);
   }, [cues, videoRef]);
 
-  // Keep the active line in view (but don't fight the user while they search).
+  // Don't scroll while the user is searching — that would fight their input.
   useEffect(() => {
     if (cueQuery || activeCue < 0 || !cuesRef.current) return;
     const el = cuesRef.current.querySelector(".cue.active") as HTMLElement | null;

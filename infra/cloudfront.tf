@@ -5,10 +5,26 @@ data "aws_cloudfront_cache_policy" "optimized" {
   name = "Managed-CachingOptimized"
 }
 
-# Adds permissive CORS response headers so hls.js can fetch segments
-# cross-origin from the frontend.
-data "aws_cloudfront_response_headers_policy" "cors" {
-  name = "Managed-SimpleCORS"
+# Adds ACAO: * to responses that include an Origin request header.
+# Safari native HLS workaround is in Player.tsx (captions fetched as blob URL
+# so crossOrigin="anonymous" is not set on the <video> element in Safari).
+resource "aws_cloudfront_response_headers_policy" "cors" {
+  name = "${local.name}-unconditional-cors"
+
+  cors_config {
+    access_control_allow_credentials = false
+    origin_override                  = true
+
+    access_control_allow_headers {
+      items = ["*"]
+    }
+    access_control_allow_methods {
+      items = ["GET", "HEAD", "OPTIONS"]
+    }
+    access_control_allow_origins {
+      items = ["*"]
+    }
+  }
 }
 
 resource "aws_cloudfront_origin_access_control" "streaming" {
@@ -36,7 +52,7 @@ resource "aws_cloudfront_distribution" "streaming" {
     cached_methods             = ["GET", "HEAD"]
     compress                   = true
     cache_policy_id            = data.aws_cloudfront_cache_policy.optimized.id
-    response_headers_policy_id = data.aws_cloudfront_response_headers_policy.cors.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.cors.id
   }
 
   restrictions {

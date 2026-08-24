@@ -101,6 +101,7 @@ resource "aws_lambda_function" "api" {
       AI_MODEL               = var.ai_model
       CLOUDFRONT_DOMAIN      = aws_cloudfront_distribution.streaming.domain_name
       CREATOR_USERNAME       = "admin"
+      DEMO_USERNAME          = "visitor"
       JWT_SECRET             = random_password.jwt.result
       ALLOWED_ORIGINS        = join(",", local.frontend_origins)
       PRESIGN_EXPIRY_SECONDS = "900"

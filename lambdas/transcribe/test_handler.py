@@ -15,7 +15,13 @@ import pytest  # noqa: E402
 from botocore.exceptions import ClientError  # noqa: E402
 from moto import mock_aws  # noqa: E402
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parents[2]))  # repo root for shared/
+
 import handler  # noqa: E402
+from shared.captions import build_cues, to_vtt, _ts
 
 
 def _word(content, start, end):
@@ -44,7 +50,7 @@ def test_build_cues_groups_and_breaks_on_sentence_end():
             ]
         }
     }
-    cues = handler._build_cues(raw)
+    cues = build_cues(raw)
     assert len(cues) == 2
     assert cues[0]["text"] == "Hello there."
     assert cues[0]["start"] == 0.0
@@ -61,31 +67,31 @@ def test_build_cues_breaks_on_long_pause():
             ]
         }
     }
-    cues = handler._build_cues(raw)
+    cues = build_cues(raw)
     assert len(cues) == 2
     assert cues[0]["text"] == "before"
     assert cues[1]["text"] == "after"
 
 
 def test_build_cues_empty_when_no_speech():
-    assert handler._build_cues({"results": {"items": []}}) == []
-    assert handler._build_cues({}) == []
+    assert build_cues({"results": {"items": []}}) == []
+    assert build_cues({}) == []
 
 
 def test_punctuation_attaches_without_leading_space():
     raw = {"results": {"items": [_word("Hi", 0.0, 0.3), _punc(",")]}}
-    cues = handler._build_cues(raw)
+    cues = build_cues(raw)
     assert cues[0]["text"] == "Hi,"
 
 
 def test_ts_formats_webvtt_timestamp():
-    assert handler._ts(0) == "00:00:00.000"
-    assert handler._ts(65.5) == "00:01:05.500"
-    assert handler._ts(3661.25) == "01:01:01.250"
+    assert _ts(0) == "00:00:00.000"
+    assert _ts(65.5) == "00:01:05.500"
+    assert _ts(3661.25) == "01:01:01.250"
 
 
 def test_to_vtt_has_header_and_cues():
-    vtt = handler._to_vtt([{"start": 0.0, "end": 1.0, "text": "hi"}])
+    vtt = to_vtt([{"start": 0.0, "end": 1.0, "text": "hi"}])
     assert vtt.startswith("WEBVTT")
     assert "00:00:00.000 --> 00:00:01.000" in vtt
     assert "hi" in vtt

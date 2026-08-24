@@ -6,7 +6,7 @@ from pathlib import Path
 
 import boto3
 
-from .transcoder import _content_type
+from transcoder import _content_type
 
 _s3 = None
 

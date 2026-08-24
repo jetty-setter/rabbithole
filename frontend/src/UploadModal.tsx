@@ -23,15 +23,23 @@ export function UploadModal({
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function chooseFile(f: File | null) {
-    setFile(f);
     setSuggested(false);
-    // Reset ALL fields on a new file so a previous file's title/description
-    // can't carry over (the suggestion only fills empty fields).
     setTitle("");
     setDescription("");
     setTags([]);
     if (!f) return;
-    // Show the AI's take up front so the user can keep or tweak it.
+
+    // No accept attr on the input: macOS Photos blocks library items when accept="video/*", so we validate here.
+    const ext = f.name.split(".").pop()?.toLowerCase() ?? "";
+    const isVideo =
+      f.type.startsWith("video/") ||
+      ["mov", "mp4", "m4v", "webm", "mkv", "avi", "hevc", "heif", "3gp"].includes(ext);
+    if (!isVideo) {
+      setError("Please select a video file.");
+      return;
+    }
+    setError(null);
+    setFile(f);
     setSuggesting(true);
     try {
       const frames = await extractFrames(f);
@@ -56,15 +64,21 @@ export function UploadModal({
     setError(null);
     setProgress(0);
     try {
+      // file.type is often empty for Photos-library items in Safari.
+      // Fall back to extension-based guessing; server validates anyway.
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      const contentType =
+        file.type ||
+        (ext === "mov" ? "video/quicktime" : ext === "webm" ? "video/webm" : "video/mp4");
       const ticket = await createUpload(
         file.name,
-        file.type || "video/mp4",
+        contentType,
         title,
         description,
         tags,
         visibility,
       );
-      await uploadToS3(ticket.upload_url, file, setProgress);
+      await uploadToS3(ticket.upload_url, file, setProgress, contentType);
       onUploaded();
       onClose();
     } catch (e) {
@@ -111,7 +125,10 @@ export function UploadModal({
             <>
               <span className="dz-icon">⬆</span>
               <span>
-                Drag a video down the hole, or <b>browse</b>
+                Drag a video here, or <b>browse</b>
+              </span>
+              <span style={{ fontSize: "0.75rem", opacity: 0.55, marginTop: 4 }}>
+                Drag from Photos app · or browse Movies folder
               </span>
             </>
           )}
