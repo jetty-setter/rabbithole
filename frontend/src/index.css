@@ -2761,7 +2761,6 @@ body {
   gap: 10px;
 }
 
-.dive-deeper,
 .dive-surface {
   border-radius: 999px;
   padding: 7px 16px;
@@ -2769,25 +2768,22 @@ body {
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  border: 1.5px solid var(--pink);
+  border: 1.5px solid var(--border-2);
   background: transparent;
-  color: var(--pink);
-  transition: background 130ms ease, color 130ms ease;
-}
-
-.dive-deeper:hover {
-  background: var(--pink);
-  color: #fff;
-}
-
-.dive-surface {
-  border-color: var(--border-2);
   color: var(--muted);
+  transition: background 130ms ease, color 130ms ease, border-color 130ms ease;
 }
 
 .dive-surface:hover {
   border-color: var(--text);
   color: var(--text);
+}
+
+.dive-dead-end {
+  padding: 24px 16px;
+}
+.dive-dead-end p {
+  margin: 0 0 14px;
 }
 
 

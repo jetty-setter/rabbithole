@@ -11,6 +11,7 @@ import {
   updateVideo,
   type AskAnswer,
   type SearchMoment,
+  type Video,
 } from "./api";
 import { Player } from "./Player";
 import { SkeletonWatch } from "./Skeleton";
@@ -19,6 +20,12 @@ import { Avatar } from "./Avatar";
 import { EditForm } from "./components/EditForm";
 import { useVideoData } from "./hooks/useVideoData";
 import { useTranscript } from "./hooks/useTranscript";
+
+interface DiveCandidate {
+  video: Video;
+  start: number;
+  snippet: string;
+}
 
 /** Seconds → m:ss for cue timestamps. */
 function fmtTime(s: number): string {
@@ -45,8 +52,10 @@ export function WatchPage() {
     react,
     diveActive,
     diveDepth,
+    startDive,
     stopDive,
-    nextDive,
+    chooseDive,
+    diveVisited,
     recordTrail,
   } = useApp();
 
@@ -114,6 +123,24 @@ export function WatchPage() {
     };
   }, [video?.video_id, video?.has_transcript]);
 
+  // Branching dive candidates: closest semantic matches to THIS video that
+  // haven't been visited yet this dive, falling back to any unvisited video
+  // when there's no transcript match. Each pick becomes the next video's own
+  // seed, so a dive descends through real relatedness, not a random walk.
+  const diveCandidates = useMemo<DiveCandidate[]>(() => {
+    if (!diveActive) return [];
+    if (deeperMoments && deeperMoments.length > 0) {
+      return deeperMoments
+        .filter((m) => !diveVisited(m.video.video_id))
+        .slice(0, 4)
+        .map((m) => ({ video: m.video, start: m.start, snippet: m.snippet }));
+    }
+    return related
+      .filter((v) => !diveVisited(v.video_id))
+      .slice(0, 4)
+      .map((v) => ({ video: v, start: 0, snippet: "" }));
+  }, [diveActive, deeperMoments, related, diveDepth]);
+
   useEffect(() => {
     setAskQuestion("");
     setAskAnswer(null);
@@ -167,17 +194,6 @@ export function WatchPage() {
           }
         : v,
     );
-  }
-
-  function fallDeeper() {
-    if (!video) return;
-    const n = nextDive(video.video_id);
-    if (n) navigate(`/watch/${n}`);
-    else stopDive();
-  }
-
-  function onEnded() {
-    if (diveActive) fallDeeper();
   }
 
   async function copyLink() {
@@ -244,11 +260,8 @@ export function WatchPage() {
       {diveActive && (
         <div className="dive-hud">
           <span className="dive-depth">🕳️ You're {diveDepth} {diveDepth === 1 ? "hole" : "holes"} deep</span>
-          <span className="dive-note">Auto-falling when this ends…</span>
+          <span className="dive-note">Pick a direction on the right to go deeper.</span>
           <div className="dive-hud-actions">
-            <button className="dive-deeper" onClick={fallDeeper}>
-              Deeper ▼
-            </button>
             <button className="dive-surface" onClick={stopDive}>
               Surface ▲
             </button>
@@ -263,7 +276,6 @@ export function WatchPage() {
               <div className={burst?.kind === "thump" ? "player-wrap shake" : "player-wrap"}>
                 <Player
                   src={video.playback_url}
-                  onEnded={onEnded}
                   videoRef={videoRef}
                   captionsSrc={video.captions_url}
                 />
@@ -366,6 +378,15 @@ export function WatchPage() {
                     <button className="btn-ghost" onClick={copyLink}>
                       {copied ? "Copied ✓" : "Copy link"}
                     </button>
+                    {diveActive ? (
+                      <button className="btn-ghost" onClick={stopDive}>
+                        Surface ▲
+                      </button>
+                    ) : (
+                      <button className="btn-ghost" onClick={() => startDive(vid)}>
+                        🕳️ Dive
+                      </button>
+                    )}
                     {canManage && (
                       <div className="owner-menu">
                         <button
@@ -511,7 +532,54 @@ export function WatchPage() {
         </div>
 
         <aside className="watch-related">
-          {deeperMoments && deeperMoments.length > 0 ? (
+          {diveActive ? (
+            <>
+              <h3 className="related-head">{diveDepth === 0 ? "Where to dive" : "Go deeper"}</h3>
+              {diveCandidates.length === 0 ? (
+                <div className="empty dive-dead-end">
+                  <p>No closer moments to dive into from here.</p>
+                  <button className="btn-ghost" onClick={stopDive}>
+                    Surface ▲
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <p className="deeper-sub">Pick a direction — closest matches first.</p>
+                  {diveCandidates.map((c) => (
+                    <Link
+                      to={`/watch/${c.video.video_id}${c.start > 0 ? `?t=${Math.floor(c.start)}` : ""}`}
+                      className="related-item deeper-moment"
+                      key={c.video.video_id}
+                      onClick={() => chooseDive(c.video.video_id)}
+                    >
+                      <div className="related-thumb">
+                        {c.video.thumbnail_url ? (
+                          <img src={c.video.thumbnail_url} alt="" />
+                        ) : (
+                          <span>🐇</span>
+                        )}
+                        {c.start > 0 ? (
+                          <span className="dur-badge">{fmtTime(c.start)}</span>
+                        ) : (
+                          c.video.duration_seconds && (
+                            <span className="dur-badge">{formatDuration(c.video.duration_seconds)}</span>
+                          )
+                        )}
+                      </div>
+                      <div className="related-info">
+                        <span className="related-title">{displayTitle(c.video)}</span>
+                        {c.snippet ? (
+                          <span className="deeper-snippet">“…{c.snippet}…”</span>
+                        ) : (
+                          <span className="related-meta">{c.video.owner || "RabbitHole"}</span>
+                        )}
+                      </div>
+                    </Link>
+                  ))}
+                </>
+              )}
+            </>
+          ) : deeperMoments && deeperMoments.length > 0 ? (
             <>
               <h3 className="related-head">Go deeper</h3>
               <p className="deeper-sub">Related moments, elsewhere in the library.</p>
