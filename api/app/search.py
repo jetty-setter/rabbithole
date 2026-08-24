@@ -153,6 +153,36 @@ def _all_chunks() -> list[dict]:
     return items
 
 
+def chunks_for_video(video_id: str) -> list[dict]:
+    table = aws.embeddings_table()
+    resp = table.query(KeyConditionExpression=Key("video_id").eq(video_id))
+    items = resp.get("Items", [])
+    while "LastEvaluatedKey" in resp:
+        resp = table.query(
+            KeyConditionExpression=Key("video_id").eq(video_id),
+            ExclusiveStartKey=resp["LastEvaluatedKey"],
+        )
+        items += resp.get("Items", [])
+    return items
+
+
+def search_within_video(video_id: str, query: str, k: int = 6) -> list[dict]:
+    """Top passages within ONE video, ranked by relevance to `query` -- the
+    retrieval step for "ask this video" (unlike `search`, doesn't dedupe to
+    one hit per video; we want several passages from the same video)."""
+    index_video(video_id)  # idempotent; makes sure this video's chunks exist
+    qv = _embed([query])[0]
+    scored = sorted(
+        ((cosine(qv, unpack_vector(it["vector"])), it) for it in chunks_for_video(video_id)),
+        key=lambda x: x[0],
+        reverse=True,
+    )
+    return [
+        {"start": float(it.get("start") or 0.0), "text": it.get("text", ""), "score": round(score, 4)}
+        for score, it in scored[:k]
+    ]
+
+
 def search(query: str, k: int = 12) -> list[dict]:
     """Top moments across the library — the single best moment per video."""
     _ensure_indexed()

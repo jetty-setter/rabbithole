@@ -118,3 +118,44 @@ def test_search_endpoint_filters_unlisted(client, videos_table, monkeypatch):
     ids = {r["video"]["video_id"] for r in body["results"]}
     assert "pubv" in ids
     assert "unlv" not in ids
+
+
+def test_search_within_video_scoped_to_one_video(aws_stack, monkeypatch):
+    monkeypatch.setattr(search_mod, "_model", lambda: _FakeModel())
+    _seed("snowvid", "heavy snow snow covered the frozen valley")
+    _seed("spyvid", "a spy spy on a dangerous secret mission")
+
+    hits = search_mod.search_within_video("snowvid", "snow")
+    assert hits
+    # Every passage returned must actually belong to snowvid -- the whole
+    # point of this function vs. plain `search`, which dedupes across videos.
+    assert all("start" in h and "text" in h for h in hits)
+    # Asking the spy video about snow still only returns its own passages.
+    spy_hits = search_mod.search_within_video("spyvid", "snow")
+    assert all("spy" in h["text"] for h in spy_hits)
+
+
+# ── /videos/{id}/ask -- safe fallback branches (no ANTHROPIC key in tests,
+# so the actual Claude call is never reached; this covers the guard logic) ──
+def test_ask_video_not_found(client):
+    resp = client.post("/videos/doesnotexist/ask", json={"question": "hi"})
+    assert resp.status_code == 404
+
+
+def test_ask_video_no_transcript(client, videos_table):
+    videos_table.put_item(
+        Item={"video_id": "v1", "status": "ready", "visibility": "public", "has_transcript": False}
+    )
+    resp = client.post("/videos/v1/ask", json={"question": "what happens?"})
+    assert resp.status_code == 200
+    assert resp.json()["citations"] == []
+    assert "transcript" in resp.json()["answer"].lower()
+
+
+def test_ask_video_no_key_configured(client, monkeypatch):
+    monkeypatch.setattr(search_mod, "_model", lambda: _FakeModel())
+    _seed("v1", "heavy snow snow covered the frozen valley")
+    resp = client.post("/videos/v1/ask", json={"question": "what covered the valley?"})
+    # No ANTHROPIC_KEY_PARAM in the test environment -- should fail safely,
+    # not attempt a real network call.
+    assert resp.status_code == 503

@@ -263,6 +263,30 @@ export async function searchMoments(q: string): Promise<SearchMoment[]> {
   return Array.isArray(data.results) ? data.results : [];
 }
 
+export interface AskCitation {
+  start: number;
+  text: string;
+}
+
+export interface AskAnswer {
+  answer: string;
+  citations: AskCitation[];
+}
+
+/** RAG Q&A scoped to one video's own transcript. */
+export async function askVideo(videoId: string, question: string): Promise<AskAnswer> {
+  const res = await fetch(`${API_URL}/videos/${videoId}/ask`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question }),
+  });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => null);
+    throw new Error(detail?.detail || `ask failed (${res.status})`);
+  }
+  return res.json();
+}
+
 export async function listVideos(): Promise<Video[]> {
   // Send auth when we have it so owners see their own unlisted videos in feeds.
   const res = await fetch(`${API_URL}/videos`, { headers: { ...authHeaders() } });

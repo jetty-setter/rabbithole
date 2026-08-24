@@ -2883,6 +2883,91 @@ body::after {
   color: var(--muted);
 }
 
+/* ── Ask this video (RAG Q&A) ──────────────────────────────── */
+.ask-video {
+  margin-top: 24px;
+}
+
+.ask-form {
+  display: flex;
+  gap: 10px;
+}
+
+.ask-input {
+  flex: 1;
+  padding: 9px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+.ask-input::placeholder {
+  color: var(--muted);
+}
+.ask-input:focus {
+  outline: none;
+  border-color: var(--green);
+}
+
+.ask-btn {
+  flex: none;
+}
+
+.ask-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.ask-error {
+  margin-top: 10px;
+  color: var(--red, #e5484d);
+  font-size: 14px;
+}
+
+.ask-answer {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+}
+
+.ask-answer-text {
+  margin: 0;
+  color: var(--text);
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+.ask-citations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ask-citation {
+  padding: 4px 10px;
+  border: 1px solid var(--border-2);
+  border-radius: 999px;
+  background: none;
+  color: var(--green);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+.ask-citation:hover {
+  background: rgba(155, 232, 11, 0.1);
+}
+
 /* ── Visibility (public / unlisted) ────────────────────────── */
 .vis-row {
   display: flex;

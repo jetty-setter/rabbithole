@@ -67,6 +67,7 @@ _VISIBILITIES = {"public", "unlisted"}
 def _norm_visibility(value: str | None) -> str:
     return value if value in _VISIBILITIES else "public"
 from .models import (
+    AskRequest,
     Comment,
     CommentCreate,
     Credentials,
@@ -475,6 +476,79 @@ def search_reindex(user: str = Depends(require_auth)) -> dict:
     from . import search as search_mod
 
     return {"indexed_chunks": search_mod.reindex_all()}
+
+
+@app.post("/videos/{video_id}/ask")
+def ask_video(video_id: str, body: AskRequest) -> dict:
+    """Answer a question about ONE video, grounded only in its own transcript.
+    Retrieval-augmented: reuses the same embedding search that powers cross-
+    video search, scoped to this video, then asks Claude to answer using only
+    those passages -- with citations back to the timestamp they came from."""
+    item = aws.videos_table().get_item(Key={"video_id": video_id}).get("Item")
+    if not item:
+        raise HTTPException(status_code=404, detail="video not found")
+    if not item.get("has_transcript"):
+        return {
+            "answer": "This video doesn't have a transcript yet, so there's nothing to ask about.",
+            "citations": [],
+        }
+
+    from . import search as search_mod
+
+    passages = search_mod.search_within_video(video_id, body.question)
+    if not passages:
+        return {"answer": "No transcript is available for this video yet.", "citations": []}
+
+    key = _anthropic_key()
+    if not key:
+        raise HTTPException(status_code=503, detail="AI answers unavailable")
+
+    import anthropic
+
+    client = anthropic.Anthropic(api_key=key)
+    excerpts = "\n\n".join(f"[{p['start']:.0f}s] {p['text']}" for p in passages)
+    system = (
+        "You answer questions about a single video using ONLY the transcript excerpts "
+        "provided below -- each tagged with its start time in seconds. Never use outside "
+        "knowledge or guess at content not in the excerpts. If the excerpts don't contain "
+        "the answer, say so plainly instead of guessing. Respond with ONLY a JSON object: "
+        '{"answer": str, "citations": [number, ...]} where citations are the start-time '
+        "seconds (as numbers) of the excerpts that support the answer."
+    )
+    try:
+        resp = client.messages.create(
+            model=config.AI_MODEL,
+            max_tokens=400,
+            system=system,
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"Transcript excerpts:\n\n{excerpts}\n\nQuestion: {body.question}",
+                }
+            ],
+        )
+        text = "".join(b.text for b in resp.content if b.type == "text").strip()
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=502, detail="AI answer failed") from exc
+
+    if "{" not in text:
+        return {"answer": text[:800], "citations": []}
+    raw = text[text.find("{") : text.rfind("}") + 1]
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return {"answer": text[:800], "citations": []}
+
+    answer = (data.get("answer") or "").strip()[:1200]
+    cited_starts = {
+        round(float(c), 2) for c in (data.get("citations") or []) if isinstance(c, (int, float))
+    }
+    citations = [
+        {"start": p["start"], "text": p["text"][:200]}
+        for p in passages
+        if any(abs(p["start"] - c) < 1.0 for c in cited_starts)
+    ]
+    return {"answer": answer or text[:800], "citations": citations}
 
 
 @app.patch("/videos/{video_id}", response_model=Video)
