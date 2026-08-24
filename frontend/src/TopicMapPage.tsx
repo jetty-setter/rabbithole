@@ -32,6 +32,18 @@ export function TopicMapPage() {
     return buildTopicGraph(ready);
   }, [videos]);
 
+  // The video list re-polls every 15s and hands back a fresh array even when
+  // nothing changed, which would otherwise re-trigger buildTopicGraph's
+  // useMemo with new (but equal) array references and restart the whole
+  // settle animation on a loop. Keying the simulation effect on the graph's
+  // actual content, not object identity, keeps it stable across those polls.
+  const graphKey = useMemo(
+    () =>
+      `${nodes.map((n) => `${n.tag}:${n.count}`).join(",")}|` +
+      edges.map((e) => `${e.source}>${e.target}:${e.weight}`).join(","),
+    [nodes, edges],
+  );
+
   useEffect(() => {
     setPositions(null);
     setHovered(null);
@@ -54,7 +66,7 @@ export function TopicMapPage() {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodes, edges]);
+  }, [graphKey]);
 
   const byTag = useMemo(() => {
     const m = new Map<string, PositionedNode>();
