@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { displayTitle, searchMoments, type SearchMoment } from "./api";
 import { Avatar } from "./Avatar";
@@ -15,6 +15,13 @@ export function SearchPage() {
   const [params] = useSearchParams();
   const q = params.get("q") || "";
   const [results, setResults] = useState<SearchMoment[] | null>([]);
+
+  const trailStats = useMemo(() => {
+    if (!results || results.length < 2) return null;
+    const videoIds = new Set(results.map((r) => r.video.video_id));
+    const creators = new Set(results.map((r) => r.video.owner || "RabbitHole"));
+    return { moments: results.length, videos: videoIds.size, creators: creators.size };
+  }, [results]);
 
   useEffect(() => {
     if (!q.trim()) {
@@ -53,7 +60,17 @@ export function SearchPage() {
           </p>
         </div>
       ) : (
-        <div className="search-results">
+        <>
+          {trailStats && (
+            <div className="trail-banner">
+              <span className="trail-banner-label">Trail</span>
+              <span className="trail-banner-stats">
+                {trailStats.moments} moments · {trailStats.videos} videos ·{" "}
+                {trailStats.creators} {trailStats.creators === 1 ? "creator" : "creators"}
+              </span>
+            </div>
+          )}
+          <div className="search-results">
           {results.map((r) => (
             <Link
               key={r.video.video_id}
@@ -80,7 +97,8 @@ export function SearchPage() {
               </div>
             </Link>
           ))}
-        </div>
+          </div>
+        </>
       )}
     </main>
   );
