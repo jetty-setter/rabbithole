@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useApp } from "./App";
 import { VideoCard } from "./VideoCard";
 
-/** Your hub — uploads, stash, trail, and a couple of stats in one burrow. */
+/** Your hub — uploads, saves, trail, and a couple of stats in one place. */
 export function DenPage() {
   const { videos, username, authed, requireLogin, favorites, hopped, trail } = useApp();
 
@@ -17,7 +17,7 @@ export function DenPage() {
       <main className="page">
         <div className="empty">
           <h3>Dashboard</h3>
-          <p>Sign in to see your uploads, stash, and trail in one place.</p>
+          <p>Sign in to see your uploads, saves, and trail in one place.</p>
           <button className="btn-primary" onClick={requireLogin}>
             Sign in
           </button>

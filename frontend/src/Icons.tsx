@@ -50,6 +50,29 @@ export function DownIcon({ className }: { className?: string }) {
   );
 }
 
+// Topic map — a few connected nodes (used in the sidebar nav and as the
+// homepage's entry point into the topic graph).
+export function MapIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="6" cy="7" r="2.2" />
+      <circle cx="18" cy="6" r="2.2" />
+      <circle cx="9" cy="17" r="2.2" />
+      <circle cx="18" cy="16" r="2.2" />
+      <path d="M7.9 8.2l8.2-1.6M7.6 9l1 6M11 17.3l5-1" />
+    </svg>
+  );
+}
+
 // Tiny solid bunny silhouette — legible at small sizes (feed-card hop count).
 export function HopGlyph({ className }: { className?: string }) {
   return (

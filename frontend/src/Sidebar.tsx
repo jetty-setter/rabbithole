@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { MapIcon } from "./Icons";
 
 const IconMenu = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
@@ -41,16 +42,6 @@ const IconTunnels = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round">
     <path d="M20.6 13.4 12 22l-9-9V3h10l7.6 7.6a2 2 0 0 1 0 2.8z" />
     <circle cx="7.5" cy="7.5" r="1.4" fill="currentColor" stroke="none" />
-  </svg>
-);
-
-const IconMap = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="6" cy="7" r="2.2" />
-    <circle cx="18" cy="6" r="2.2" />
-    <circle cx="9" cy="17" r="2.2" />
-    <circle cx="18" cy="16" r="2.2" />
-    <path d="M7.9 8.2l8.2-1.6M7.6 9l1 6M11 17.3l5-1" />
   </svg>
 );
 
@@ -141,7 +132,7 @@ export function Sidebar({
         <span className="side-text">Tunnels</span>
       </Link>
       <Link to="/map" className={cls("/map")}>
-        <IconMap />
+        <MapIcon />
         <span className="side-text">Map</span>
       </Link>
       <Link to="/trail" className={cls("/trail")}>
