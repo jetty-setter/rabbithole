@@ -44,6 +44,16 @@ const IconTunnels = () => (
   </svg>
 );
 
+const IconMap = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="6" cy="7" r="2.2" />
+    <circle cx="18" cy="6" r="2.2" />
+    <circle cx="9" cy="17" r="2.2" />
+    <circle cx="18" cy="16" r="2.2" />
+    <path d="M7.9 8.2l8.2-1.6M7.6 9l1 6M11 17.3l5-1" />
+  </svg>
+);
+
 const IconTrail = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
     <path d="M5 18l5-5 4 2 5-8" strokeDasharray="0.1 4" />
@@ -129,6 +139,10 @@ export function Sidebar({
       <Link to="/tunnels" className={clsPrefix("/tunnels")}>
         <IconTunnels />
         <span className="side-text">Tunnels</span>
+      </Link>
+      <Link to="/map" className={cls("/map")}>
+        <IconMap />
+        <span className="side-text">Map</span>
       </Link>
       <Link to="/trail" className={cls("/trail")}>
         <IconTrail />

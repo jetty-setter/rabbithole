@@ -3300,6 +3300,61 @@ body::after {
   margin-bottom: 16px;
 }
 
+/* ── Topic map (force-directed tag graph) ──────────────────── */
+.topic-map {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+  padding: 8px;
+}
+
+.topic-map-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 72vh;
+}
+
+.topic-edge {
+  stroke: var(--border-2);
+  opacity: 0.7;
+  transition: opacity 160ms ease;
+}
+.topic-edge.dim {
+  opacity: 0.08;
+}
+
+.topic-node {
+  cursor: pointer;
+  transition: opacity 160ms ease;
+}
+.topic-node.dim {
+  opacity: 0.28;
+}
+
+.topic-node circle {
+  fill: rgba(155, 232, 11, 0.14);
+  stroke: var(--green);
+  stroke-width: 1.5;
+  transition: fill 160ms ease, stroke 160ms ease;
+}
+.topic-node:hover circle,
+.topic-node:focus-visible circle {
+  fill: rgba(243, 28, 146, 0.22);
+  stroke: var(--pink);
+}
+.topic-node:focus-visible {
+  outline: none;
+}
+
+.topic-node text {
+  fill: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
 /* ── Trail header (title + clear button) ───────────────────── */
 .trail-head {
   display: flex;
