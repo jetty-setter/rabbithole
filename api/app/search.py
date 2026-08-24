@@ -14,17 +14,36 @@ import base64
 import functools
 import json
 import struct
-import sys
-from pathlib import Path
 
 import numpy as np
 from boto3.dynamodb.conditions import Attr, Key
 
 from . import aws, config
 
-# shared/ lives at the repo root — two levels up from api/app/
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from shared.captions import chunk_cues  # noqa: E402, F401 (re-exported)
+
+def chunk_cues(cues: list[dict], max_chars: int = 350) -> list[dict]:
+    """Group consecutive cues into ~few-sentence passages, each tagged with the
+    start time of its first cue so a hit can jump straight to the moment.
+
+    Inlined from shared/captions.py -- the Lambda image only bakes in app/, so
+    a cross-repo import here silently 500'd in production (shared/ was never
+    on sys.path inside the container, only in local dev)."""
+    passages: list[dict] = []
+    buf: list[str] = []
+    start: float | None = None
+    for c in cues:
+        text = (c.get("text") or "").strip()
+        if not text:
+            continue
+        if start is None:
+            start = float(c.get("start") or 0.0)
+        buf.append(text)
+        if sum(len(t) for t in buf) >= max_chars:
+            passages.append({"start": start, "text": " ".join(buf)})
+            buf, start = [], None
+    if buf:
+        passages.append({"start": start or 0.0, "text": " ".join(buf)})
+    return passages
 
 
 # ── Embedding model (lazy: never loaded by tests or non-search calls) ──
