@@ -49,7 +49,8 @@ export interface AppCtx {
   diveDepth: number;
   startDive: (fromId: string) => void;
   stopDive: () => void;
-  nextDive: (currentId: string) => string | null;
+  chooseDive: (id: string) => void;
+  diveVisited: (id: string) => boolean;
   trail: string[];
   recordTrail: (id: string) => void;
   clearTrail: () => void;
@@ -173,17 +174,16 @@ function Layout() {
     setDiveDepth(0);
   }
 
-  function nextDive(currentId: string): string | null {
-    visitedRef.current.add(currentId);
-    const ready = videos.filter(
-      (v) => v.status === "ready" && !!v.playback_url && v.video_id !== currentId,
-    );
-    if (ready.length === 0) return null;
-    const fresh = ready.filter((v) => !visitedRef.current.has(v.video_id));
-    const pool = fresh.length ? fresh : ready;
-    const pick = pool[Math.floor(Math.random() * pool.length)];
+  // Branching dive: the caller (WatchPage) picks WHICH related video to fall
+  // into next — using real semantic "go deeper" candidates, not a random
+  // pick — and just tells us so depth/visited stay right for the chooser.
+  function chooseDive(id: string) {
+    visitedRef.current.add(id);
     setDiveDepth((d) => d + 1);
-    return pick.video_id;
+  }
+
+  function diveVisited(id: string): boolean {
+    return visitedRef.current.has(id);
   }
 
   function recordTrail(id: string) {
@@ -254,7 +254,8 @@ function Layout() {
     diveDepth,
     startDive,
     stopDive,
-    nextDive,
+    chooseDive,
+    diveVisited,
     trail,
     recordTrail,
     clearTrail,
