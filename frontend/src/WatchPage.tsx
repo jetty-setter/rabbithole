@@ -303,7 +303,12 @@ export function WatchPage() {
                 <div className="watch-sub">
                   <Avatar name={video.owner || "RabbitHole"} />
                   <div className="watch-by">
-                    <div className="watch-channel">{video.owner || "RabbitHole"}</div>
+                    <Link
+                      to={`/creator/${encodeURIComponent(video.owner || "RabbitHole")}`}
+                      className="watch-channel"
+                    >
+                      {video.owner || "RabbitHole"}
+                    </Link>
                     <div className="watch-stats">
                       {video.views ?? 0} views · {relativeTime(video.created_at)}
                     </div>

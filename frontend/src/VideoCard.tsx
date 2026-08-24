@@ -71,7 +71,13 @@ export function VideoCard({ v }: { v: Video }) {
         <Avatar name={v.owner || "RabbitHole"} />
         <div className="vcard-info">
           <span className="vtitle">{displayTitle(v)}</span>
-          <span className="vchannel">{v.owner || "RabbitHole"}</span>
+          <Link
+            to={`/creator/${encodeURIComponent(v.owner || "RabbitHole")}`}
+            className="vchannel vchannel-link"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {v.owner || "RabbitHole"}
+          </Link>
           <span className="vmeta">
             {v.views ?? 0} views
             {v.hops ? (

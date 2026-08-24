@@ -28,6 +28,7 @@ import { FavoritesPage } from "./FavoritesPage";
 import { MyVideosPage } from "./MyVideosPage";
 import { WatchPage } from "./WatchPage";
 import { AdminPage } from "./AdminPage";
+import { CreatorPage } from "./CreatorPage";
 
 export interface AppCtx {
   videos: Video[];
@@ -322,6 +323,7 @@ export default function App() {
         <Route path="/favorites" element={<FavoritesPage />} />
         <Route path="/mine" element={<MyVideosPage />} />
         <Route path="/watch/:id" element={<WatchPage />} />
+        <Route path="/creator/:username" element={<CreatorPage />} />
         <Route path="/admin" element={<AdminPage />} />
       </Route>
     </Routes>
