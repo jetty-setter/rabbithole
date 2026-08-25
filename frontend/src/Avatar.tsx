@@ -1,16 +1,15 @@
 // Per-user hexagon avatar — 4 brand-cohesive looks, chosen deterministically
 // from the name: pink/green filled (light letter) + white outline (pink/green
 // letter). Only the brand's two accent colors, so avatars always match the site.
-const PINK = "#f31c92";
-const GREEN = "#9be80b";
-const WHITE = "#f5f5f8";
-const DARK = "#0a0a0d";
+const PINK = "#cf2ce8";
+const GREEN = "#8f3bff";
+const WHITE = "#f3f3f1";
 
 const VARIANTS = [
-  { fill: PINK, stroke: PINK, text: WHITE }, // pink hex, white letter
-  { fill: GREEN, stroke: GREEN, text: DARK }, // green hex, dark letter (white is illegible on acid green)
-  { fill: "none", stroke: WHITE, text: PINK }, // white outline, pink letter
-  { fill: "none", stroke: WHITE, text: GREEN }, // white outline, green letter
+  { fill: PINK, stroke: PINK, text: WHITE }, // magenta, white letter
+  { fill: GREEN, stroke: GREEN, text: WHITE }, // purple, white letter
+  { fill: "none", stroke: WHITE, text: PINK }, // white outline, magenta letter
+  { fill: "none", stroke: WHITE, text: GREEN }, // white outline, purple letter
 ];
 
 function variantFor(name: string) {
