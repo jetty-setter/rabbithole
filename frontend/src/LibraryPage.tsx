@@ -91,30 +91,30 @@ export function LibraryPage() {
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
                   </button>
                 </form>
-                {startTopics.length > 0 && (
-                  <div className="start-somewhere">
-                    <span className="start-label">Or start somewhere</span>
-                    <div className="start-row">
-                      {startTopics.map(([tag, n]) => (
-                        <Link
-                          key={tag}
-                          to={`/tunnels/${encodeURIComponent(tag)}`}
-                          className="tunnel-chip start-chip"
-                        >
-                          <span className="tunnel-tag">#{tag}</span>
-                          <span className="tunnel-count">{n}</span>
-                        </Link>
-                      ))}
-                      <Link to="/map" className="start-map-link">
-                        <MapIcon />
-                        Explore the topic map
-                      </Link>
-                    </div>
-                  </div>
-                )}
               </div>
               <div className="home-hero-art" aria-hidden="true">
                 <img src="/planet-hero.webp?v=1" alt="" />
+              </div>
+            </div>
+          )}
+          {featured && startTopics.length > 0 && (
+            <div className="start-somewhere">
+              <span className="start-label">Or start somewhere</span>
+              <div className="start-row">
+                {startTopics.map(([tag, n]) => (
+                  <Link
+                    key={tag}
+                    to={`/tunnels/${encodeURIComponent(tag)}`}
+                    className="tunnel-chip start-chip"
+                  >
+                    <span className="tunnel-tag">#{tag}</span>
+                    <span className="tunnel-count">{n}</span>
+                  </Link>
+                ))}
+                <Link to="/map" className="start-map-link">
+                  <MapIcon />
+                  Explore the topic map
+                </Link>
               </div>
             </div>
           )}

@@ -81,7 +81,7 @@ function Layout() {
   const [loginMode, setLoginMode] = useState<"login" | "signup">("login");
   const [live, setLive] = useState(false);
   const [query, setQuery] = useState("");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(location.pathname !== "/");
   const [user, setUser] = useState<AuthUser | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [trail, setTrail] = useState<string[]>(loadTrail);
@@ -101,6 +101,12 @@ function Layout() {
       setThumped(new Set(r.thumped));
     });
   }
+
+  // The homepage hero wants full width to breathe — collapse the rail on
+  // arrival there, but leave it however the visitor last set it elsewhere.
+  useEffect(() => {
+    if (location.pathname === "/") setSidebarOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     getMe().then((u) => {
