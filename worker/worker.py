@@ -17,6 +17,7 @@ import os
 import subprocess
 import tempfile
 import time
+from decimal import Decimal
 from pathlib import Path
 
 import boto3
@@ -265,7 +266,9 @@ def process_record(bucket: str, key: str) -> None:
     extra = {
         "hls_key": f"{video_id}/hls/master.m3u8",
         "thumb_key": f"{video_id}/thumb.jpg",
-        "duration_seconds": round(elapsed, 2),
+        # DynamoDB's resource API rejects native float -- round first (so the
+        # string conversion doesn't carry binary-float noise), then Decimal.
+        "duration_seconds": Decimal(str(round(elapsed, 2))),
         "cost_usd": f"{estimate_cost(elapsed):.4f}",
         # True until the post-processor Lambda writes cues (or gives up).
         "transcribing": transcribing,
