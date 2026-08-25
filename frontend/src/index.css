@@ -348,23 +348,15 @@ body {
 .home-browse .featured {
   margin-bottom: 40px;
 }
-.start-somewhere {
-  margin-bottom: 8px;
-}
-.start-label {
-  display: block;
-  font-size: 11.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: var(--muted);
-  margin-bottom: 12px;
+.home-browse .section-head:first-child {
+  margin-top: 0;
 }
 .start-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
+  margin-bottom: 40px;
 }
 .start-map-link {
   display: inline-flex;
