@@ -131,7 +131,10 @@ export function Header({
           </NavLink>
         </li>
         <li>
-          <button type="button" className="navlink navlink-btn" onClick={onTumble}>
+          <button type="button" className="tumble-action" onClick={onTumble} title="Take me somewhere.">
+            <span className="tumble-action-glyph" aria-hidden="true">
+              ↝
+            </span>
             Tumble
           </button>
         </li>

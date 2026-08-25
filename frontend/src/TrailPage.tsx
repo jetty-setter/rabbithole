@@ -28,7 +28,7 @@ export function TrailPage() {
       </div>
       {list.length === 0 ? (
         <div className="empty">
-          <span className="empty-heart">🐾</span>
+          <img src="/RHRabbit.png?v=5" alt="" className="empty-mark" />
           <h3>No trail yet</h3>
           <p>Watch a few videos and they'll show up here.</p>
         </div>
