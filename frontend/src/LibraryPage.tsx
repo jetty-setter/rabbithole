@@ -1,7 +1,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useApp } from "./App";
-import { VideoCard } from "./VideoCard";
+import { EditorialCard } from "./EditorialCard";
 import { FeaturedCard } from "./FeaturedCard";
 import { SkeletonFeed } from "./Skeleton";
 import { displayTitle } from "./api";
@@ -97,33 +97,42 @@ export function LibraryPage() {
               </div>
             </div>
           )}
-          {featured && startTopics.length > 0 && (
-            <div className="start-somewhere">
-              <span className="start-label">Or start somewhere</span>
-              <div className="start-row">
-                {startTopics.map(([tag, n]) => (
-                  <Link
-                    key={tag}
-                    to={`/tunnels/${encodeURIComponent(tag)}`}
-                    className="tunnel-chip start-chip"
-                  >
-                    <span className="tunnel-tag">#{tag}</span>
-                    <span className="tunnel-count">{n}</span>
-                  </Link>
-                ))}
-                <Link to="/map" className="start-map-link">
-                  <MapIcon />
-                  Explore the topic map
-                </Link>
+          {featured && (
+            <div className="home-browse">
+              {startTopics.length > 0 && (
+                <div className="start-somewhere">
+                  <span className="start-label">Or start somewhere</span>
+                  <div className="start-row">
+                    {startTopics.map(([tag, n]) => (
+                      <Link
+                        key={tag}
+                        to={`/tunnels/${encodeURIComponent(tag)}`}
+                        className="tunnel-chip start-chip"
+                      >
+                        <span className="tunnel-tag">#{tag}</span>
+                        <span className="tunnel-count">{n}</span>
+                      </Link>
+                    ))}
+                    <Link to="/map" className="start-map-link">
+                      <MapIcon />
+                      Explore the topic map
+                    </Link>
+                  </div>
+                </div>
+              )}
+              <div className="section-head">
+                <h2>
+                  Start watching<span className="home-punct">.</span>
+                </h2>
               </div>
-            </div>
-          )}
-          {featured && <FeaturedCard v={featured} />}
-          {gridList.length > 0 && (
-            <div className="grid">
-              {gridList.map((v) => (
-                <VideoCard key={v.video_id} v={v} />
-              ))}
+              <FeaturedCard v={featured} />
+              {gridList.length > 0 && (
+                <div className="home-grid">
+                  {gridList.map((v) => (
+                    <EditorialCard key={v.video_id} v={v} />
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </>
