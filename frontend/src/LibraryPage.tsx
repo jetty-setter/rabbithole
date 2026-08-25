@@ -68,44 +68,54 @@ export function LibraryPage() {
       ) : (
         <>
           {featured && (
-            <div className="home-hero">
-              <h1>What are you curious about?</h1>
-              <form className="home-search-form" onSubmit={submitHomeSearch}>
-                <input
-                  className="home-search-input"
-                  placeholder="Search what was actually said…"
-                  value={homeQuery}
-                  onChange={(e) => setHomeQuery(e.target.value)}
-                />
-                <button type="submit" className="home-search-btn" aria-label="Search">
-                  ↵
-                </button>
-              </form>
-              <p className="home-hero-sub">
-                RabbitHole reads every video's transcript and jumps you straight to the
-                moment — not just titles and tags.
-              </p>
-              {startTopics.length > 0 && (
-                <div className="start-somewhere">
-                  <span className="start-label">Or start somewhere</span>
-                  <div className="start-row">
-                    {startTopics.map(([tag, n]) => (
-                      <Link
-                        key={tag}
-                        to={`/tunnels/${encodeURIComponent(tag)}`}
-                        className="tunnel-chip start-chip"
-                      >
-                        <span className="tunnel-tag">#{tag}</span>
-                        <span className="tunnel-count">{n}</span>
+            <div className="home-hero-grid">
+              <div className="home-hero">
+                <h1 className="home-h1">
+                  <span className="home-h1-line">Go deeper.</span>
+                  <span className="home-h1-line">Follow</span>
+                  <span className="home-h1-line home-h1-accent">Curiosity.</span>
+                </h1>
+                <p className="home-hero-sub">
+                  Search across every <em>spoken</em> moment — RabbitHole reads every video's
+                  transcript and jumps you straight to it, not just titles and tags.
+                </p>
+                <form className="home-search-form" onSubmit={submitHomeSearch}>
+                  <svg className="home-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+                  <input
+                    className="home-search-input"
+                    placeholder="What are you curious about?"
+                    value={homeQuery}
+                    onChange={(e) => setHomeQuery(e.target.value)}
+                  />
+                  <button type="submit" className="home-search-btn" aria-label="Search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                  </button>
+                </form>
+                {startTopics.length > 0 && (
+                  <div className="start-somewhere">
+                    <span className="start-label">Or start somewhere</span>
+                    <div className="start-row">
+                      {startTopics.map(([tag, n]) => (
+                        <Link
+                          key={tag}
+                          to={`/tunnels/${encodeURIComponent(tag)}`}
+                          className="tunnel-chip start-chip"
+                        >
+                          <span className="tunnel-tag">#{tag}</span>
+                          <span className="tunnel-count">{n}</span>
+                        </Link>
+                      ))}
+                      <Link to="/map" className="start-map-link">
+                        <MapIcon />
+                        Explore the topic map
                       </Link>
-                    ))}
-                    <Link to="/map" className="start-map-link">
-                      <MapIcon />
-                      Explore the topic map
-                    </Link>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+              <div className="home-hero-art" aria-hidden="true">
+                <img src="/planet-hero.webp?v=1" alt="" />
+              </div>
             </div>
           )}
           {featured && <FeaturedCard v={featured} />}

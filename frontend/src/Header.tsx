@@ -51,8 +51,8 @@ export function Header({
     <header className="topbar">
       <div className="topbar-left">
         <Link to="/" className="logo">
-          <img src="/RHRabbit.png?v=4" alt="" className="logo-bunny" />
-          <img src="/RHWordmark.png?v=4" alt="RabbitHole" className="logo-wordmark" />
+          <img src="/RHRabbit.png?v=5" alt="" className="logo-bunny" />
+          <span className="logo-wordmark-text">RabbitHole</span>
         </Link>
       </div>
 
