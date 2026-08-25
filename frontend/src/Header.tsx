@@ -1,11 +1,11 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Avatar } from "./Avatar";
 
 const IconSearch = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-    <circle cx="10.5" cy="10.5" r="6.5" />
-    <path d="M20 20l-4.8-4.8" />
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="11" cy="11" r="7" />
+    <path d="M21 21l-4.3-4.3" />
   </svg>
 );
 
@@ -15,67 +15,213 @@ const IconClose = () => (
   </svg>
 );
 
+const IconMenu = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <path d="M4 7h16M4 12h16M4 17h16" />
+  </svg>
+);
+
+const IconFresh = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+    <path d="M12 2l1.7 5.6L19 9l-5.3 1.4L12 16l-1.7-5.6L5 9l5.3-1.4z" />
+  </svg>
+);
+
+const IconTrending = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 17l6-6 4 4 8-8" />
+    <path d="M17 7h4v4" />
+  </svg>
+);
+
+const IconDen = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 11l8-7 8 7" />
+    <path d="M6 10v9h12v-9" />
+    <path d="M10 19v-5h4v5" />
+  </svg>
+);
+
+const IconHeart = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z" />
+  </svg>
+);
+
+const IconVideo = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
+    <rect x="2" y="5" width="14" height="14" rx="2.5" />
+    <path d="M16 10l6-3v10l-6-3z" />
+  </svg>
+);
+
+const IconAdmin = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <rect x="3" y="3" width="7" height="7" rx="1.5" />
+    <rect x="14" y="3" width="7" height="7" rx="1.5" />
+    <rect x="3" y="14" width="7" height="7" rx="1.5" />
+    <rect x="14" y="14" width="7" height="7" rx="1.5" />
+  </svg>
+);
+
+const navCls = ({ isActive }: { isActive: boolean }) => (isActive ? "navlink active" : "navlink");
+
 export function Header({
   authed,
   username,
+  isAdmin,
   onUpload,
   onLogin,
   onSignup,
   onLogout,
+  onTumble,
   query,
   setQuery,
 }: {
   authed: boolean;
   username: string | null;
+  isAdmin: boolean;
   onUpload: () => void;
   onLogin: () => void;
   onSignup: () => void;
   onLogout: () => void;
+  onTumble: () => void;
   query: string;
   setQuery: (s: string) => void;
 }) {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   function submitSearch(e: FormEvent) {
     e.preventDefault();
     const term = query.trim();
     if (term) {
       navigate(`/search?q=${encodeURIComponent(term)}`);
-      setMobileSearchOpen(false);
+      setSearchOpen(false);
     }
   }
 
   return (
     <header className="topbar">
-      <div className="topbar-left">
-        <Link to="/" className="logo">
-          <img src="/RHRabbit.png?v=5" alt="" className="logo-bunny" />
-          <span className="logo-wordmark-text">RabbitHole</span>
-        </Link>
+      <Link to="/" className="logo">
+        <img src="/RHRabbit.png?v=5" alt="" className="logo-bunny" />
+        <span className="logo-wordmark-text">RabbitHole</span>
+      </Link>
+
+      <ul className="nav-center">
+        <li>
+          <NavLink to="/" end className={navCls}>
+            Watch
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/tunnels" className={navCls}>
+            Tunnels
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/map" className={navCls}>
+            Map
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/trail" className={navCls}>
+            Trail
+          </NavLink>
+        </li>
+        <li>
+          <button type="button" className="navlink navlink-btn" onClick={onTumble}>
+            Tumble
+          </button>
+        </li>
+      </ul>
+
+      <div className="nav-right">
+        <button type="button" className="nav-search-trigger" onClick={() => setSearchOpen(true)}>
+          <IconSearch />
+          <span className="nav-search-trigger-label">Search</span>
+        </button>
+        <span className="nav-sep" />
+
+        {authed ? (
+          <button type="button" className="nav-upload-link" onClick={onUpload}>
+            Upload
+          </button>
+        ) : (
+          <>
+            <button className="btn-ghost" onClick={onLogin}>
+              Sign in
+            </button>
+            <button className="btn-primary" onClick={onSignup}>
+              Sign up
+            </button>
+          </>
+        )}
+
+        <div className="account">
+          <button
+            type="button"
+            className="burger-btn"
+            onClick={() => setMenuOpen((o) => !o)}
+            title={authed ? (username ?? "") : "Menu"}
+            aria-label="Menu"
+          >
+            {authed ? <Avatar name={username} /> : <IconMenu />}
+          </button>
+          {menuOpen && (
+            <>
+              <div className="menu-backdrop" onClick={() => setMenuOpen(false)} />
+              <div className="account-menu">
+                {authed && <div className="menu-user">@{username}</div>}
+                <Link to="/fresh" className="menu-item" onClick={() => setMenuOpen(false)}>
+                  <IconFresh />
+                  Fresh
+                </Link>
+                <Link to="/trending" className="menu-item" onClick={() => setMenuOpen(false)}>
+                  <IconTrending />
+                  Trending
+                </Link>
+                {authed && (
+                  <>
+                    <div className="menu-sep" />
+                    <Link to="/den" className="menu-item" onClick={() => setMenuOpen(false)}>
+                      <IconDen />
+                      Dashboard
+                    </Link>
+                    <Link to="/favorites" className="menu-item" onClick={() => setMenuOpen(false)}>
+                      <IconHeart />
+                      Saved
+                    </Link>
+                    <Link to="/mine" className="menu-item" onClick={() => setMenuOpen(false)}>
+                      <IconVideo />
+                      Your videos
+                    </Link>
+                    {isAdmin && (
+                      <Link to="/admin" className="menu-item" onClick={() => setMenuOpen(false)}>
+                        <IconAdmin />
+                        Admin
+                      </Link>
+                    )}
+                    <div className="menu-sep" />
+                    <button
+                      className="menu-item"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        onLogout();
+                      }}
+                    >
+                      Sign out
+                    </button>
+                  </>
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
-      <form className="nav-search-form" onSubmit={submitSearch} role="search">
-        <input
-          className="nav-search"
-          placeholder="Search what's said…  ↵"
-          title="Searches every video's transcript by meaning and jumps to the matching moment."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-      </form>
-
-      <button
-        type="button"
-        className="mobile-search-btn"
-        onClick={() => setMobileSearchOpen(true)}
-        aria-label="Search"
-      >
-        <IconSearch />
-      </button>
-
-      {mobileSearchOpen && (
+      {searchOpen && (
         <div className="mobile-search-overlay">
           <form className="mobile-search-form" onSubmit={submitSearch} role="search">
             <IconSearch />
@@ -89,7 +235,7 @@ export function Header({
             <button
               type="button"
               className="mobile-search-close"
-              onClick={() => setMobileSearchOpen(false)}
+              onClick={() => setSearchOpen(false)}
               aria-label="Close search"
             >
               <IconClose />
@@ -97,55 +243,6 @@ export function Header({
           </form>
         </div>
       )}
-
-      <nav className="topnav">
-        {authed ? (
-          <>
-            <button className="btn-primary" onClick={onUpload}>
-              ＋ Upload
-            </button>
-            <div className="account">
-              <button
-                className="avatar-btn"
-                onClick={() => setMenuOpen((o) => !o)}
-                title={username ?? ""}
-                aria-label="Account menu"
-              >
-                <Avatar name={username} />
-              </button>
-              {menuOpen && (
-                <>
-                  <div className="menu-backdrop" onClick={() => setMenuOpen(false)} />
-                  <div className="account-menu">
-                    <div className="menu-user">@{username}</div>
-                    <Link to="/favorites" className="menu-item" onClick={() => setMenuOpen(false)}>
-                      Saved
-                    </Link>
-                    <button
-                      className="menu-item"
-                      onClick={() => {
-                        setMenuOpen(false);
-                        onLogout();
-                      }}
-                    >
-                      Sign out
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          </>
-        ) : (
-          <>
-            <button className="btn-ghost" onClick={onLogin}>
-              Sign in
-            </button>
-            <button className="btn-primary" onClick={onSignup}>
-              Sign up
-            </button>
-          </>
-        )}
-      </nav>
     </header>
   );
 }
