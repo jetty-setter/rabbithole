@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useApp } from "./App";
-import { VideoCard } from "./VideoCard";
+import { EditorialCard } from "./EditorialCard";
 
 /** Newest drops, strictly chronological — the "what's new" feed (vs Trending,
  *  which ranks by views). */
@@ -26,9 +26,9 @@ export function FreshPage() {
           <p>Nothing fresh yet.</p>
         </div>
       ) : (
-        <div className="grid">
+        <div className="home-grid">
           {list.map((v) => (
-            <VideoCard key={v.video_id} v={v} />
+            <EditorialCard key={v.video_id} v={v} />
           ))}
         </div>
       )}

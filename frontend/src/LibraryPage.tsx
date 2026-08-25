@@ -99,32 +99,29 @@ export function LibraryPage() {
           )}
           {featured && (
             <div className="home-browse">
-              {startTopics.length > 0 && (
-                <div className="start-somewhere">
-                  <span className="start-label">Or start somewhere</span>
-                  <div className="start-row">
-                    {startTopics.map(([tag, n]) => (
-                      <Link
-                        key={tag}
-                        to={`/tunnels/${encodeURIComponent(tag)}`}
-                        className="tunnel-chip start-chip"
-                      >
-                        <span className="tunnel-tag">#{tag}</span>
-                        <span className="tunnel-count">{n}</span>
-                      </Link>
-                    ))}
-                    <Link to="/map" className="start-map-link">
-                      <MapIcon />
-                      Explore the topic map
-                    </Link>
-                  </div>
-                </div>
-              )}
               <div className="section-head">
                 <h2>
-                  Start watching<span className="home-punct">.</span>
+                  Start somewhere<span className="home-punct">.</span>
                 </h2>
               </div>
+              {startTopics.length > 0 && (
+                <div className="start-row">
+                  {startTopics.map(([tag, n]) => (
+                    <Link
+                      key={tag}
+                      to={`/tunnels/${encodeURIComponent(tag)}`}
+                      className="tunnel-chip start-chip"
+                    >
+                      <span className="tunnel-tag">#{tag}</span>
+                      <span className="tunnel-count">{n}</span>
+                    </Link>
+                  ))}
+                  <Link to="/map" className="start-map-link">
+                    <MapIcon />
+                    Explore the topic map
+                  </Link>
+                </div>
+              )}
               <FeaturedCard v={featured} />
               {gridList.length > 0 && (
                 <div className="home-grid">

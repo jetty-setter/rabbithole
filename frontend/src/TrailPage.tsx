@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useApp } from "./App";
-import { VideoCard } from "./VideoCard";
+import { EditorialCard } from "./EditorialCard";
 
 /** Local watch history — the trail of videos you've been down, newest first. */
 export function TrailPage() {
@@ -33,9 +33,9 @@ export function TrailPage() {
           <p>Watch a few videos and they'll show up here.</p>
         </div>
       ) : (
-        <div className="grid">
+        <div className="home-grid">
           {list.map((v) => (
-            <VideoCard key={v.video_id} v={v} />
+            <EditorialCard key={v.video_id} v={v} />
           ))}
         </div>
       )}

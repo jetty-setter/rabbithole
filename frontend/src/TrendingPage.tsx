@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useApp } from "./App";
-import { VideoCard } from "./VideoCard";
+import { EditorialCard } from "./EditorialCard";
 
 export function TrendingPage() {
   const { videos } = useApp();
@@ -24,9 +24,9 @@ export function TrendingPage() {
           <p>Nothing's surfaced yet.</p>
         </div>
       ) : (
-        <div className="grid">
+        <div className="home-grid">
           {list.map((v) => (
-            <VideoCard key={v.video_id} v={v} />
+            <EditorialCard key={v.video_id} v={v} />
           ))}
         </div>
       )}
