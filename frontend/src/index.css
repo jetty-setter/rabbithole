@@ -196,6 +196,7 @@ body {
   z-index: 0;
   inset: -18% -4vw -18% 34%;
   display: block;
+  overflow: hidden;
   pointer-events: none;
 }
 
