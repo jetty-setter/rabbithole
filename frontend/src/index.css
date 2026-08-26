@@ -201,12 +201,13 @@ body {
   z-index: 0;
   background-image: url("/hero-environment.webp");
   background-repeat: no-repeat;
-  /* Scale by height, not "cover" -- cover crops top/bottom to fill wide,
-     short hero containers, and the diver sits low enough in the plate
-     (~89% down) that a centered cover-crop clips his feet. Sizing by
-     height and anchoring lower keeps him fully in frame. */
-  background-size: auto 112%;
-  background-position: right -1vw top 46%;
+  /* Scale to exactly the container height -- the tunnel's outer rings
+     touch the very top and bottom pixel rows of the baked plate itself,
+     so any vertical overscan (cover, or auto >100%) always clips a ring
+     edge or the diver. auto 100% is the only size that guarantees the
+     whole hole -- mouth, rings, and diver -- stays in frame. */
+  background-size: auto 100%;
+  background-position: right center;
   pointer-events: none;
 }
 
@@ -239,8 +240,8 @@ body {
   }
   .home-hero-art {
     opacity: 0.4;
-    background-size: auto 95%;
-    background-position: right -40px top 35%;
+    background-size: auto 100%;
+    background-position: right center;
   }
 }
 .home-h1 {
