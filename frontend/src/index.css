@@ -176,7 +176,7 @@ body {
    pasted on a page" instead of an environment. */
 .home-hero-grid {
   position: relative;
-  min-height: clamp(680px, 82vh, 880px);
+  min-height: clamp(650px, 76vh, 820px);
   margin-left: -28px;
   margin-right: -28px;
   padding: clamp(78px, 9vh, 118px) 28px 72px;
@@ -217,10 +217,11 @@ body {
   background: linear-gradient(
     90deg,
     var(--bg) 0%,
-    rgba(5, 5, 5, 0.97) 28%,
-    rgba(5, 5, 5, 0.74) 42%,
-    rgba(5, 5, 5, 0.18) 60%,
-    transparent 76%
+    rgba(5, 5, 5, 0.96) 20%,
+    rgba(5, 5, 5, 0.72) 34%,
+    rgba(5, 5, 5, 0.32) 48%,
+    rgba(5, 5, 5, 0.08) 60%,
+    transparent 72%
   );
 }
 
