@@ -183,6 +183,10 @@ body {
 }
 
 .home-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(340px, 620px) 1fr;
+  gap: 12px;
+  align-items: center;
   margin-bottom: 8px;
   padding-top: 12px;
 }
@@ -190,6 +194,26 @@ body {
   max-width: 640px;
   position: relative;
   z-index: 2;
+}
+.home-hero-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.home-hero-art img {
+  width: auto;
+  height: clamp(340px, 44vw, 520px);
+  max-width: 100%;
+  display: block;
+  filter: drop-shadow(0 30px 70px rgba(154, 130, 242, 0.14));
+}
+@media (max-width: 900px) {
+  .home-hero-grid {
+    grid-template-columns: 1fr;
+  }
+  .home-hero-art {
+    display: none;
+  }
 }
 .home-h1 {
   font-family: var(--display);
@@ -1061,7 +1085,7 @@ body {
   letter-spacing: 0.5px;
 }
 
-.hstat-num.green {
+.hstat-num.accent {
   color: var(--violet);
 }
 

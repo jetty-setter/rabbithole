@@ -1,11 +1,12 @@
 import { useMemo } from "react";
 import { useApp } from "./App";
 import { EditorialCard } from "./EditorialCard";
+import { SkeletonFeed } from "./Skeleton";
 
 /** Newest drops, strictly chronological — the "what's new" feed (vs Trending,
  *  which ranks by views). */
 export function FreshPage() {
-  const { videos } = useApp();
+  const { videos, loading } = useApp();
 
   const list = useMemo(
     () =>
@@ -14,6 +15,8 @@ export function FreshPage() {
         .sort((a, b) => (b.created_at || "").localeCompare(a.created_at || "")),
     [videos],
   );
+
+  if (loading && list.length === 0) return <SkeletonFeed />;
 
   return (
     <main className="page">

@@ -1,9 +1,10 @@
 import { useMemo } from "react";
 import { useApp } from "./App";
 import { VideoCard } from "./VideoCard";
+import { SkeletonFeed } from "./Skeleton";
 
 export function FavoritesPage() {
-  const { videos, favorites, authed, requireLogin } = useApp();
+  const { videos, favorites, authed, requireLogin, loading } = useApp();
 
   const list = useMemo(
     () => videos.filter((v) => favorites.has(v.video_id) && v.status === "ready" && !!v.playback_url),
@@ -23,6 +24,8 @@ export function FavoritesPage() {
       </main>
     );
   }
+
+  if (loading && list.length === 0) return <SkeletonFeed />;
 
   return (
     <main className="page">

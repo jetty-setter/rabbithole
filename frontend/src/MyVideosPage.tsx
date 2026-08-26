@@ -1,9 +1,10 @@
 import { useMemo } from "react";
 import { useApp } from "./App";
 import { VideoCard } from "./VideoCard";
+import { SkeletonFeed } from "./Skeleton";
 
 export function MyVideosPage() {
-  const { videos, authed, username, requireLogin } = useApp();
+  const { videos, authed, username, requireLogin, loading } = useApp();
 
   const list = useMemo(
     () =>
@@ -26,6 +27,8 @@ export function MyVideosPage() {
       </main>
     );
   }
+
+  if (loading && list.length === 0) return <SkeletonFeed />;
 
   return (
     <main className="page">

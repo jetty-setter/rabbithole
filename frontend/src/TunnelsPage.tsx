@@ -2,12 +2,13 @@ import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useApp } from "./App";
 import { VideoCard } from "./VideoCard";
+import { SkeletonFeed } from "./Skeleton";
 
 /** Browse by topic. Every tag is a "tunnel" you can dig into. `/tunnels` shows
  *  the tag cloud; `/tunnels/:tag` shows that tunnel's videos. */
 export function TunnelsPage() {
   const { tag } = useParams();
-  const { videos } = useApp();
+  const { videos, loading } = useApp();
 
   const ready = useMemo(
     () => videos.filter((v) => v.status === "ready" && !!v.playback_url),
@@ -19,6 +20,8 @@ export function TunnelsPage() {
     for (const v of ready) for (const t of v.tags || []) counts.set(t, (counts.get(t) || 0) + 1);
     return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   }, [ready]);
+
+  if (loading && ready.length === 0) return <SkeletonFeed />;
 
   if (tag) {
     const list = ready.filter((v) => (v.tags || []).includes(tag));

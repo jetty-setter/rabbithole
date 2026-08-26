@@ -81,6 +81,9 @@ export function LibraryPage() {
                   </button>
                 </form>
               </div>
+              <div className="home-hero-art" aria-hidden="true">
+                <img src="/hero-hole.webp" alt="" />
+              </div>
             </div>
           )}
           {featured && (
