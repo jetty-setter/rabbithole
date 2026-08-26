@@ -62,7 +62,9 @@ export function LibraryPage() {
                 <h1 className="home-h1">
                   <span className="home-h1-line">Go deeper.</span>
                   <span className="home-h1-line">Follow</span>
-                  <span className="home-h1-line home-h1-accent">Curiosity.</span>
+                  <span className="home-h1-line">
+                    Curiosity<span className="home-hero-dot">.</span>
+                  </span>
                 </h1>
                 <p className="home-hero-sub">
                   Search across every <em>spoken</em> moment — RabbitHole reads every video's
