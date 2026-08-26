@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { createUpload, suggestMetadata, uploadToS3 } from "./api";
 import { extractFrames } from "./extractFrames";
 import { TagEditor } from "./TagEditor";
+import { useModalA11y } from "./hooks/useModalA11y";
 
 export function UploadModal({
   onClose,
@@ -21,6 +22,7 @@ export function UploadModal({
   const [suggesting, setSuggesting] = useState(false);
   const [suggested, setSuggested] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const modalRef = useModalA11y<HTMLDivElement>(onClose);
 
   async function chooseFile(f: File | null) {
     setSuggested(false);
@@ -89,9 +91,16 @@ export function UploadModal({
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="upload-modal-title"
+        ref={modalRef}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal-head">
-          <h2>Feed the rabbit</h2>
+          <h2 id="upload-modal-title">Feed the rabbit</h2>
           <button className="icon-btn" onClick={onClose} aria-label="Close">
             ✕
           </button>

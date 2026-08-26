@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useApp } from "./App";
 import { VideoCard } from "./VideoCard";
 import { SkeletonFeed } from "./Skeleton";
+import { useDocumentMeta } from "./hooks/useDocumentMeta";
 
 /** Browse by topic. Every tag is a "tunnel" you can dig into. `/tunnels` shows
  *  the tag cloud; `/tunnels/:tag` shows that tunnel's videos. */
@@ -20,6 +21,11 @@ export function TunnelsPage() {
     for (const v of ready) for (const t of v.tags || []) counts.set(t, (counts.get(t) || 0) + 1);
     return [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   }, [ready]);
+
+  useDocumentMeta(
+    tag ? `#${tag} tunnel` : "Tunnels",
+    tag ? `Every video tagged #${tag} on RabbitHole.` : "Dig by topic — every tag is a tunnel.",
+  );
 
   if (loading && ready.length === 0) return <SkeletonFeed />;
 
