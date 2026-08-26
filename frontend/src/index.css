@@ -173,14 +173,15 @@ body {
 
 .home-hero-grid {
   display: grid;
-  grid-template-columns: minmax(340px, 620px) 1fr;
+  grid-template-columns: minmax(320px, 560px) 1fr;
   gap: 12px;
   align-items: center;
   margin-bottom: 8px;
   padding-top: 12px;
+  overflow: visible;
 }
 .home-hero {
-  max-width: 640px;
+  max-width: 600px;
   position: relative;
   z-index: 2;
 }
@@ -188,11 +189,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: visible;
 }
 .home-hero-art img {
   width: auto;
-  height: clamp(340px, 44vw, 520px);
-  max-width: 100%;
+  height: clamp(480px, 82vh, 920px);
+  max-width: none;
   display: block;
   filter: drop-shadow(0 30px 70px rgba(154, 130, 242, 0.14));
 }
