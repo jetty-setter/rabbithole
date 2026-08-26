@@ -260,7 +260,7 @@ export function WatchPage() {
       {diveActive && (
         <div className="dive-hud">
           <span className="dive-depth">🕳️ You're {diveDepth} {diveDepth === 1 ? "hole" : "holes"} deep</span>
-          <span className="dive-note">Pick a direction on the right to go deeper.</span>
+          <span className="dive-note">Pick a direction to go deeper.</span>
           <div className="dive-hud-actions">
             <button className="dive-surface" onClick={stopDive}>
               Surface ▲

@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Avatar } from "./Avatar";
+import { MapIcon } from "./Icons";
 
 const IconSearch = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -18,6 +19,30 @@ const IconClose = () => (
 const IconMenu = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
     <path d="M4 7h16M4 12h16M4 17h16" />
+  </svg>
+);
+
+const IconWatch = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M10 8.5l5.5 3.5L10 15.5z" fill="currentColor" stroke="none" />
+  </svg>
+);
+
+const IconTunnels = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round">
+    <path d="M20.6 13.4 12 22l-9-9V3h10l7.6 7.6a2 2 0 0 1 0 2.8z" />
+    <circle cx="7.5" cy="7.5" r="1.4" fill="currentColor" stroke="none" />
+  </svg>
+);
+
+const IconTrail = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 18l5-5 4 2 5-8" strokeDasharray="0.1 4" />
+    <circle cx="5" cy="18" r="1.4" fill="currentColor" stroke="none" />
+    <circle cx="10" cy="13" r="1.4" fill="currentColor" stroke="none" />
+    <circle cx="14" cy="15" r="1.4" fill="currentColor" stroke="none" />
+    <circle cx="19" cy="7" r="1.4" fill="currentColor" stroke="none" />
   </svg>
 );
 
@@ -176,6 +201,40 @@ export function Header({
               <div className="menu-backdrop" onClick={() => setMenuOpen(false)} />
               <div className="account-menu">
                 {authed && <div className="menu-user">@{username}</div>}
+                {/* Primary nav collapses out of the topbar below 720px -- mirror
+                    it here so mobile visitors don't lose Tunnels/Map/Trail/Tumble. */}
+                <div className="menu-mobile-primary">
+                  <Link to="/" className="menu-item" onClick={() => setMenuOpen(false)}>
+                    <IconWatch />
+                    Watch
+                  </Link>
+                  <Link to="/tunnels" className="menu-item" onClick={() => setMenuOpen(false)}>
+                    <IconTunnels />
+                    Tunnels
+                  </Link>
+                  <Link to="/map" className="menu-item" onClick={() => setMenuOpen(false)}>
+                    <MapIcon />
+                    Map
+                  </Link>
+                  <Link to="/trail" className="menu-item" onClick={() => setMenuOpen(false)}>
+                    <IconTrail />
+                    Trail
+                  </Link>
+                  <button
+                    type="button"
+                    className="menu-item"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      onTumble();
+                    }}
+                  >
+                    <span className="tumble-action-glyph" aria-hidden="true">
+                      ↝
+                    </span>
+                    Tumble
+                  </button>
+                  <div className="menu-sep" />
+                </div>
                 <Link to="/fresh" className="menu-item" onClick={() => setMenuOpen(false)}>
                   <IconFresh />
                   Fresh

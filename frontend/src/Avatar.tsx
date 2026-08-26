@@ -1,15 +1,15 @@
 // Per-user hexagon avatar — 4 brand-cohesive looks, chosen deterministically
-// from the name: pink/green filled (light letter) + white outline (pink/green
+// from the name: violet/warm filled (light letter) + white outline (violet/warm
 // letter). Only the brand's two accent colors, so avatars always match the site.
-const PINK = "#cf2ce8";
-const GREEN = "#8f3bff";
+const VIOLET = "#8f3bff";
+const WARM = "#e85b35";
 const WHITE = "#f3f3f1";
 
 const VARIANTS = [
-  { fill: PINK, stroke: PINK, text: WHITE }, // magenta, white letter
-  { fill: GREEN, stroke: GREEN, text: WHITE }, // purple, white letter
-  { fill: "none", stroke: WHITE, text: PINK }, // white outline, magenta letter
-  { fill: "none", stroke: WHITE, text: GREEN }, // white outline, purple letter
+  { fill: VIOLET, stroke: VIOLET, text: WHITE }, // violet, white letter
+  { fill: WARM, stroke: WARM, text: WHITE }, // warm, white letter
+  { fill: "none", stroke: WHITE, text: VIOLET }, // white outline, violet letter
+  { fill: "none", stroke: WHITE, text: WARM }, // white outline, warm letter
 ];
 
 function variantFor(name: string) {
@@ -42,7 +42,8 @@ export function Avatar({ name, className }: { name: string | null | undefined; c
         textAnchor="middle"
         dominantBaseline="central"
         fill={text}
-        fontFamily="Anton, system-ui, sans-serif"
+        fontFamily="'Space Grotesk', system-ui, sans-serif"
+        fontWeight="700"
         fontSize="11"
       >
         {initial}
