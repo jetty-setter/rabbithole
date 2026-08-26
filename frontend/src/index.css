@@ -63,22 +63,12 @@ body {
 .logo {
   display: flex;
   align-items: center;
-  gap: 11px;
 }
 
-.logo-bunny {
-  height: 34px;
+.logo-mark {
+  height: 40px;
   width: auto;
   display: block;
-}
-
-.logo-wordmark-text {
-  font-family: var(--sans);
-  font-weight: 700;
-  font-size: 16px;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: var(--text);
 }
 
 .nav-right {
