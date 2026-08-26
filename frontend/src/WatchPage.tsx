@@ -259,7 +259,7 @@ export function WatchPage() {
     <main className="page watch">
       {diveActive && (
         <div className="dive-hud">
-          <span className="dive-depth">🕳️ You're {diveDepth} {diveDepth === 1 ? "hole" : "holes"} deep</span>
+          <span className="dive-depth">You're {diveDepth} {diveDepth === 1 ? "hole" : "holes"} deep</span>
           <span className="dive-note">Pick a direction to go deeper.</span>
           <div className="dive-hud-actions">
             <button className="dive-surface" onClick={stopDive}>
@@ -534,7 +534,7 @@ export function WatchPage() {
                 </button>
               </div>
               <span className="dive-depth-inline">
-                🕳️ {diveDepth} {diveDepth === 1 ? "hole" : "holes"} deep
+                {diveDepth} {diveDepth === 1 ? "hole" : "holes"} deep
               </span>
               {diveCandidates.length === 0 ? (
                 <div className="empty dive-dead-end">
@@ -554,7 +554,7 @@ export function WatchPage() {
                         {c.video.thumbnail_url ? (
                           <img src={c.video.thumbnail_url} alt="" />
                         ) : (
-                          <span>🐇</span>
+                          <img src="/RHRabbit.png?v=5" alt="" className="thumb-ph" />
                         )}
                         {c.start > 0 ? (
                           <span className="dur-badge">{fmtTime(c.start)}</span>
@@ -583,7 +583,7 @@ export function WatchPage() {
               <div className="feature-head-row">
                 <h2 className="feature-head">Go deeper</h2>
                 <button className="btn-dive" onClick={() => startDive(vid)}>
-                  🕳️ Dive
+                  Dive ▼
                 </button>
               </div>
               <p className="deeper-sub">Related moments, elsewhere in the library.</p>
@@ -597,7 +597,7 @@ export function WatchPage() {
                     {r.video.thumbnail_url ? (
                       <img src={r.video.thumbnail_url} alt="" />
                     ) : (
-                      <span>🐇</span>
+                      <img src="/RHRabbit.png?v=5" alt="" className="thumb-ph" />
                     )}
                     <span className="dur-badge">{fmtTime(r.start)}</span>
                   </div>
@@ -614,14 +614,14 @@ export function WatchPage() {
                 <h2 className="feature-head">Deeper</h2>
                 {related.length > 0 && (
                   <button className="btn-dive" onClick={() => startDive(vid)}>
-                    🕳️ Dive
+                    Dive ▼
                   </button>
                 )}
               </div>
               {related.map((r) => (
                 <Link to={`/watch/${r.video_id}`} className="related-item" key={r.video_id}>
                   <div className="related-thumb">
-                    {r.thumbnail_url ? <img src={r.thumbnail_url} alt="" /> : <span>🐇</span>}
+                    {r.thumbnail_url ? <img src={r.thumbnail_url} alt="" /> : <img src="/RHRabbit.png?v=5" alt="" className="thumb-ph" />}
                     {r.duration_seconds && (
                       <span className="dur-badge">{formatDuration(r.duration_seconds)}</span>
                     )}

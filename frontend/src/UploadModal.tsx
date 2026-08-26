@@ -115,7 +115,6 @@ export function UploadModal({
           <input
             ref={inputRef}
             type="file"
-            accept="video/*"
             hidden
             onChange={(e) => chooseFile(e.target.files?.[0] ?? null)}
           />

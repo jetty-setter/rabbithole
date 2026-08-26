@@ -40,9 +40,14 @@ export function VideoCard({ v }: { v: Video }) {
   const faved = favorites.has(v.video_id);
 
   return (
-    <Link to={`/watch/${v.video_id}`} className="vcard">
+    <div className="vcard">
+      <Link to={`/watch/${v.video_id}`} className="vcard-stretch-link" aria-label={displayTitle(v)} />
       <div className="thumb">
-        {v.thumbnail_url ? <img src={v.thumbnail_url} alt="" /> : <span className="thumb-ph">🐇</span>}
+        {v.thumbnail_url ? (
+          <img src={v.thumbnail_url} alt="" />
+        ) : (
+          <img src="/RHRabbit.png?v=5" alt="" className="thumb-ph" />
+        )}
         <span className="play-badge">▶</span>
         <div className="card-badges">
           {v.has_transcript && (
@@ -57,11 +62,7 @@ export function VideoCard({ v }: { v: Video }) {
           <button
             className={faved ? "fav-btn on" : "fav-btn"}
             title={faved ? "Remove from favorites" : "Save to favorites"}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              toggleFavorite(v.video_id);
-            }}
+            onClick={() => toggleFavorite(v.video_id)}
           >
             {faved ? "♥" : "♡"}
           </button>
@@ -74,7 +75,6 @@ export function VideoCard({ v }: { v: Video }) {
           <Link
             to={`/creator/${encodeURIComponent(v.owner || "RabbitHole")}`}
             className="vchannel vchannel-link"
-            onClick={(e) => e.stopPropagation()}
           >
             {v.owner || "RabbitHole"}
           </Link>
@@ -98,6 +98,6 @@ export function VideoCard({ v }: { v: Video }) {
           </span>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

@@ -4,11 +4,10 @@ import { useApp } from "./App";
 import { EditorialCard } from "./EditorialCard";
 import { FeaturedCard } from "./FeaturedCard";
 import { SkeletonFeed } from "./Skeleton";
-import { displayTitle } from "./api";
 import { MapIcon } from "./Icons";
 
 export function LibraryPage() {
-  const { videos, loading, authed, username, query } = useApp();
+  const { videos, loading, authed, username } = useApp();
   const navigate = useNavigate();
   const [homeQuery, setHomeQuery] = useState("");
 
@@ -28,17 +27,11 @@ export function LibraryPage() {
     [videos],
   );
 
-  const list = useMemo(
-    () =>
-      [...mine, ...ready].filter((v) =>
-        displayTitle(v).toLowerCase().includes(query.toLowerCase()),
-      ),
-    [mine, ready, query],
-  );
+  const list = useMemo(() => [...mine, ...ready], [mine, ready]);
 
   const hasAny = mine.length + ready.length > 0;
 
-  const featured = !query.trim() && ready.length > 0 ? ready[0] : null;
+  const featured = ready.length > 0 ? ready[0] : null;
   const gridList = featured ? list.filter((v) => v.video_id !== featured.video_id) : list;
 
   // A taste of the ways to follow curiosity here, right under the search
@@ -60,10 +53,6 @@ export function LibraryPage() {
           <img src="/rabbit-hole-logo.svg" alt="RabbitHole" className="empty-logo" />
           <h3>Nothing in the hole yet</h3>
           <p>{authed ? "Throw the first one down." : "The rabbit's still digging — check back soon."}</p>
-        </div>
-      ) : list.length === 0 ? (
-        <div className="empty">
-          <p>The rabbit came up empty{query ? ` for “${query}”` : ""}.</p>
         </div>
       ) : (
         <>
@@ -93,7 +82,7 @@ export function LibraryPage() {
                 </form>
               </div>
               <div className="home-hero-art" aria-hidden="true">
-                <img src="/planet-hero.webp?v=1" alt="" />
+                <img src="/hero-tunnel.webp" alt="" />
               </div>
             </div>
           )}
