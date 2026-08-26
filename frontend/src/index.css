@@ -1577,11 +1577,13 @@ body {
 .table-wrap {
   border: 1px solid var(--border);
   border-radius: 12px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .admin-table {
   width: 100%;
+  min-width: 640px;
   border-collapse: collapse;
   font-size: 14px;
 }
@@ -3347,6 +3349,22 @@ body::after {
   width: 100%;
   height: auto;
   max-height: 72vh;
+}
+
+/* Below the graph's native 900px width, scaling the SVG down shrinks its
+   11px node labels into illegible specks. Hold it at native size inside a
+   scroll/pinch-zoom container instead of squeezing the whole coordinate
+   system into the viewport. */
+@media (max-width: 940px) {
+  .topic-map {
+    overflow-x: auto;
+    padding: 8px 0;
+  }
+  .topic-map-svg {
+    width: 900px;
+    max-width: none;
+    max-height: none;
+  }
 }
 
 .topic-edge {

@@ -19,6 +19,7 @@ import { Comments } from "./Comments";
 import { Avatar } from "./Avatar";
 import { EditForm } from "./components/EditForm";
 import { useVideoData } from "./hooks/useVideoData";
+import { useDocumentMeta } from "./hooks/useDocumentMeta";
 import { useTranscript } from "./hooks/useTranscript";
 
 interface DiveCandidate {
@@ -61,6 +62,7 @@ export function WatchPage() {
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const { video, setVideo, notFound } = useVideoData(id, recordTrail);
+  useDocumentMeta(video ? displayTitle(video) : undefined, video?.description ?? undefined);
   const { cues, cuesRef, cueQuery, setCueQuery, activeCue, shownCues } = useTranscript(
     video,
     videoRef,

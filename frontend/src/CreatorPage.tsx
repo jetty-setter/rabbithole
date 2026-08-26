@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { getCreator, relativeTime, type Creator } from "./api";
 import { Avatar } from "./Avatar";
 import { VideoCard } from "./VideoCard";
+import { useDocumentMeta } from "./hooks/useDocumentMeta";
 
 /** A creator's public profile — their videos, aggregate stats, and an
  *  "expertise" topic list built from the tags across their own videos. */
@@ -10,6 +11,10 @@ export function CreatorPage() {
   const { username } = useParams();
   const [creator, setCreator] = useState<Creator | null>(null);
   const [notFound, setNotFound] = useState(false);
+  useDocumentMeta(
+    creator ? `@${creator.username}` : username ? `@${username}` : undefined,
+    creator ? `${creator.video_count} video${creator.video_count === 1 ? "" : "s"} on RabbitHole.` : undefined,
+  );
 
   useEffect(() => {
     setCreator(null);

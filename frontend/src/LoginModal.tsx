@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { login, signup, type AuthUser } from "./api";
+import { useModalA11y } from "./hooks/useModalA11y";
 
 export function LoginModal({
   onClose,
@@ -16,6 +17,7 @@ export function LoginModal({
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const modalRef = useModalA11y<HTMLDivElement>(onClose);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -33,9 +35,16 @@ export function LoginModal({
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="login-modal-title"
+        ref={modalRef}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal-head">
-          <h2>{mode === "signup" ? "Join the warren" : "Welcome back"}</h2>
+          <h2 id="login-modal-title">{mode === "signup" ? "Join the warren" : "Welcome back"}</h2>
           <button className="icon-btn" onClick={onClose} aria-label="Close">
             ✕
           </button>
