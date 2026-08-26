@@ -200,9 +200,13 @@ body {
   inset: 0;
   z-index: 0;
   background-image: url("/hero-environment.webp");
-  background-position: center right;
   background-repeat: no-repeat;
-  background-size: cover;
+  /* Scale by height, not "cover" -- cover crops top/bottom to fill wide,
+     short hero containers, and the diver sits low enough in the plate
+     (~89% down) that a centered cover-crop clips his feet. Sizing by
+     height and anchoring lower keeps him fully in frame. */
+  background-size: auto 112%;
+  background-position: right -1vw top 46%;
   pointer-events: none;
 }
 
@@ -235,7 +239,8 @@ body {
   }
   .home-hero-art {
     opacity: 0.4;
-    background-position: top right;
+    background-size: auto 95%;
+    background-position: right -40px top 35%;
   }
 }
 .home-h1 {
