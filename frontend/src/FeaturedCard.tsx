@@ -10,7 +10,7 @@ export function FeaturedCard({ v }: { v: Video }) {
         {v.thumbnail_url ? (
           <img src={v.thumbnail_url} alt="" />
         ) : (
-          <span className="thumb-ph">🐇</span>
+          <img src="/RHRabbit.png?v=5" alt="" className="thumb-ph" />
         )}
         <div className="card-badges">
           {v.has_transcript && (

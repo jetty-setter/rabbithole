@@ -1,16 +1,20 @@
 import { Link } from "react-router-dom";
 import { displayTitle, formatDuration, type Video } from "./api";
 
-/** Premium, image-forward card for the homepage grid — category label, serif
- *  title, play + duration. Deliberately minimal: no vote/save chrome on the
- *  face (that lives on the watch page), so the photography does the work. */
+/** Premium, image-forward card for the homepage grid — category label, bold
+ *  display title, play + duration. Deliberately minimal: no vote/save chrome
+ *  on the face (that lives on the watch page), so the photography does the work. */
 export function EditorialCard({ v }: { v: Video }) {
   const cat = v.tags?.[0];
 
   return (
     <Link to={`/watch/${v.video_id}`} className="ecard">
       <div className="ecard-thumb">
-        {v.thumbnail_url ? <img src={v.thumbnail_url} alt="" /> : <span className="thumb-ph">🐇</span>}
+        {v.thumbnail_url ? (
+          <img src={v.thumbnail_url} alt="" />
+        ) : (
+          <img src="/RHRabbit.png?v=5" alt="" className="thumb-ph" />
+        )}
       </div>
       {cat && <span className="ecard-cat">{cat}</span>}
       <h3 className="ecard-title">{displayTitle(v)}</h3>

@@ -85,7 +85,7 @@ export function SearchPage() {
                 {r.video.thumbnail_url ? (
                   <img src={r.video.thumbnail_url} alt="" />
                 ) : (
-                  <span className="thumb-ph">🐇</span>
+                  <img src="/RHRabbit.png?v=5" alt="" className="thumb-ph" />
                 )}
                 <span className="dur-badge">{fmt(r.start)}</span>
               </div>

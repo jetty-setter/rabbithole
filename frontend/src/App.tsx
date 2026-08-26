@@ -29,6 +29,7 @@ import { WatchPage } from "./WatchPage";
 import { AdminPage } from "./AdminPage";
 import { CreatorPage } from "./CreatorPage";
 import { TopicMapPage } from "./TopicMapPage";
+import { NotFoundPage } from "./NotFoundPage";
 
 export interface AppCtx {
   videos: Video[];
@@ -319,6 +320,7 @@ export default function App() {
         <Route path="/creator/:username" element={<CreatorPage />} />
         <Route path="/map" element={<TopicMapPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );
