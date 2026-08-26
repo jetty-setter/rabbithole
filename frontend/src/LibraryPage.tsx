@@ -57,7 +57,7 @@ export function LibraryPage() {
     <main className="page">
       {!hasAny ? (
         <div className="empty">
-          <img src="/RHLogo.png?v=5" alt="RabbitHole" className="empty-logo" />
+          <img src="/rabbit-hole-logo.svg" alt="RabbitHole" className="empty-logo" />
           <h3>Nothing in the hole yet</h3>
           <p>{authed ? "Throw the first one down." : "The rabbit's still digging — check back soon."}</p>
         </div>
