@@ -1,9 +1,10 @@
 import { useMemo } from "react";
 import { useApp } from "./App";
 import { EditorialCard } from "./EditorialCard";
+import { SkeletonFeed } from "./Skeleton";
 
 export function TrendingPage() {
-  const { videos } = useApp();
+  const { videos, loading } = useApp();
 
   const list = useMemo(
     () =>
@@ -12,6 +13,8 @@ export function TrendingPage() {
         .sort((a, b) => (b.views ?? 0) - (a.views ?? 0)),
     [videos],
   );
+
+  if (loading && list.length === 0) return <SkeletonFeed />;
 
   return (
     <main className="page">

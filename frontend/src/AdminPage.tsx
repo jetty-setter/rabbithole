@@ -1,8 +1,9 @@
 import { useApp } from "./App";
 import { STATUS_LABEL } from "./api";
+import { SkeletonAdmin } from "./Skeleton";
 
 export function AdminPage() {
-  const { videos, live, authed, isAdmin, requireLogin } = useApp();
+  const { videos, live, authed, isAdmin, requireLogin, loading } = useApp();
 
   if (!isAdmin) {
     return (
@@ -19,6 +20,8 @@ export function AdminPage() {
       </main>
     );
   }
+
+  if (loading && videos.length === 0) return <SkeletonAdmin />;
 
   const ready = videos.filter((v) => v.status === "ready").length;
   const processing = videos.filter((v) =>
@@ -55,7 +58,7 @@ export function AdminPage() {
           <span className="hstat-l">Failed</span>
         </div>
         <div className="hstat">
-          <span className="hstat-num green">${cost.toFixed(4)}</span>
+          <span className="hstat-num accent">${cost.toFixed(4)}</span>
           <span className="hstat-l">Compute cost</span>
         </div>
       </div>

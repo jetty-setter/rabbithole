@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "./App";
 import { buildTopicGraph, createForceSim, type PositionedNode } from "./topicGraph";
+import { SkeletonFeed } from "./Skeleton";
 
 const WIDTH = 900;
 const HEIGHT = 560;
@@ -21,7 +22,7 @@ function truncate(s: string, n = 18): string {
  *  — a lightweight, dependency-free force layout over data that already
  *  exists (no separate topic model). Click a node to browse that tunnel. */
 export function TopicMapPage() {
-  const { videos } = useApp();
+  const { videos, loading } = useApp();
   const navigate = useNavigate();
   const [positions, setPositions] = useState<PositionedNode[] | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
@@ -83,6 +84,8 @@ export function TopicMapPage() {
     }
     return set;
   }, [hovered, edges]);
+
+  if (loading && nodes.length === 0) return <SkeletonFeed />;
 
   return (
     <main className="page">

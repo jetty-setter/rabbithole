@@ -2,10 +2,11 @@ import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useApp } from "./App";
 import { VideoCard } from "./VideoCard";
+import { SkeletonFeed } from "./Skeleton";
 
 /** Your hub — uploads, saves, trail, and a couple of stats in one place. */
 export function DenPage() {
-  const { videos, username, authed, requireLogin, favorites, hopped, trail } = useApp();
+  const { videos, username, authed, requireLogin, favorites, hopped, trail, loading } = useApp();
 
   const mine = useMemo(
     () => videos.filter((v) => v.owner === username),
@@ -25,6 +26,8 @@ export function DenPage() {
       </main>
     );
   }
+
+  if (loading && mine.length === 0) return <SkeletonFeed />;
 
   const recent = mine
     .filter((v) => v.status === "ready" && !!v.playback_url)

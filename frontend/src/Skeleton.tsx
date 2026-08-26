@@ -39,6 +39,28 @@ export function SkeletonFeed() {
   );
 }
 
+/** Stat row + table skeleton for the admin/operations page. */
+export function SkeletonAdmin() {
+  return (
+    <main className="page" aria-hidden="true">
+      <div className="sk sk-line tall" style={{ width: "220px", marginBottom: 24 }} />
+      <div className="hood-stats">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div className="hstat" key={i}>
+            <div className="sk sk-line tall" style={{ width: "50%" }} />
+            <div className="sk sk-line short" style={{ width: "70%" }} />
+          </div>
+        ))}
+      </div>
+      <div className="sk-lines" style={{ marginTop: 32 }}>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div className="sk sk-line" style={{ width: "100%" }} key={i} />
+        ))}
+      </div>
+    </main>
+  );
+}
+
 /** Player + meta skeleton for the watch page. */
 export function SkeletonWatch() {
   return (
