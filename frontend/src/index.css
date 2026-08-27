@@ -348,8 +348,15 @@ body {
 .home-browse {
   background: var(--bg-2);
   color: var(--text);
-  margin: 40px -28px 0;
-  padding: 28px 28px 56px;
+  /* margin-top used to be 40px, an unpainted gap between the hero's
+     bottom edge and this section's own background -- it fell through to
+     body's --bg (#050505), a third tone sandwiched between the hero's
+     --hero-black and this panel's --bg-2. Moved that same 40px into
+     padding-top instead, so the panel's own background (and border-top)
+     sit flush against the hero with no gap, while the visual spacing
+     before the first heading is unchanged. */
+  margin: 0 -28px 0;
+  padding: 68px 28px 56px;
   border-top: 1px solid var(--border);
 }
 .home-browse .featured {
