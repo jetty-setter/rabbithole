@@ -59,7 +59,7 @@ body {
 }
 
 .logo-mark {
-  height: 40px;
+  height: 46px;
   width: auto;
   display: block;
 }
@@ -255,11 +255,11 @@ body {
 .home-h1 {
   font-family: var(--display);
   font-weight: 700;
-  font-size: clamp(54px, 7.2vw, 104px);
+  font-size: clamp(50px, 6.6vw, 94px);
   line-height: 0.91;
   letter-spacing: -0.045em;
   text-transform: uppercase;
-  margin: 0 0 20px;
+  margin: 0 0 30px;
 }
 .home-h1-line {
   display: block;
@@ -285,7 +285,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  max-width: 620px;
+  max-width: 560px;
   min-height: 62px;
   background: rgba(13, 13, 14, 0.42);
   border: 1px solid rgba(251, 245, 232, 0.18);
@@ -346,18 +346,18 @@ body {
    the hero rather than switching to a light editorial section. A slightly
    raised panel tone plus a hairline is enough to separate it from the hero. */
 .home-browse {
-  background: var(--bg-2);
   color: var(--text);
-  /* margin-top used to be 40px, an unpainted gap between the hero's
-     bottom edge and this section's own background -- it fell through to
-     body's --bg (#050505), a third tone sandwiched between the hero's
-     --hero-black and this panel's --bg-2. Moved that same 40px into
-     padding-top instead, so the panel's own background (and border-top)
-     sit flush against the hero with no gap, while the visual spacing
-     before the first heading is unchanged. */
+  /* No hard line, no flat panel-gray directly under the hero -- that read
+     as leaving the RabbitHole brand for an admin UI. Instead: start at
+     (near) --hero-black, the same black the hero itself ends on, ease
+     into --bg-2 gradually over the first ~560px, and carry a very faint
+     violet wash from the hero's atmosphere a little further into the
+     section so the color language doesn't just stop at the fold. */
+  background:
+    radial-gradient(ellipse 70% 420px at 76% 0%, rgba(154, 130, 242, 0.07), transparent 70%),
+    linear-gradient(to bottom, var(--hero-black), var(--bg-2) 560px);
   margin: 0 -28px 0;
   padding: 68px 28px 56px;
-  border-top: 1px solid var(--border);
 }
 .home-browse .featured {
   margin-bottom: 40px;
@@ -365,26 +365,62 @@ body {
 .home-browse .section-head:first-child {
   margin-top: 0;
 }
+/* "Start somewhere." belongs to the hero's typography, not the generic
+   section-head style DenPage also uses -- scoped so only this instance
+   changes. */
+.home-browse .section-head:first-child h2 {
+  font-family: var(--display);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
 .start-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 16px;
   margin-bottom: 40px;
+}
+/* Editorial chip treatment for the homepage only -- .tunnel-chip itself
+   (used on the Tunnels/Creator pages) is untouched. Squared-off corners,
+   a quieter border, more air, and violet held back to an accent (hover,
+   the map icon) rather than a colored badge sitting inside every chip. */
+.start-chip {
+  padding: 10px 16px;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.start-chip:hover {
+  border-color: var(--violet);
+  transform: none;
+}
+.start-chip .tunnel-count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  background: none;
+  padding: 0;
+  border-radius: 0;
 }
 .start-map-link {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 8px 14px;
-  border: 1px solid var(--border-2);
-  border-radius: 999px;
-  background: var(--panel);
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: transparent;
   color: var(--text);
   text-decoration: none;
   font-size: 13px;
-  font-weight: 600;
-  transition: border-color 130ms ease, transform 130ms ease;
+  font-weight: 500;
+  transition: border-color 130ms ease;
 }
 .start-map-link svg {
   width: 15px;
@@ -393,7 +429,6 @@ body {
 }
 .start-map-link:hover {
   border-color: var(--violet);
-  transform: translateY(-2px);
 }
 @media (max-width: 560px) {
   .home-browse {
