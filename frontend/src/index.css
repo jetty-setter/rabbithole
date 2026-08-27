@@ -187,7 +187,7 @@ body {
   overflow: hidden;
   isolation: isolate;
   background-color: #050505;
-  background-image: url("/RabbitHole_Hero_3840x1800.webp");
+  background-image: url("/RabbitHole_Hero_3840x1800_EdgeBlended.webp");
   background-repeat: no-repeat;
   /* Fill hero vertically and sit flush to right edge */
   background-size: auto 100%;
