@@ -84,7 +84,7 @@ export function LibraryPage() {
                 </form>
               </div>
               <div className="home-hero-art" aria-hidden="true">
-                <img src="/hero-environment.webp" alt="" />
+                <img src="/hero-hole-full.webp" alt="" />
               </div>
             </div>
           )}

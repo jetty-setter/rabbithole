@@ -205,8 +205,8 @@ body {
   right: max(28px, calc((100vw - 1180px) / 2 + 28px));
   top: 50%;
   transform: translateY(-50%);
-  width: min(52vw, 760px);
-  height: min(82%, 760px);
+  width: min(44vw, 700px);
+  height: min(88%, 780px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -257,10 +257,10 @@ body {
   background: linear-gradient(
     90deg,
     rgba(5, 5, 5, 0.96) 0%,
-    rgba(5, 5, 5, 0.88) 18%,
-    rgba(5, 5, 5, 0.56) 34%,
-    rgba(5, 5, 5, 0.18) 48%,
-    transparent 62%
+    rgba(5, 5, 5, 0.82) 20%,
+    rgba(5, 5, 5, 0.38) 36%,
+    rgba(5, 5, 5, 0.08) 50%,
+    transparent 60%
   );
 }
 
