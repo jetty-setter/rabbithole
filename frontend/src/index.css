@@ -1,5 +1,6 @@
 :root {
   --bg: #050505;
+  --hero-black: #030105;
   --bg-2: #0d0d0e;
   --panel: #131316;
   --panel-2: #1a1a1e;
@@ -186,8 +187,12 @@ body {
     72px;
   overflow: hidden;
   isolation: isolate;
-  background-color: #050505;
-  background-image: url("/RabbitHole_Hero_3840x1800_EdgeBlended.webp");
+  /* Match the hero surface to the plate's own near-black perimeter
+     (measured ~rgb(2,1,5) averaged across its edges) instead of forcing
+     the artwork to match the page's --bg. That's what actually makes the
+     image boundary disappear. */
+  background-color: var(--hero-black);
+  background-image: url("/RabbitHole_Hero_3840x1800.webp");
   background-repeat: no-repeat;
   /* Fill hero vertically and sit flush to right edge */
   background-size: auto 100%;
@@ -207,14 +212,20 @@ body {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: linear-gradient(
-    90deg,
-    rgba(5, 5, 5, 0.92) 0%,
-    rgba(5, 5, 5, 0.68) 22%,
-    rgba(5, 5, 5, 0.26) 38%,
-    rgba(5, 5, 5, 0.05) 50%,
-    transparent 58%
-  );
+  background:
+    linear-gradient(
+      90deg,
+      rgba(3, 1, 5, 0.94) 0%,
+      rgba(3, 1, 5, 0.72) 22%,
+      rgba(3, 1, 5, 0.3) 38%,
+      rgba(3, 1, 5, 0.06) 50%,
+      transparent 58%
+    ),
+    /* --hero-black (#030105) and the page's --bg (#050505) are two
+       different near-blacks; the hero's own bottom margin exposes --bg
+       directly beneath it, so ease across that boundary instead of
+       cutting straight from one to the other. */
+    linear-gradient(to bottom, transparent 92%, var(--bg) 100%);
 }
 
 @media (max-width: 900px) {
