@@ -180,6 +180,13 @@ body {
   width: 100vw;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
+  /* .page has a fixed 32px padding-top shared by every route; that gap sat
+     between the header and the hero with nothing painted in it, so it
+     fell through to body's --bg (#050505) -- a flat, textureless strip in
+     a slightly different black than the hero's own #030105, directly
+     above it. Pull the hero up to close that gap with its own
+     background instead of touching .page's shared padding. */
+  margin-top: -32px;
   min-height: clamp(650px, 76vh, 820px);
   padding:
     clamp(78px, 9vh, 118px)
