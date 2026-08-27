@@ -222,9 +222,15 @@ body {
   .home-hero-grid {
     min-height: 640px;
     padding: 42px 16px 36px;
-    /* Keep the full hole visible on mobile too */
-    background-size: auto 74%;
-    background-position: right bottom 18px;
+    /* auto 74% (sizing by height) crops ~63% off the image's left edge at
+       phone widths, deep into real ring content, not just the ambient
+       haze fringe -- confirmed by rendering the exact visible crop. This
+       asset is a wide 2.13:1 plate; the only way to guarantee zero
+       cropping at an arbitrary narrow width is to size by width instead,
+       so the full image is always shown regardless of how much shorter
+       that makes it. */
+    background-size: 100% auto;
+    background-position: bottom 18px center;
   }
   .home-hero {
     width: 100%;
