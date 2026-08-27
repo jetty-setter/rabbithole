@@ -212,20 +212,19 @@ body {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background:
-    linear-gradient(
-      90deg,
-      rgba(3, 1, 5, 0.94) 0%,
-      rgba(3, 1, 5, 0.72) 22%,
-      rgba(3, 1, 5, 0.3) 38%,
-      rgba(3, 1, 5, 0.06) 50%,
-      transparent 58%
-    ),
-    /* --hero-black (#030105) and the page's --bg (#050505) are two
-       different near-blacks; the hero's own bottom margin exposes --bg
-       directly beneath it, so ease across that boundary instead of
-       cutting straight from one to the other. */
-    linear-gradient(to bottom, transparent 92%, var(--bg) 100%);
+  /* Horizontal left-side readability veil only. The hero stays
+     --hero-black all the way to its bottom edge -- no fade back to --bg
+     inside the hero itself, which just reintroduced the tonal boundary
+     this token was added to remove. The section below handles its own
+     separation via its panel background/border. */
+  background: linear-gradient(
+    90deg,
+    rgba(3, 1, 5, 0.94) 0%,
+    rgba(3, 1, 5, 0.72) 22%,
+    rgba(3, 1, 5, 0.3) 38%,
+    rgba(3, 1, 5, 0.06) 50%,
+    transparent 58%
+  );
 }
 
 @media (max-width: 900px) {
