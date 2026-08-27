@@ -266,17 +266,24 @@ body {
 
 @media (max-width: 900px) {
   .home-hero-grid {
-    min-height: 540px;
+    min-height: 640px;
     padding: 42px 16px 36px;
   }
   .home-hero {
     width: 100%;
   }
+  /* Desktop centers the stage vertically against a copy column that only
+     takes up the left half; on mobile the copy stacks full-width above it,
+     so a vertically-centered stage sits directly behind the search form
+     and gets hidden. Anchor it to the clear space below the copy instead. */
   .home-hero-art {
-    right: 8px;
-    width: min(62vw, 360px);
-    height: min(72%, 420px);
-    opacity: 0.42;
+    top: auto;
+    bottom: 20px;
+    transform: none;
+    right: 12px;
+    width: min(58vw, 300px);
+    height: min(38%, 260px);
+    opacity: 0.9;
   }
 }
 .home-h1 {
