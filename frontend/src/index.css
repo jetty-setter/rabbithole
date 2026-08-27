@@ -240,8 +240,8 @@ body {
   }
   .home-hero-art {
     opacity: 0.4;
-    background-size: auto 100%;
-    background-position: right center;
+    background-size: auto 88%;
+    background-position: right 42%;
   }
 }
 .home-h1 {
