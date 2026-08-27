@@ -189,8 +189,9 @@ body {
   background-color: #050505;
   background-image: url("/RabbitHole_Hero_3840x1800.webp");
   background-repeat: no-repeat;
-  background-size: auto 96%;
-  background-position: right 2vw center;
+  /* Fill hero vertically and sit flush to right edge */
+  background-size: auto 100%;
+  background-position: right center;
 }
 
 .home-hero {
