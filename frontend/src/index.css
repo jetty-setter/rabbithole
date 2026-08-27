@@ -24,6 +24,15 @@
 html,
 body {
   margin: 0;
+  /* .home-hero-grid (and any other full-bleed section) uses width:100vw
+     with negative margins to break out of .page's padding. 100vw includes
+     the vertical scrollbar's own width, so on any page tall enough to
+     scroll, that element runs ~5-15px past the actual visible viewport
+     and forces a horizontal scrollbar. This is the standard guard against
+     that class of bug -- nothing on the site relies on page-level
+     horizontal scroll (wide tables/code blocks use their own scoped
+     overflow-x:auto containers, unaffected by this). */
+  overflow-x: hidden;
 }
 
 body {
