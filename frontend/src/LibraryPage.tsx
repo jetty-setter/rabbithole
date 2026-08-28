@@ -50,7 +50,7 @@ export function LibraryPage() {
   if (loading && !hasAny) return <SkeletonFeed />;
 
   return (
-    <main className="page">
+    <main className="page home-page">
       {!hasAny ? (
         <div className="empty">
           <img src="/rabbit-hole-logo.png" alt="RabbitHole" className="empty-logo" />
