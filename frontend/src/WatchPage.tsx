@@ -546,7 +546,7 @@ export function WatchPage() {
               {transcriptState === "ready" && cues.length > 0 && (
                 <input
                   className="transcript-search"
-                  placeholder="Search this video…"
+                  placeholder="Find a word or phrase…"
                   value={cueQuery}
                   onChange={(e) => setCueQuery(e.target.value)}
                 />
@@ -669,7 +669,7 @@ export function WatchPage() {
             {transcriptState === "ready" && cues.length > 0 && (
               <input
                 className="transcript-search"
-                placeholder="Search this video…"
+                placeholder="Find a word or phrase…"
                 value={cueQuery}
                 onChange={(e) => setCueQuery(e.target.value)}
               />
