@@ -1225,34 +1225,31 @@ body {
 }
 
 /* Tumble is an action, not a destination — a jump to somewhere random, so it
-   gets an outlined pill instead of sitting in the link row like a page. */
-/* Shuffle belongs to the nav, not a separate gimmick pill -- same
-   register as the other .navlink items, just with a coral-accented icon. */
-.shuffle-action {
+   stays a compact filled capsule instead of sitting in the link row like a
+   page. Text only: no icon. */
+.tumble-action {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: none;
+  justify-content: center;
+  background: rgba(213, 107, 82, 0.88);
   border: none;
-  padding: 0;
-  color: var(--muted);
+  border-radius: 999px;
+  padding: 7px 16px;
+  color: #050505;
   font: inherit;
   font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: color 140ms ease;
+  transition:
+    background 140ms ease,
+    transform 140ms ease;
 }
 
-.shuffle-action:hover {
-  color: var(--text);
-}
-
-.shuffle-action svg {
-  width: 14px;
-  height: 14px;
-  color: var(--accent-warm);
+.tumble-action:hover {
+  background: var(--accent-warm);
+  transform: translateY(-1px);
 }
 
 .nav-right {

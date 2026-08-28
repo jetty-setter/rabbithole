@@ -95,23 +95,36 @@ export function WatchPage() {
     [videos, id],
   );
 
-  // "Go deeper" — semantically related moments in OTHER videos, seeded by
-  // this video's own title. Reuses the same cross-video search endpoint the
-  // Search page uses; no separate topic/relation model needed.
+  // RELATED — semantically connected moments in OTHER videos. Seeded by this
+  // video's own transcript content (what it's actually about), not just its
+  // title, whenever a transcript is available. Reuses the same cross-video
+  // search endpoint the Search page uses; no separate topic/relation model
+  // needed. Falls back to the plain video list (via `related` below) when
+  // there's no transcript yet or the search turns up nothing useful.
   const [deeperMoments, setDeeperMoments] = useState<SearchMoment[] | null>(null);
   useEffect(() => {
     setDeeperMoments(null);
     if (!video || !video.has_transcript) return;
-    const seed = displayTitle(video);
+    // Wait for the transcript to finish loading so the seed reflects real
+    // cue text; this effect re-fires once `cues` populates.
+    if (cues.length === 0) return;
+    const seed = cues.map((c) => c.text).join(" ").trim().slice(0, 1000) || displayTitle(video);
     let live = true;
     searchMoments(seed).then((results) => {
       if (!live) return;
-      setDeeperMoments(results.filter((r) => r.video.video_id !== video.video_id));
+      setDeeperMoments(
+        results.filter(
+          (r) =>
+            r.video.video_id !== video.video_id &&
+            r.video.status === "ready" &&
+            !!r.video.playback_url,
+        ),
+      );
     });
     return () => {
       live = false;
     };
-  }, [video?.video_id, video?.has_transcript]);
+  }, [video?.video_id, video?.has_transcript, cues]);
 
   useEffect(() => {
     setAskQuestion("");
