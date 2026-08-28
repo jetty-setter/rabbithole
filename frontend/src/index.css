@@ -2729,128 +2729,34 @@ body {
   margin: 0 1px;
 }
 
-/* Reaction burst — the mascot leaps/stomps over the player on click */
 .player-stage {
   position: relative;
 }
 
-.player-wrap.shake {
-  animation: rh-shake 0.5s ease;
+/* Reaction feedback lives entirely on the button now -- a brief pop when a
+   reaction is selected, plus an ordinary press state. No mascot/graphic. */
+.vote-btn:active {
+  transform: scale(0.96);
 }
 
-.burst {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  z-index: 5;
-  overflow: hidden;
+.vote-btn.on {
+  animation: vote-pop 220ms ease;
 }
 
-.burst-mascot {
-  height: clamp(150px, 30vh, 300px);
-  aspect-ratio: 1 / 1;
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: contain;
-  mask-size: contain;
-}
-
-/* White mascots, with a thicker (offset-shadow) line weight + colored neon glow */
-.burst-hop .burst-mascot,
-.burst-thump .burst-mascot {
-  background-color: #fff;
-}
-
-.burst-hop .burst-mascot {
-  -webkit-mask-image: url("/hop.png?v=2");
-  mask-image: url("/hop.png?v=2");
-  filter: drop-shadow(2.5px 0 0 #fff) drop-shadow(-2.5px 0 0 #fff)
-    drop-shadow(0 2.5px 0 #fff) drop-shadow(0 -2.5px 0 #fff)
-    drop-shadow(1.8px 1.8px 0 #fff) drop-shadow(-1.8px -1.8px 0 #fff)
-    drop-shadow(0 0 28px rgba(154, 130, 242, 0.85));
-  animation: rh-burst-hop 1s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
-}
-
-.burst-thump .burst-mascot {
-  -webkit-mask-image: url("/thump.png?v=2");
-  mask-image: url("/thump.png?v=2");
-  filter: drop-shadow(2.5px 0 0 #fff) drop-shadow(-2.5px 0 0 #fff)
-    drop-shadow(0 2.5px 0 #fff) drop-shadow(0 -2.5px 0 #fff)
-    drop-shadow(1.8px 1.8px 0 #fff) drop-shadow(-1.8px -1.8px 0 #fff)
-    drop-shadow(0 0 28px rgba(213, 107, 82, 0.85));
-  animation: rh-burst-thump 0.9s cubic-bezier(0.3, 0.7, 0.4, 1) forwards;
-}
-
-@keyframes rh-burst-hop {
+@keyframes vote-pop {
   0% {
-    transform: translateY(70px) scale(0.5) rotate(-8deg);
-    opacity: 0;
+    transform: scale(1);
   }
-  25% {
-    opacity: 1;
-  }
-  55% {
-    transform: translateY(-26px) scale(1.15) rotate(5deg);
-    opacity: 1;
+  40% {
+    transform: scale(1.08);
   }
   100% {
-    transform: translateY(-90px) scale(1) rotate(0deg);
-    opacity: 0;
-  }
-}
-
-@keyframes rh-burst-thump {
-  0% {
-    transform: translateY(-55px) scale(1.2) rotate(7deg);
-    opacity: 0;
-  }
-  22% {
-    transform: translateY(0) scale(1.1) rotate(0deg);
-    opacity: 1;
-  }
-  36% {
-    transform: translateY(0) scale(0.94);
-  }
-  52% {
-    transform: scale(1.04);
-  }
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 0;
-  }
-}
-
-@keyframes rh-shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  15% {
-    transform: translateX(-6px) rotate(-0.4deg);
-  }
-  30% {
-    transform: translateX(6px) rotate(0.4deg);
-  }
-  45% {
-    transform: translateX(-5px);
-  }
-  60% {
-    transform: translateX(5px);
-  }
-  75% {
-    transform: translateX(-3px);
+    transform: scale(1);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .burst-hop .burst-mascot,
-  .burst-thump .burst-mascot,
-  .player-wrap.shake {
+  .vote-btn.on {
     animation-duration: 0.01ms;
   }
 }
