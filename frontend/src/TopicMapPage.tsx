@@ -57,27 +57,37 @@ export function TopicMapPage() {
 
     const sim = createForceSim(nodes, edges, { width: WIDTH, height: HEIGHT });
     let ticks = 0;
-    const startedAt = performance.now();
+    let done = false;
+
+    function finish() {
+      if (done) return;
+      done = true;
+      setSettled(true);
+    }
 
     function frame() {
       const next = sim.tick();
       ticks += 1;
       setPositions(next);
-      // Wall-clock backstop alongside the tick/energy checks: a backgrounded
-      // or throttled tab can run requestAnimationFrame far slower than 60fps,
-      // which would otherwise leave the graph "animating" (and the fixed
-      // viewBox in place) far longer than intended. Settle unconditionally
-      // once real time is up, regardless of how many ticks actually ran.
-      const timedOut = performance.now() - startedAt > SETTLE_DEADLINE_MS;
-      if (!timedOut && ticks < MAX_TICKS && sim.energy() > SETTLE_ENERGY) {
+      if (ticks < MAX_TICKS && sim.energy() > SETTLE_ENERGY) {
         rafRef.current = requestAnimationFrame(frame);
       } else {
-        setSettled(true);
+        finish();
       }
     }
     rafRef.current = requestAnimationFrame(frame);
 
+    // Independent of the rAF loop entirely: a backgrounded/hidden tab can
+    // throttle requestAnimationFrame down to a crawl, or a browser may
+    // suspend it outright rather than just slowing it down, in which case a
+    // check living *inside* the rAF callback would never get to run again.
+    // setTimeout doesn't depend on the loop ever ticking again, so this
+    // guarantees the graph settles (and the dynamic viewBox activates)
+    // within a bounded real-time window regardless.
+    const deadline = setTimeout(finish, SETTLE_DEADLINE_MS);
+
     return () => {
+      clearTimeout(deadline);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
