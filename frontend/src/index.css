@@ -3222,6 +3222,64 @@ body::after {
   outline-offset: 2px;
 }
 
+/* ── Tunnels: "Browse tunnels" -- scalable directory ──────────
+   Keeps the default page height flat regardless of catalog size: a
+   capped default chip set, an opt-in A-Z directory instead of dumping
+   everything at once, and a quiet find field that searches the full
+   list without changing the page's default footprint. */
+.tunnel-browse-tools {
+  margin-bottom: 16px;
+}
+
+.tunnel-search-input {
+  width: 260px;
+  max-width: 100%;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+}
+.tunnel-search-input::placeholder {
+  color: var(--muted);
+}
+.tunnel-search-input:focus {
+  outline: none;
+  border-color: var(--violet);
+}
+
+.tunnel-empty-note {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 4px 0;
+}
+
+.tunnel-view-toggle {
+  display: inline-block;
+  margin-top: 18px;
+  font-size: 13.5px;
+}
+
+.tunnel-directory-group {
+  margin-bottom: 22px;
+}
+.tunnel-directory-group:last-child {
+  margin-bottom: 0;
+}
+
+/* Small editorial marker, not a heading-scale letter -- matches
+   .featured-eyebrow's register. */
+.tunnel-directory-letter {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--violet);
+  margin: 0 0 10px;
+}
+
 /* ── Tunnels: "Start somewhere" featured section ─────────────
    One larger primary tunnel + two smaller secondaries stacked beside it,
    same cinematic card language as .featured-thumb (radius, border, hover
@@ -3337,6 +3395,9 @@ body::after {
   }
   .tunnel-feat-secondaries .tunnel-feat-card {
     aspect-ratio: 16 / 9;
+  }
+  .tunnel-search-input {
+    width: 100%;
   }
 }
 
