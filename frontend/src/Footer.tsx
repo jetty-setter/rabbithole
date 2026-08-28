@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 const FOOTER_LINKS: { label: string; to: string }[] = [
-  { label: "Watch", to: "/" },
+  { label: "Discover", to: "/" },
   { label: "Tunnels", to: "/tunnels" },
   { label: "Map", to: "/map" },
   { label: "Trail", to: "/trail" },

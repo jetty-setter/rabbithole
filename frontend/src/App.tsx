@@ -47,12 +47,6 @@ export interface AppCtx {
   hopped: Set<string>;
   thumped: Set<string>;
   react: (id: string, reaction: "hop" | "thump") => void;
-  diveActive: boolean;
-  diveDepth: number;
-  startDive: (fromId: string) => void;
-  stopDive: () => void;
-  chooseDive: (id: string) => void;
-  diveVisited: (id: string) => boolean;
   trail: string[];
   recordTrail: (id: string) => void;
   clearTrail: () => void;
@@ -86,9 +80,6 @@ function Layout() {
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [trail, setTrail] = useState<string[]>(loadTrail);
 
-  const [diveActive, setDiveActive] = useState(false);
-  const [diveDepth, setDiveDepth] = useState(0);
-  const visitedRef = useRef<Set<string>>(new Set());
   const tumbleHistoryRef = useRef<Set<string>>(new Set());
 
   const authed = !!user;
@@ -164,29 +155,6 @@ function Layout() {
     reactCore(id, reaction, authed, setVideos);
   }
 
-  function startDive(fromId: string) {
-    visitedRef.current = new Set([fromId]);
-    setDiveDepth(0);
-    setDiveActive(true);
-  }
-
-  function stopDive() {
-    setDiveActive(false);
-    setDiveDepth(0);
-  }
-
-  // Branching dive: the caller (WatchPage) picks WHICH related video to fall
-  // into next — using real semantic "go deeper" candidates, not a random
-  // pick — and just tells us so depth/visited stay right for the chooser.
-  function chooseDive(id: string) {
-    visitedRef.current.add(id);
-    setDiveDepth((d) => d + 1);
-  }
-
-  function diveVisited(id: string): boolean {
-    return visitedRef.current.has(id);
-  }
-
   function recordTrail(id: string) {
     setTrail((prev) => {
       const next = [id, ...prev.filter((x) => x !== id)].slice(0, 60);
@@ -251,12 +219,6 @@ function Layout() {
     hopped,
     thumped,
     react,
-    diveActive,
-    diveDepth,
-    startDive,
-    stopDive,
-    chooseDive,
-    diveVisited,
     trail,
     recordTrail,
     clearTrail,

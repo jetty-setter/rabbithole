@@ -11,7 +11,6 @@ import {
   updateVideo,
   type AskAnswer,
   type SearchMoment,
-  type Video,
 } from "./api";
 import { Player } from "./Player";
 import { SkeletonWatch } from "./Skeleton";
@@ -21,12 +20,6 @@ import { EditForm } from "./components/EditForm";
 import { useVideoData } from "./hooks/useVideoData";
 import { useDocumentMeta } from "./hooks/useDocumentMeta";
 import { useTranscript } from "./hooks/useTranscript";
-
-interface DiveCandidate {
-  video: Video;
-  start: number;
-  snippet: string;
-}
 
 /** Seconds → m:ss for cue timestamps. */
 function fmtTime(s: number): string {
@@ -51,12 +44,6 @@ export function WatchPage() {
     hopped,
     thumped,
     react,
-    diveActive,
-    diveDepth,
-    startDive,
-    stopDive,
-    chooseDive,
-    diveVisited,
     recordTrail,
   } = useApp();
 
@@ -124,24 +111,6 @@ export function WatchPage() {
       live = false;
     };
   }, [video?.video_id, video?.has_transcript]);
-
-  // Branching dive candidates: closest semantic matches to THIS video that
-  // haven't been visited yet this dive, falling back to any unvisited video
-  // when there's no transcript match. Each pick becomes the next video's own
-  // seed, so a dive descends through real relatedness, not a random walk.
-  const diveCandidates = useMemo<DiveCandidate[]>(() => {
-    if (!diveActive) return [];
-    if (deeperMoments && deeperMoments.length > 0) {
-      return deeperMoments
-        .filter((m) => !diveVisited(m.video.video_id))
-        .slice(0, 4)
-        .map((m) => ({ video: m.video, start: m.start, snippet: m.snippet }));
-    }
-    return related
-      .filter((v) => !diveVisited(v.video_id))
-      .slice(0, 4)
-      .map((v) => ({ video: v, start: 0, snippet: "" }));
-  }, [diveActive, deeperMoments, related, diveDepth]);
 
   useEffect(() => {
     setAskQuestion("");
@@ -259,13 +228,6 @@ export function WatchPage() {
 
   return (
     <main className="page watch">
-      {diveActive && (
-        <div className="dive-hud">
-          <span className="dive-depth">Dive mode</span>
-          <span className="dive-note">Pick a direction to go deeper.</span>
-        </div>
-      )}
-
       <div className="watch-grid">
         <div className="watch-main">
           <div className="player-stage">
@@ -521,73 +483,11 @@ export function WatchPage() {
           <Comments videoId={vid} />
         </div>
 
-        <aside className="watch-related feature-panel">
-          {diveActive ? (
-            <>
-              <span className="feature-kicker">Branching exploration</span>
-              <div className="feature-head-row">
-                <h2 className="feature-head">{diveDepth === 0 ? "Where to dive" : "Go deeper"}</h2>
-                <button className="btn-dive surfacing" onClick={stopDive}>
-                  Surface ▲
-                </button>
-              </div>
-              {diveDepth > 0 && (
-                <span className="dive-depth-inline">
-                  {diveDepth} {diveDepth === 1 ? "hole" : "holes"} deep
-                </span>
-              )}
-              {diveCandidates.length === 0 ? (
-                <div className="empty dive-dead-end">
-                  <p>No closer moments to dive into from here.</p>
-                </div>
-              ) : (
-                <>
-                  <p className="deeper-sub">Pick a direction — closest matches first.</p>
-                  {diveCandidates.map((c) => (
-                    <Link
-                      to={`/watch/${c.video.video_id}${c.start > 0 ? `?t=${Math.floor(c.start)}` : ""}`}
-                      className="related-item deeper-moment"
-                      key={c.video.video_id}
-                      onClick={() => chooseDive(c.video.video_id)}
-                    >
-                      <div className="related-thumb">
-                        {c.video.thumbnail_url ? (
-                          <img src={c.video.thumbnail_url} alt="" />
-                        ) : (
-                          <img src="/RHRabbit.png?v=5" alt="" className="thumb-ph" />
-                        )}
-                        {c.start > 0 ? (
-                          <span className="dur-badge">{fmtTime(c.start)}</span>
-                        ) : (
-                          c.video.duration_seconds && (
-                            <span className="dur-badge">{formatDuration(c.video.duration_seconds)}</span>
-                          )
-                        )}
-                      </div>
-                      <div className="related-info">
-                        <span className="related-title">{displayTitle(c.video)}</span>
-                        {c.snippet ? (
-                          <span className="deeper-snippet">“…{c.snippet}…”</span>
-                        ) : (
-                          <span className="related-meta">{c.video.owner || "RabbitHole"}</span>
-                        )}
-                      </div>
-                    </Link>
-                  ))}
-                </>
-              )}
-            </>
-          ) : deeperMoments && deeperMoments.length > 0 ? (
-            <>
-              <span className="feature-kicker">Semantic exploration</span>
-              <div className="feature-head-row">
-                <h2 className="feature-head">Go deeper</h2>
-                <button className="btn-dive" onClick={() => startDive(vid)}>
-                  Dive ▼
-                </button>
-              </div>
-              <p className="deeper-sub">Related moments, elsewhere in the library.</p>
-              {deeperMoments.map((r) => (
+        <aside className="watch-related">
+          <h2 className="related-head">Related</h2>
+          <p className="related-sub">Connected moments from across RabbitHole.</p>
+          {deeperMoments && deeperMoments.length > 0
+            ? deeperMoments.map((r) => (
                 <Link
                   to={`/watch/${r.video.video_id}?t=${Math.floor(r.start)}`}
                   className="related-item deeper-moment"
@@ -606,19 +506,8 @@ export function WatchPage() {
                     <span className="deeper-snippet">“…{r.snippet}…”</span>
                   </div>
                 </Link>
-              ))}
-            </>
-          ) : (
-            <>
-              <div className="feature-head-row">
-                <h2 className="feature-head">Deeper</h2>
-                {related.length > 0 && (
-                  <button className="btn-dive" onClick={() => startDive(vid)}>
-                    Dive ▼
-                  </button>
-                )}
-              </div>
-              {related.map((r) => (
+              ))
+            : related.map((r) => (
                 <Link to={`/watch/${r.video_id}`} className="related-item" key={r.video_id}>
                   <div className="related-thumb">
                     {r.thumbnail_url ? <img src={r.thumbnail_url} alt="" /> : <img src="/RHRabbit.png?v=5" alt="" className="thumb-ph" />}
@@ -635,8 +524,6 @@ export function WatchPage() {
                   </div>
                 </Link>
               ))}
-            </>
-          )}
         </aside>
       </div>
     </main>
