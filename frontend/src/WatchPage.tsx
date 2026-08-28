@@ -388,42 +388,22 @@ export function WatchPage() {
                   <div className="watch-actions">
                     <div className="vote">
                       <button
-                        className={isHopped ? "vote-btn up on" : "vote-btn up"}
+                        className={isHopped ? "vote-btn yay on" : "vote-btn yay"}
                         onClick={() => onReact("hop")}
-                        title="Hop it up"
-                        aria-label="Hop it up"
+                        aria-label="Yay"
+                        aria-pressed={isHopped}
                       >
-                        <svg
-                          className="vote-ico"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.4"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M6 14l6-6 6 6" />
-                        </svg>
+                        <span className="vote-label">Yay</span>
                         <span className="vote-count">{video.hops ?? 0}</span>
                       </button>
                       <span className="vote-sep" />
                       <button
-                        className={isThumped ? "vote-btn down on" : "vote-btn down"}
+                        className={isThumped ? "vote-btn nay on" : "vote-btn nay"}
                         onClick={() => onReact("thump")}
-                        title="Thump it down"
-                        aria-label="Thump it down"
+                        aria-label="Nay"
+                        aria-pressed={isThumped}
                       >
-                        <svg
-                          className="vote-ico"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.4"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M6 10l6 6 6-6" />
-                        </svg>
+                        <span className="vote-label">Nay</span>
                         <span className="vote-count">{video.thumps ?? 0}</span>
                       </button>
                     </div>

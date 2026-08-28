@@ -1078,13 +1078,223 @@ body {
   margin: 12px 0 0;
 }
 
+/* Player shell -- owns the dimensions/aspect-ratio/chrome; the <video> and
+   the custom control bar are both absolutely positioned inside it. Same
+   box the native <video controls> element used to be, so nothing about
+   the player's size on the page changes. */
 .player {
+  position: relative;
   width: 100%;
   border-radius: 14px;
   background: #000;
   aspect-ratio: 16 / 9;
-  display: block;
+  overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.player-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #000;
+}
+
+/* ── Custom control bar (replaces native <video controls>, so Safari's
+   floating volume pill never appears) ─────────────────────────────── */
+.player-controls {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 8px 12px 10px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.5) 65%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.player.controls-hidden .player-controls {
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+}
+
+/* Paused (and never-yet-played) state keeps controls fully visible --
+   .controls-hidden is only ever applied while playing. */
+
+.player-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.player-spacer {
+  flex: 1;
+}
+
+.player-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 5px 8px;
+  color: var(--text);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.player-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.player-btn:focus-visible {
+  outline: none;
+  border-color: var(--violet);
+}
+
+.player-btn.on {
+  color: var(--violet);
+}
+
+.player-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.player-play svg {
+  width: 18px;
+  height: 18px;
+}
+
+.player-time {
+  font-size: 11.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  margin: 0 6px;
+}
+
+.player-volume {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Progress + volume: a taller invisible hit area than the visible track,
+   so the scrubber stays thin without being fiddly to grab on touch. */
+.player-progress {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 16px;
+  background: transparent;
+  outline: none;
+  margin: 0 0 6px;
+  cursor: pointer;
+}
+.player-progress::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--violet) var(--player-progress-pct, 0%),
+    rgba(255, 255, 255, 0.28) var(--player-progress-pct, 0%)
+  );
+}
+.player-progress::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text);
+  margin-top: -4px;
+  cursor: pointer;
+}
+.player-progress::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+}
+.player-progress::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--violet);
+}
+.player-progress::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: none;
+  border-radius: 50%;
+  background: var(--text);
+  cursor: pointer;
+}
+.player-progress:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
+}
+
+.player-vol-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 70px;
+  height: 14px;
+  background: transparent;
+  cursor: pointer;
+}
+.player-vol-slider::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+}
+.player-vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text);
+  margin-top: -3.5px;
+  cursor: pointer;
+}
+.player-vol-slider::-moz-range-track {
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+}
+.player-vol-slider::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border: none;
+  border-radius: 50%;
+  background: var(--text);
+  cursor: pointer;
+}
+
+@media (max-width: 560px) {
+  .player-volume {
+    display: none;
+  }
+  .player-controls {
+    padding: 6px 8px 8px;
+  }
+  .player-btn {
+    padding: 5px 6px;
+  }
+  .player-time {
+    margin: 0 2px;
+  }
 }
 
 /* ── Animations ──────────────────────────────────────────── */
@@ -2116,6 +2326,14 @@ body {
   margin: 4px 0;
 }
 
+/* With zero comments, .page's generic 90px bottom padding plus the empty
+   list above it reads as a noticeably large gap before the footer.
+   Scoped to the watch page's own empty state via :has() -- doesn't touch
+   .page for any other page, or the watch page once real comments exist. */
+.watch.page:has(.comment-empty) {
+  padding-bottom: 60px;
+}
+
 .comment {
   display: flex;
   gap: 12px;
@@ -2306,7 +2524,9 @@ body {
 
 /* ══ RabbitHole identity ═══════════════════════════════════ */
 
-/* Hop / Thump vote — clean up/down; the mascot burst carries the personality */
+/* Yay / Nay vote — text-only, mutually exclusive; the mascot burst still
+   carries the personality (unchanged), the buttons just read as plain
+   reactions rather than up/down chevrons. */
 .vote {
   display: inline-flex;
   align-items: stretch;
@@ -2335,9 +2555,14 @@ body {
   background: rgba(255, 255, 255, 0.05);
 }
 
-.vote-ico {
-  width: 19px;
-  height: 19px;
+.vote-btn:focus-visible {
+  outline: 1px solid var(--violet);
+  outline-offset: -2px;
+}
+
+.vote-label {
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .vote-count {
@@ -2352,21 +2577,21 @@ body {
   background: var(--border-2);
 }
 
-.vote-btn.up.on,
-.vote-btn.up.on .vote-count {
+.vote-btn.yay.on,
+.vote-btn.yay.on .vote-count {
   color: var(--violet);
 }
 
-.vote-btn.up.on {
+.vote-btn.yay.on {
   background: rgba(154, 130, 242, 0.12);
 }
 
-.vote-btn.down.on,
-.vote-btn.down.on .vote-count {
+.vote-btn.nay.on,
+.vote-btn.nay.on .vote-count {
   color: var(--accent-warm);
 }
 
-.vote-btn.down.on {
+.vote-btn.nay.on {
   background: rgba(213, 107, 82, 0.12);
 }
 
