@@ -688,7 +688,7 @@ export function WatchPage() {
               <>
                 {!followPlayback && !cueQuery.trim() && (
                   <button type="button" className="follow-playback" onClick={() => setFollowPlayback(true)}>
-                    Follow playback
+                    Follow video
                   </button>
                 )}
                 <div
