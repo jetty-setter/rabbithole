@@ -10,11 +10,13 @@ export function Player({
   onEnded,
   videoRef: externalRef,
   captionsSrc,
+  poster,
 }: {
   src: string;
   onEnded?: () => void;
   videoRef?: RefObject<HTMLVideoElement>;
   captionsSrc?: string | null;
+  poster?: string | null;
 }) {
   const internalRef = useRef<HTMLVideoElement>(null);
   const videoRef = externalRef ?? internalRef;
@@ -83,6 +85,7 @@ export function Player({
       controls
       playsInline
       autoPlay
+      poster={poster || undefined}
       crossOrigin={needsCrossOrigin ? "anonymous" : undefined}
       className="player"
       onEnded={onEnded}

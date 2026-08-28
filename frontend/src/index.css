@@ -1216,6 +1216,14 @@ body {
   color: var(--text);
 }
 
+/* Intentional focus ring instead of the browser default rectangle --
+   never suppressed without this replacing it. */
+.navlink:focus-visible {
+  outline: 1px solid var(--violet);
+  outline-offset: 5px;
+  border-radius: 3px;
+}
+
 /* Tumble is an action, not a destination — a jump to somewhere random, so it
    gets an outlined pill instead of sitting in the link row like a page. */
 .tumble-action {
@@ -1410,6 +1418,13 @@ body {
   max-width: none;
   margin: 0;
   padding: 32px 28px 90px;
+}
+/* Standard interior-page content column, aligned with the footer and
+   homepage's ~1220px system (Tunnels/Map/Trail). Watch keeps .page's full
+   width -- its player + related rail benefit from the wider canvas. */
+.standard-page {
+  max-width: 1220px;
+  margin: 0 auto;
 }
 /* .home-browse controls the intentional homepage-to-footer spacing;
    .page's generic 90px bottom padding was stacking with it (plus the
@@ -1800,30 +1815,15 @@ body {
 
 /* Related videos sit to the LEFT of the player (away from the right rail),
    pinned with their own scroll so the player stays put while you browse. */
+/* Sticky, but part of the normal page scroll -- no internal max-height/
+   overflow, so there's only ever one visible scrollbar (the page's). */
 .watch-related {
   display: flex;
   flex-direction: column;
   gap: 8px;
   position: sticky;
   top: 84px;
-  max-height: calc(100vh - 104px);
-  overflow-y: auto;
-  padding-right: 6px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border-2) transparent;
-}
-
-.watch-related::-webkit-scrollbar {
-  width: 8px;
-}
-
-.watch-related::-webkit-scrollbar-thumb {
-  background: var(--border-2);
-  border-radius: 8px;
-}
-
-.watch-related::-webkit-scrollbar-thumb:hover {
-  background: var(--muted);
+  padding-right: 0;
 }
 
 /* Section header with a fading hairline rule: "DEEPER ———————" */
@@ -3023,34 +3023,36 @@ body::after {
   gap: 12px;
 }
 
+/* Matches the homepage "Start somewhere" discovery-chip language --
+   squared-off corners, quiet border, no pill/violet-capsule treatment. */
 .tunnel-chip {
   display: inline-flex;
   align-items: center;
   gap: 9px;
   padding: 9px 14px;
-  border: 1px solid var(--border-2);
-  border-radius: 999px;
-  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: transparent;
   color: var(--text);
   text-decoration: none;
   font-size: 14px;
   font-weight: 600;
-  transition: border-color 130ms ease, transform 130ms ease, background 130ms ease;
+  transition: border-color 130ms ease, transform 130ms ease;
 }
 .tunnel-chip:hover {
   border-color: var(--violet);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 .tunnel-tag {
   color: var(--text);
 }
 .tunnel-count {
   font-size: 12px;
-  font-weight: 700;
-  color: var(--violet);
-  background: rgba(154, 130, 242, 0.12);
-  padding: 1px 8px;
-  border-radius: 999px;
+  font-weight: 500;
+  color: var(--muted);
+  background: none;
+  padding: 0;
+  border-radius: 0;
 }
 
 /* ── Creator profile ────────────────────────────────────────── */
@@ -3115,9 +3117,9 @@ body::after {
 
 /* ── Topic map (force-directed tag graph) ──────────────────── */
 .topic-map {
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  background: var(--panel);
+  border: 1px solid rgba(251, 245, 232, 0.07);
+  border-radius: 10px;
+  background: #080809;
   padding: 8px;
 }
 
