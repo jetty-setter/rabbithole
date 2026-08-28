@@ -1226,34 +1226,33 @@ body {
 
 /* Tumble is an action, not a destination — a jump to somewhere random, so it
    gets an outlined pill instead of sitting in the link row like a page. */
-.tumble-action {
-  display: flex;
+/* Shuffle belongs to the nav, not a separate gimmick pill -- same
+   register as the other .navlink items, just with a coral-accented icon. */
+.shuffle-action {
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   background: none;
-  border: 1px solid rgba(213, 107, 82, 0.4);
-  border-radius: 999px;
-  padding: 5px 14px 5px 12px;
-  color: var(--text);
+  border: none;
+  padding: 0;
+  color: var(--muted);
   font: inherit;
   font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
+  transition: color 140ms ease;
 }
 
-.tumble-action:hover {
-  border-color: var(--accent-warm);
-  background: rgba(213, 107, 82, 0.12);
-  transform: translateY(-1px);
+.shuffle-action:hover {
+  color: var(--text);
 }
 
-.tumble-action-glyph {
-  font-size: 13px;
+.shuffle-action svg {
+  width: 14px;
+  height: 14px;
   color: var(--accent-warm);
-  line-height: 1;
 }
 
 .nav-right {
@@ -1826,6 +1825,25 @@ body {
   padding-right: 0;
 }
 
+/* The rail's own heading -- scoped so it doesn't touch .related-head's
+   shared use for Transcript/Comments section headers elsewhere on the
+   page (those keep their trailing hairline-rule treatment; this is a
+   plainer, standalone heading with no panel/kicker around it). */
+.watch-related .related-head {
+  display: block;
+  letter-spacing: 0.08em;
+  margin: 4px 0 4px;
+}
+.watch-related .related-head::after {
+  content: none;
+}
+
+.related-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 14px;
+}
+
 /* Section header with a fading hairline rule: "DEEPER ———————" */
 .related-head {
   display: flex;
@@ -1909,11 +1927,6 @@ body {
   color: var(--muted);
 }
 
-.deeper-sub {
-  font-size: 12px;
-  color: var(--muted);
-  margin: -6px 0 12px;
-}
 .deeper-snippet {
   font-size: 12px;
   line-height: 1.35;
@@ -2540,62 +2553,6 @@ body {
   }
 }
 
-/* Dive HUD across the top of the watch page while diving */
-.dive-hud {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px 18px;
-  padding: 0 0 14px;
-  margin-bottom: 18px;
-  border-bottom: 1px solid var(--border);
-}
-
-.dive-depth {
-  font-family: var(--display);
-  font-size: 18px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: var(--accent-warm);
-}
-
-.dive-note {
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.dive-hud-actions {
-  margin-left: auto;
-  display: flex;
-  gap: 10px;
-}
-
-.dive-surface {
-  border-radius: 10px;
-  padding: 7px 16px;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  border: 1.5px solid var(--border-2);
-  background: transparent;
-  color: var(--muted);
-  transition: background 130ms ease, color 130ms ease, border-color 130ms ease;
-}
-
-.dive-surface:hover {
-  border-color: var(--text);
-  color: var(--text);
-}
-
-.dive-dead-end {
-  padding: 24px 16px;
-}
-.dive-dead-end p {
-  margin: 0 0 14px;
-}
-
-
 .related-head,
 .comments-head {
   font-family: var(--display);
@@ -2726,59 +2683,6 @@ body::after {
   letter-spacing: 0.5px;
   text-transform: uppercase;
   margin: 0 0 14px;
-}
-
-.feature-head-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px 14px;
-  margin-bottom: 4px;
-}
-.feature-head-row .feature-head {
-  margin-bottom: 0;
-}
-
-.btn-dive {
-  flex: none;
-  padding: 8px 16px;
-  border-radius: 10px;
-  border: 1.5px solid var(--accent-warm);
-  background: rgba(213, 107, 82, 0.1);
-  color: var(--accent-warm);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 130ms ease, color 130ms ease, transform 130ms ease;
-}
-.btn-dive:hover {
-  background: var(--accent-warm);
-  color: var(--text);
-  transform: translateY(-1px);
-}
-.btn-dive.surfacing {
-  border-color: var(--border-2);
-  background: none;
-  color: var(--muted);
-}
-.btn-dive.surfacing:hover {
-  border-color: var(--text);
-  color: var(--text);
-  background: none;
-  transform: none;
-}
-
-.dive-depth-inline {
-  display: block;
-  font-family: var(--display);
-  font-size: 12.5px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: var(--accent-warm);
-  margin-bottom: 14px;
 }
 
 /* ── Ask this video (RAG Q&A) ──────────────────────────────── */

@@ -22,6 +22,16 @@ const IconMenu = () => (
   </svg>
 );
 
+const IconShuffle = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="16 3 21 3 21 8" />
+    <line x1="4" y1="20" x2="21" y2="3" />
+    <polyline points="21 16 21 21 16 21" />
+    <line x1="15" y1="15" x2="21" y2="21" />
+    <line x1="4" y1="4" x2="9" y2="9" />
+  </svg>
+);
+
 const IconWatch = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
     <circle cx="12" cy="12" r="9" />
@@ -155,11 +165,9 @@ export function Header({
           </NavLink>
         </li>
         <li>
-          <button type="button" className="tumble-action" onClick={onTumble} title="Take me somewhere.">
-            <span className="tumble-action-glyph" aria-hidden="true">
-              ↝
-            </span>
-            Tumble
+          <button type="button" className="shuffle-action" onClick={onTumble} title="Take me somewhere.">
+            <IconShuffle />
+            Shuffle
           </button>
         </li>
       </ul>
@@ -202,7 +210,7 @@ export function Header({
               <div className="account-menu">
                 {authed && <div className="menu-user">@{username}</div>}
                 {/* Primary nav collapses out of the topbar below 720px -- mirror
-                    it here so mobile visitors don't lose Tunnels/Map/Trail/Tumble. */}
+                    it here so mobile visitors don't lose Tunnels/Map/Trail/Shuffle. */}
                 <div className="menu-mobile-primary">
                   <Link to="/" className="menu-item" onClick={() => setMenuOpen(false)}>
                     <IconWatch />
@@ -228,10 +236,8 @@ export function Header({
                       onTumble();
                     }}
                   >
-                    <span className="tumble-action-glyph" aria-hidden="true">
-                      ↝
-                    </span>
-                    Tumble
+                    <IconShuffle />
+                    Shuffle
                   </button>
                   <div className="menu-sep" />
                 </div>
