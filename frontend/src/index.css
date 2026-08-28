@@ -2676,17 +2676,20 @@ body::after {
   margin-bottom: 12px;
 }
 
+/* Deliberately quieter than .ask-input -- this is a literal find-in-
+   transcript field, secondary to the transcript itself, not a primary
+   question-asking action like Ask This Video. */
 .transcript-search {
   flex: none;
   width: 230px;
   max-width: 55%;
-  padding: 7px 12px;
+  padding: 6px 10px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 7px;
   background: var(--panel);
   color: var(--text);
   font: inherit;
-  font-size: 13px;
+  font-size: 12.5px;
 }
 .transcript-search::placeholder {
   color: var(--muted);
