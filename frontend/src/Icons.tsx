@@ -1,19 +1,5 @@
 /** RabbitHole reaction art.
- *  - HopIcon / ThumpIcon: the mascot line-art (used big, in the reaction buttons).
  *  - HopGlyph: a tiny solid bunny that still reads at ~13px (card meta). */
-
-// Bump when the art changes — busts any cached copy of the same filename.
-const ART_V = "2";
-
-// The mascot mid-hop — excited — approval.
-export function HopIcon({ className }: { className?: string }) {
-  return <img src={`/hop.png?v=${ART_V}`} alt="" className={className} />;
-}
-
-// The mascot mid-thump — angry stomp — disapproval.
-export function ThumpIcon({ className }: { className?: string }) {
-  return <img src={`/thump.png?v=${ART_V}`} alt="" className={className} />;
-}
 
 // Small up/down chevrons for the feed-card vote counts (match the watch vote).
 export function UpIcon({ className }: { className?: string }) {

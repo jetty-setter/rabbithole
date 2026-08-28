@@ -63,16 +63,6 @@ export function WatchPage() {
   const [editVis, setEditVis] = useState<"public" | "unlisted">("public");
   const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [burst, setBurst] = useState<{ kind: "hop" | "thump"; id: number } | null>(null);
-  const burstTimer = useRef<number>();
-
-  useEffect(() => () => window.clearTimeout(burstTimer.current), []);
-
-  function fireBurst(kind: "hop" | "thump") {
-    setBurst({ kind, id: Date.now() });
-    window.clearTimeout(burstTimer.current);
-    burstTimer.current = window.setTimeout(() => setBurst(null), 1100);
-  }
 
   // Deep-link from search → jump the player to ?t= once it has metadata.
   useEffect(() => {
@@ -252,7 +242,6 @@ export function WatchPage() {
     const wasThump = thumped.has(vid);
     const next = kind === "hop" ? (wasHop ? null : "hop") : wasThump ? null : "thump";
     react(vid, kind);
-    if (next === kind) fireBurst(kind);
     const dHop = (next === "hop" ? 1 : 0) - (wasHop ? 1 : 0);
     const dThump = (next === "thump" ? 1 : 0) - (wasThump ? 1 : 0);
     setVideo((v) =>
@@ -332,18 +321,13 @@ export function WatchPage() {
         <div className="watch-main">
           <div className="player-stage">
             {video.playback_url && (
-              <div className={burst?.kind === "thump" ? "player-wrap shake" : "player-wrap"}>
+              <div className="player-wrap">
                 <Player
                   src={video.playback_url}
                   videoRef={videoRef}
                   captionsSrc={video.captions_url}
                   poster={video.thumbnail_url}
                 />
-              </div>
-            )}
-            {burst && (
-              <div className={`burst burst-${burst.kind}`} key={burst.id}>
-                <span className="burst-mascot" />
               </div>
             )}
           </div>
