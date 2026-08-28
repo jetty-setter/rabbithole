@@ -2651,8 +2651,21 @@ body::after {
 }
 
 /* ── Transcript / searchable captions ──────────────────────── */
+/* Desktop: the right rail's TRANSCRIPT tab is the one transcript
+   experience (see the watch-grid breakpoint below) -- this full-width
+   section would just repeat it and push Comments further down. It
+   reappears once the layout stacks and the rail is gone. */
 .transcript {
+  display: none;
   margin-top: 24px;
+}
+
+/* Stacked layout: the side rail is gone, so this becomes the one
+   transcript experience again -- same breakpoint as .watch-grid. */
+@media (max-width: 980px) {
+  .transcript {
+    display: block;
+  }
 }
 
 .transcript-head {
@@ -2758,16 +2771,6 @@ body::after {
   padding: 0;
 }
 
-.feature-kicker {
-  display: block;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: var(--accent-warm);
-  margin-bottom: 6px;
-}
-
 .feature-head {
   font-family: var(--display);
   font-size: clamp(21px, 2.6vw, 28px);
@@ -2814,6 +2817,15 @@ body::after {
   gap: 8px;
   margin-top: 10px;
   font-size: 14px;
+}
+
+/* Quiet, permanent context under the form -- not a loading state (that's
+   .ask-note above), just a plain-language trust note. */
+.ask-hint {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .ask-error {
