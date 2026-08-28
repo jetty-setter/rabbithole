@@ -2880,11 +2880,19 @@ body::after {
 .cue:hover {
   background: rgba(251, 245, 232, 0.03);
 }
+/* Active cue: the row the video is on right now needs to read at a glance,
+   not just a lighter shade of text -- brighter lavender text, a restrained
+   violet wash behind the whole row, and the left indicator together. */
 .cue.active {
   border-left-color: var(--violet);
+  background: rgba(154, 130, 242, 0.1);
 }
 .cue.active .cue-text {
-  color: var(--text);
+  color: #c8b8ff;
+  font-weight: 600;
+}
+.cue.active .cue-time {
+  color: #b3a0f7;
 }
 
 .cue-time {
