@@ -32,7 +32,7 @@ export function TunnelsPage() {
   if (tag) {
     const list = ready.filter((v) => (v.tags || []).includes(tag));
     return (
-      <main className="page">
+      <main className="page standard-page">
         <div className="feed-head">
           <h1>#{tag}</h1>
           <p>

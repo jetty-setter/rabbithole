@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Link } from "react-router-dom";
 import { useApp } from "./App";
 import { EditorialCard } from "./EditorialCard";
 
@@ -14,7 +15,7 @@ export function TrailPage() {
   }, [videos, trail]);
 
   return (
-    <main className="page">
+    <main className="page standard-page">
       <div className="feed-head trail-head">
         <div>
           <h1>Trail</h1>
@@ -28,9 +29,12 @@ export function TrailPage() {
       </div>
       {list.length === 0 ? (
         <div className="empty">
-          <img src="/rabbit-hole-logo.png" alt="" className="empty-mark" />
+          <img src="/RHRabbit.png?v=5" alt="" className="empty-mark" />
           <h3>No trail yet</h3>
           <p>Watch a few videos and they'll show up here.</p>
+          <Link to="/" className="archive-cta">
+            Start watching <span aria-hidden="true">→</span>
+          </Link>
         </div>
       ) : (
         <div className="home-grid">

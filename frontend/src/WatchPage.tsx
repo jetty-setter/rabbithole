@@ -261,13 +261,8 @@ export function WatchPage() {
     <main className="page watch">
       {diveActive && (
         <div className="dive-hud">
-          <span className="dive-depth">You're {diveDepth} {diveDepth === 1 ? "hole" : "holes"} deep</span>
+          <span className="dive-depth">Dive mode</span>
           <span className="dive-note">Pick a direction to go deeper.</span>
-          <div className="dive-hud-actions">
-            <button className="dive-surface" onClick={stopDive}>
-              Surface ▲
-            </button>
-          </div>
         </div>
       )}
 
@@ -280,6 +275,7 @@ export function WatchPage() {
                   src={video.playback_url}
                   videoRef={videoRef}
                   captionsSrc={video.captions_url}
+                  poster={video.thumbnail_url}
                 />
               </div>
             )}
@@ -535,9 +531,11 @@ export function WatchPage() {
                   Surface ▲
                 </button>
               </div>
-              <span className="dive-depth-inline">
-                {diveDepth} {diveDepth === 1 ? "hole" : "holes"} deep
-              </span>
+              {diveDepth > 0 && (
+                <span className="dive-depth-inline">
+                  {diveDepth} {diveDepth === 1 ? "hole" : "holes"} deep
+                </span>
+              )}
               {diveCandidates.length === 0 ? (
                 <div className="empty dive-dead-end">
                   <p>No closer moments to dive into from here.</p>
