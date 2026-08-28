@@ -391,7 +391,22 @@ def _cdn_url(key: str | None) -> str | None:
     return f"https://{config.CLOUDFRONT_DOMAIN}/{key}"
 
 
+def _transcript_status(item: dict) -> str | None:
+    status = item.get("transcript_status")
+    if status in ("pending", "transcribing", "ready", "no_speech", "failed"):
+        return status
+    # Legacy record from before transcript_status existed: fall back to the
+    # older flags so it still reads as *something* sensible rather than None
+    # everywhere. New writes always set transcript_status explicitly.
+    if item.get("has_transcript"):
+        return "ready"
+    if item.get("transcribing"):
+        return "transcribing"
+    return None
+
+
 def _to_video(item: dict) -> Video:
+    status = _transcript_status(item)
     return Video(
         video_id=item["video_id"],
         filename=item.get("filename") or "untitled",
@@ -409,8 +424,12 @@ def _to_video(item: dict) -> Video:
         thumps=int(item.get("thumps") or 0),
         tags=[str(t) for t in (item.get("tags") or [])],
         ai_generated=bool(item.get("ai_generated") or False),
-        has_transcript=bool(item.get("has_transcript") or False),
-        transcribing=bool(item.get("transcribing") or False),
+        transcript_status=status,
+        # Derived, not independently trusted -- ready is the only status that
+        # means "usable transcript exists," so has_transcript can never
+        # disagree with transcript_status.
+        has_transcript=status == "ready",
+        transcribing=status == "transcribing",
         transcript_url=_cdn_url(item.get("transcript_key")),
         captions_url=_cdn_url(item.get("vtt_key")),
         visibility=_norm_visibility(item.get("visibility")),

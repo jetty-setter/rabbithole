@@ -72,11 +72,27 @@ resource "aws_iam_role_policy" "worker_transcribe" {
 }
 
 # ── Post-processor Lambda ──────────────────────────────────────
+# handler.py imports shared.captions; the deployed zip must bundle shared/
+# as a SIBLING of handler.py (Lambda always extracts to a flat /var/task,
+# so the repo's own "shared/ two directories up" layout doesn't survive
+# packaging -- see the comment in handler.py). source_dir alone can't pull
+# files from two different directories into one archive, so this lists
+# every file explicitly instead.
 data "archive_file" "transcribe_post" {
   type        = "zip"
-  source_dir  = "${path.module}/../lambdas/transcribe"
   output_path = "${path.module}/build/transcribe.zip"
-  excludes    = ["test_handler.py", "__pycache__"]
+  source {
+    content  = file("${path.module}/../lambdas/transcribe/handler.py")
+    filename = "handler.py"
+  }
+  source {
+    content  = file("${path.module}/../shared/__init__.py")
+    filename = "shared/__init__.py"
+  }
+  source {
+    content  = file("${path.module}/../shared/captions.py")
+    filename = "shared/captions.py"
+  }
 }
 
 resource "aws_iam_role" "transcribe_post" {

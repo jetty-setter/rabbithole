@@ -169,12 +169,69 @@ def test_handler_completed_writes_cues_and_flips_flag(stack, monkeypatch):
 
     # DynamoDB flipped
     item = table.get_item(Key={"video_id": "vid7"})["Item"]
+    assert item["transcript_status"] == "ready"
     assert item["has_transcript"] is True
     assert item["transcribing"] is False
     assert item["transcript_key"] == "vid7/cues.json"
 
 
-def test_handler_failed_clears_transcribing(stack, monkeypatch):
+def test_handler_failed_sets_failed_status_and_reason(stack, monkeypatch):
+    s3, table = stack
+    monkeypatch.setattr(
+        handler.transcribe,
+        "get_transcription_job",
+        lambda **_: {"TranscriptionJob": {"Media": {"MediaFileUri": "s3://test-streaming/vid7/audio.flac"}}},
+    )
+    # A raw file happens to exist -- FAILED jobs are retained on purpose,
+    # not cleaned up, so it should still be there afterward.
+    s3.put_object(Bucket="test-streaming", Key="vid7/transcribe-raw.json", Body="{}")
+
+    out = handler.handler(
+        {
+            "detail": {
+                "TranscriptionJobName": "rh-vid7-1",
+                "TranscriptionJobStatus": "FAILED",
+                "FailureReason": "Internal server error",
+            }
+        },
+        None,
+    )
+    assert out["ok"]
+    item = table.get_item(Key={"video_id": "vid7"})["Item"]
+    assert item["transcript_status"] == "failed"
+    assert item["has_transcript"] is False
+    assert item["transcribing"] is False
+    assert item["transcript_error"] == "Internal server error"
+    # Retained, not deleted -- a real failure is exactly what's worth debugging.
+    assert s3.get_object(Bucket="test-streaming", Key="vid7/transcribe-raw.json")
+
+
+def test_handler_completed_no_cues_sets_no_speech(stack, monkeypatch):
+    s3, table = stack
+    s3.put_object(
+        Bucket="test-streaming",
+        Key="vid7/transcribe-raw.json",
+        Body=json.dumps({"results": {"items": []}}),
+    )
+    monkeypatch.setattr(
+        handler.transcribe,
+        "get_transcription_job",
+        lambda **_: {"TranscriptionJob": {"Media": {"MediaFileUri": "s3://test-streaming/vid7/audio.flac"}}},
+    )
+    out = handler.handler(
+        {"detail": {"TranscriptionJobName": "rh-vid7-1", "TranscriptionJobStatus": "COMPLETED"}},
+        None,
+    )
+    assert out["ok"] and out["cues"] == 0
+    item = table.get_item(Key={"video_id": "vid7"})["Item"]
+    assert item["transcript_status"] == "no_speech"
+    assert item["has_transcript"] is False
+
+
+def test_handler_completed_missing_raw_output_is_failed_not_no_speech(stack, monkeypatch):
+    # No transcribe-raw.json written at all -- the job says COMPLETED but we
+    # can't read our own output. That's our bug, not evidence the clip is
+    # silent, so it must NOT collapse into no_speech.
     _, table = stack
     monkeypatch.setattr(
         handler.transcribe,
@@ -182,10 +239,11 @@ def test_handler_failed_clears_transcribing(stack, monkeypatch):
         lambda **_: {"TranscriptionJob": {"Media": {"MediaFileUri": "s3://test-streaming/vid7/audio.flac"}}},
     )
     out = handler.handler(
-        {"detail": {"TranscriptionJobName": "rh-vid7-1", "TranscriptionJobStatus": "FAILED"}},
+        {"detail": {"TranscriptionJobName": "rh-vid7-1", "TranscriptionJobStatus": "COMPLETED"}},
         None,
     )
     assert out["ok"]
     item = table.get_item(Key={"video_id": "vid7"})["Item"]
+    assert item["transcript_status"] == "failed"
     assert item["has_transcript"] is False
-    assert item["transcribing"] is False
+    assert "transcript_error" in item

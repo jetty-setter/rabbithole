@@ -79,6 +79,12 @@ class Video(BaseModel):
     thumps: int = 0
     tags: list[str] = []
     ai_generated: bool = False
+    # Authoritative transcript state. has_transcript is kept for existing
+    # frontend code that already branches on it, but is always derived from
+    # this field (ready -> true, everything else -> false) so the two can
+    # never disagree. Legacy records with no transcript_status at all read
+    # as None, which the frontend treats the same as "unavailable".
+    transcript_status: str | None = None
     has_transcript: bool = False
     transcribing: bool = False
     transcript_url: str | None = None

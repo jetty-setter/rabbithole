@@ -1,5 +1,31 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { displayTitle, fetchCues, formatDuration, relativeTime } from "../api";
+import { displayTitle, fetchCues, formatDuration, relativeTime, transcriptSectionState } from "../api";
+
+describe("transcriptSectionState", () => {
+  it("shows transcribing while a job is in flight", () => {
+    expect(transcriptSectionState({ transcript_status: "transcribing" })).toBe("transcribing");
+  });
+
+  it("shows ready once cues exist", () => {
+    expect(transcriptSectionState({ transcript_status: "ready" })).toBe("ready");
+  });
+
+  it("shows no_speech distinctly from a failure", () => {
+    expect(transcriptSectionState({ transcript_status: "no_speech" })).toBe("no_speech");
+  });
+
+  it("collapses failed into unavailable (no raw error shown to the user)", () => {
+    expect(transcriptSectionState({ transcript_status: "failed" })).toBe("unavailable");
+  });
+
+  it("collapses pending into unavailable", () => {
+    expect(transcriptSectionState({ transcript_status: "pending" })).toBe("unavailable");
+  });
+
+  it("treats a legacy record with no transcript_status as unavailable, not hidden", () => {
+    expect(transcriptSectionState({})).toBe("unavailable");
+  });
+});
 
 describe("displayTitle", () => {
   it("uses the title when present", () => {

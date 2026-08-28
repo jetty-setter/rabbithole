@@ -164,3 +164,63 @@ def test_creator_profile_not_found(client):
 def test_creator_profile_uses_username_case_insensitively(client, videos_table):
     seed_video(videos_table, video_id="v1", owner="alice", visibility="public")
     assert client.get("/creators/ALICE").json()["username"] == "alice"
+
+
+def test_transcript_status_ready_implies_has_transcript(client, videos_table):
+    seed_video(videos_table, video_id="v1", transcript_status="ready",
+               transcript_key="v1/cues.json", vtt_key="v1/captions.vtt")
+    body = client.get("/videos").json()[0]
+    assert body["transcript_status"] == "ready"
+    assert body["has_transcript"] is True
+    assert body["transcribing"] is False
+
+
+def test_transcript_status_failed_implies_no_transcript(client, videos_table):
+    seed_video(videos_table, video_id="v1", transcript_status="failed")
+    body = client.get("/videos").json()[0]
+    assert body["transcript_status"] == "failed"
+    assert body["has_transcript"] is False
+    assert body["transcribing"] is False
+
+
+def test_transcript_status_transcribing_sets_transcribing_flag(client, videos_table):
+    seed_video(videos_table, video_id="v1", transcript_status="transcribing")
+    body = client.get("/videos").json()[0]
+    assert body["transcript_status"] == "transcribing"
+    assert body["has_transcript"] is False
+    assert body["transcribing"] is True
+
+
+def test_legacy_record_with_stale_has_transcript_flag_is_not_trusted_directly(client, videos_table):
+    # A record from before transcript_status existed, with the OLD boolean
+    # flags only. has_transcript must still come through consistently (the
+    # legacy fallback treats a bare has_transcript=True as effectively ready).
+    videos_table.put_item(
+        Item={
+            "video_id": "legacy",
+            "filename": "old.mp4",
+            "status": "ready",
+            "created_at": "2025-01-01T00:00:00+00:00",
+            "hls_key": "legacy/hls/master.m3u8",
+            "has_transcript": True,
+            "transcribing": False,
+        }
+    )
+    body = client.get("/videos").json()[0]
+    assert body["transcript_status"] == "ready"
+    assert body["has_transcript"] is True
+
+
+def test_legacy_record_with_no_transcript_fields_at_all(client, videos_table):
+    videos_table.put_item(
+        Item={
+            "video_id": "legacy2",
+            "filename": "old.mp4",
+            "status": "ready",
+            "created_at": "2025-01-01T00:00:00+00:00",
+            "hls_key": "legacy2/hls/master.m3u8",
+        }
+    )
+    body = client.get("/videos").json()[0]
+    assert body["transcript_status"] is None
+    assert body["has_transcript"] is False

@@ -8,6 +8,7 @@ import {
   formatDuration,
   relativeTime,
   searchMoments,
+  transcriptSectionState,
   updateVideo,
   type AskAnswer,
   type SearchMoment,
@@ -225,6 +226,7 @@ export function WatchPage() {
   const faved = favorites.has(vid);
   const isHopped = hopped.has(vid);
   const isThumped = thumped.has(vid);
+  const transcriptState = transcriptSectionState(video);
 
   return (
     <main className="page watch">
@@ -440,45 +442,47 @@ export function WatchPage() {
             </section>
           )}
 
-          {(video.has_transcript || video.transcribing) && (
-            <section className="transcript">
-              <div className="transcript-head">
-                <h3 className="related-head">Transcript</h3>
-                {cues.length > 0 && (
-                  <input
-                    className="transcript-search"
-                    placeholder="Search this video…"
-                    value={cueQuery}
-                    onChange={(e) => setCueQuery(e.target.value)}
-                  />
+          <section className="transcript">
+            <div className="transcript-head">
+              <h3 className="related-head">Transcript</h3>
+              {transcriptState === "ready" && cues.length > 0 && (
+                <input
+                  className="transcript-search"
+                  placeholder="Search this video…"
+                  value={cueQuery}
+                  onChange={(e) => setCueQuery(e.target.value)}
+                />
+              )}
+            </div>
+            {transcriptState === "transcribing" ? (
+              <p className="muted transcript-note">
+                <span className="proc-spinner sm" /> Transcribing this video…
+              </p>
+            ) : transcriptState === "no_speech" ? (
+              <p className="muted transcript-note">No spoken audio was detected in this video.</p>
+            ) : transcriptState === "unavailable" ? (
+              <p className="muted transcript-note">Transcript unavailable.</p>
+            ) : cues.length === 0 ? (
+              <p className="muted transcript-note">No speech detected in this clip.</p>
+            ) : (
+              <div className="transcript-cues" ref={cuesRef}>
+                {shownCues.length === 0 ? (
+                  <p className="muted transcript-note">No lines match "{cueQuery}".</p>
+                ) : (
+                  shownCues.map((c) => (
+                    <button
+                      key={c.i}
+                      className={c.i === activeCue ? "cue active" : "cue"}
+                      onClick={() => seekTo(c.start)}
+                    >
+                      <span className="cue-time">{fmtTime(c.start)}</span>
+                      <span className="cue-text">{c.text}</span>
+                    </button>
+                  ))
                 )}
               </div>
-              {video.transcribing && cues.length === 0 ? (
-                <p className="muted transcript-note">
-                  <span className="proc-spinner sm" /> Transcribing audio…
-                </p>
-              ) : cues.length === 0 ? (
-                <p className="muted transcript-note">No speech detected in this clip.</p>
-              ) : (
-                <div className="transcript-cues" ref={cuesRef}>
-                  {shownCues.length === 0 ? (
-                    <p className="muted transcript-note">No lines match "{cueQuery}".</p>
-                  ) : (
-                    shownCues.map((c) => (
-                      <button
-                        key={c.i}
-                        className={c.i === activeCue ? "cue active" : "cue"}
-                        onClick={() => seekTo(c.start)}
-                      >
-                        <span className="cue-time">{fmtTime(c.start)}</span>
-                        <span className="cue-text">{c.text}</span>
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
-            </section>
-          )}
+            )}
+          </section>
 
           <Comments videoId={vid} />
         </div>
