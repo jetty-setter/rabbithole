@@ -136,7 +136,7 @@ export function Header({
       <ul className="nav-center">
         <li>
           <NavLink to="/" end className={navCls}>
-            Watch
+            Discover
           </NavLink>
         </li>
         <li>
@@ -206,7 +206,7 @@ export function Header({
                 <div className="menu-mobile-primary">
                   <Link to="/" className="menu-item" onClick={() => setMenuOpen(false)}>
                     <IconWatch />
-                    Watch
+                    Discover
                   </Link>
                   <Link to="/tunnels" className="menu-item" onClick={() => setMenuOpen(false)}>
                     <IconTunnels />
