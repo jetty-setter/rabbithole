@@ -186,12 +186,16 @@ def _start_transcription(video_id: str, src: Path, workdir: Path) -> tuple[str, 
         s3.upload_file(str(audio), STREAMING_BUCKET, audio_key,
                        ExtraArgs={"ContentType": "audio/flac"})
         job = f"rh-{video_id}-{int(time.time())}"
-        # DataAccessRoleArn: Transcribe assumes this role to read/write the
-        # streaming bucket. Without it, Transcribe does NOT fall back to the
-        # calling (worker) identity's permissions -- it can't read the audio
-        # at all, even same-account, and start_transcription_job raises
-        # BadRequestException. infra/transcribe.tf already grants the worker
-        # iam:PassRole for exactly this ARN; it just needs to be passed.
+        # JobExecutionSettings.DataAccessRoleArn: Transcribe assumes this role
+        # to read/write the streaming bucket. Without it, Transcribe does NOT
+        # fall back to the calling (worker) identity's permissions -- it can't
+        # read the audio at all, even same-account, and start_transcription_job
+        # raises BadRequestException. infra/transcribe.tf already grants the
+        # worker iam:PassRole for exactly this ARN; it just needs to be passed.
+        # (DataAccessRoleArn is nested under JobExecutionSettings, not a
+        # top-level param -- confirmed directly against the installed
+        # botocore's service model; a top-level DataAccessRoleArn kwarg raises
+        # a ParamValidationError, "Unknown parameter in input".)
         transcribe.start_transcription_job(
             TranscriptionJobName=job,
             Media={"MediaFileUri": f"s3://{STREAMING_BUCKET}/{audio_key}"},
@@ -199,7 +203,7 @@ def _start_transcription(video_id: str, src: Path, workdir: Path) -> tuple[str, 
             IdentifyLanguage=True,
             OutputBucketName=STREAMING_BUCKET,
             OutputKey=f"{video_id}/transcribe-raw.json",
-            DataAccessRoleArn=TRANSCRIBE_ROLE_ARN,
+            JobExecutionSettings={"DataAccessRoleArn": TRANSCRIBE_ROLE_ARN},
         )
         print(f"transcription started for {video_id}: job={job}")
         return "transcribing", None
