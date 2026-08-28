@@ -132,6 +132,91 @@ export function WatchPage() {
     setAskError(null);
   }, [video?.video_id]);
 
+  // Right rail: RELATED / TRANSCRIPT tabs. Mode is intentionally NOT reset
+  // per video -- it's meant to persist across in-app navigation for the
+  // rest of the session (a plain useState does that for free, since
+  // WatchPage stays mounted across :id changes; nothing is persisted to
+  // storage, so it's back to "related" on a fresh page load).
+  const [railMode, setRailMode] = useState<"related" | "transcript">("related");
+
+  // Rail transcript: synchronized, auto-following cue list with a manual-
+  // scroll override so reading doesn't get yanked around. Reuses the same
+  // cues/activeCue/seekTo the main-page transcript section already uses --
+  // no second transcript fetch, no separate search state.
+  const [followPlayback, setFollowPlayback] = useState(true);
+  const railCuesRef = useRef<HTMLDivElement>(null);
+  const railAutoScrollRef = useRef(false);
+  const railScrollGenRef = useRef(0);
+
+  useEffect(() => {
+    setFollowPlayback(true);
+  }, [video?.video_id]);
+
+  useEffect(() => () => {
+    railScrollGenRef.current++; // cancel any in-flight animation on unmount
+  }, []);
+
+  // A restrained, self-driven "nearest edge" smooth scroll -- deliberately
+  // NOT the browser's native scrollIntoView({behavior:"smooth"}). That
+  // relies on the browser's own animation timing, which we can't observe
+  // precisely: a fixed guard window long enough for a one-line follow falls
+  // short on a big jump (a distant seek, a deep link) where the animation
+  // is still mid-flight when the guard clears, and the tail end of our OWN
+  // scroll then reads as a user scroll and wrongly suspends follow. Driving
+  // scrollTop ourselves with rAF gives a duration we actually know, so the
+  // guard can clear at the exact right moment every time.
+  function animateRailScroll(container: HTMLElement, delta: number, duration = 320): Promise<void> {
+    const gen = ++railScrollGenRef.current;
+    const startTop = container.scrollTop;
+    return new Promise((resolve) => {
+      const start = performance.now();
+      function step(now: number) {
+        if (railScrollGenRef.current !== gen) {
+          resolve(); // superseded by a newer scroll or an unmount
+          return;
+        }
+        const t = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - t, 3); // ease-out
+        container.scrollTop = startTop + delta * eased;
+        if (t < 1) requestAnimationFrame(step);
+        else resolve();
+      }
+      requestAnimationFrame(step);
+    });
+  }
+
+  // Auto-follow: keep the active cue comfortably in view while playing,
+  // unless the user is searching or has manually scrolled away from it.
+  useEffect(() => {
+    if (railMode !== "transcript" || !followPlayback || cueQuery.trim() || activeCue < 0) return;
+    const container = railCuesRef.current;
+    const target = container?.querySelector(".cue.active") as HTMLElement | null;
+    if (!container || !target) return;
+    const cr = container.getBoundingClientRect();
+    const tr = target.getBoundingClientRect();
+    const margin = 8;
+    let delta = 0;
+    if (tr.top < cr.top + margin) delta = tr.top - cr.top - margin;
+    else if (tr.bottom > cr.bottom - margin) delta = tr.bottom - cr.bottom + margin;
+    if (delta === 0) return; // already comfortably in view
+    railAutoScrollRef.current = true;
+    animateRailScroll(container, delta).then(() => {
+      railAutoScrollRef.current = false;
+    });
+  }, [activeCue, cueQuery, followPlayback, railMode]);
+
+  // A scroll we didn't cause ourselves means the user is browsing -- suspend
+  // auto-follow until they explicitly ask to resume.
+  function handleRailScroll() {
+    if (railAutoScrollRef.current) return;
+    if (followPlayback) setFollowPlayback(false);
+  }
+
+  function seekFromRail(t: number) {
+    seekTo(t);
+    setFollowPlayback(true);
+  }
+
   // "Ask this video" — RAG Q&A grounded only in this video's own transcript.
   const [askQuestion, setAskQuestion] = useState("");
   const [askAnswer, setAskAnswer] = useState<AskAnswer | null>(null);
@@ -501,46 +586,135 @@ export function WatchPage() {
         </div>
 
         <aside className="watch-related">
-          <h2 className="related-head">Related</h2>
-          <p className="related-sub">Connected moments from across RabbitHole.</p>
-          {deeperMoments && deeperMoments.length > 0
-            ? deeperMoments.map((r) => (
-                <Link
-                  to={`/watch/${r.video.video_id}?t=${Math.floor(r.start)}`}
-                  className="related-item deeper-moment"
-                  key={r.video.video_id}
+          <div className="rail-tabs" role="tablist" aria-label="Related videos or transcript">
+            <button
+              type="button"
+              role="tab"
+              id="rail-tab-related"
+              aria-controls="rail-panel-related"
+              aria-selected={railMode === "related"}
+              className={railMode === "related" ? "rail-tab active" : "rail-tab"}
+              onClick={() => setRailMode("related")}
+            >
+              Related
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="rail-tab-transcript"
+              aria-controls="rail-panel-transcript"
+              aria-selected={railMode === "transcript"}
+              className={railMode === "transcript" ? "rail-tab active" : "rail-tab"}
+              onClick={() => setRailMode("transcript")}
+            >
+              Transcript
+            </button>
+          </div>
+
+          <div
+            id="rail-panel-related"
+            role="tabpanel"
+            aria-labelledby="rail-tab-related"
+            className="rail-panel-related"
+            hidden={railMode !== "related"}
+          >
+            <p className="related-sub">Connected moments from across RabbitHole.</p>
+            {deeperMoments && deeperMoments.length > 0
+              ? deeperMoments.map((r) => (
+                  <Link
+                    to={`/watch/${r.video.video_id}?t=${Math.floor(r.start)}`}
+                    className="related-item deeper-moment"
+                    key={r.video.video_id}
+                  >
+                    <div className="related-thumb">
+                      {r.video.thumbnail_url ? (
+                        <img src={r.video.thumbnail_url} alt="" />
+                      ) : (
+                        <img src="/RHRabbit.png?v=5" alt="" className="thumb-ph" />
+                      )}
+                      <span className="dur-badge">{fmtTime(r.start)}</span>
+                    </div>
+                    <div className="related-info">
+                      <span className="related-title">{displayTitle(r.video)}</span>
+                      <span className="deeper-snippet">“…{r.snippet}…”</span>
+                    </div>
+                  </Link>
+                ))
+              : related.map((r) => (
+                  <Link to={`/watch/${r.video_id}`} className="related-item" key={r.video_id}>
+                    <div className="related-thumb">
+                      {r.thumbnail_url ? <img src={r.thumbnail_url} alt="" /> : <img src="/RHRabbit.png?v=5" alt="" className="thumb-ph" />}
+                      {r.duration_seconds && (
+                        <span className="dur-badge">{formatDuration(r.duration_seconds)}</span>
+                      )}
+                    </div>
+                    <div className="related-info">
+                      <span className="related-title">{displayTitle(r)}</span>
+                      <span className="related-meta">{r.owner || "RabbitHole"}</span>
+                      <span className="related-meta">
+                        {r.views ?? 0} views · {relativeTime(r.created_at)}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+          </div>
+
+          <div
+            id="rail-panel-transcript"
+            role="tabpanel"
+            aria-labelledby="rail-tab-transcript"
+            className="rail-panel-transcript"
+            hidden={railMode !== "transcript"}
+          >
+            {transcriptState === "ready" && cues.length > 0 && (
+              <input
+                className="transcript-search"
+                placeholder="Search this video…"
+                value={cueQuery}
+                onChange={(e) => setCueQuery(e.target.value)}
+              />
+            )}
+            {transcriptState === "transcribing" ? (
+              <p className="muted transcript-note">
+                <span className="proc-spinner sm" /> Transcribing this video…
+              </p>
+            ) : transcriptState === "no_speech" ? (
+              <p className="muted transcript-note">No spoken audio was detected in this video.</p>
+            ) : transcriptState === "unavailable" ? (
+              <p className="muted transcript-note">Transcript unavailable.</p>
+            ) : cues.length === 0 ? (
+              <p className="muted transcript-note">No speech detected in this clip.</p>
+            ) : (
+              <>
+                {!followPlayback && !cueQuery.trim() && (
+                  <button type="button" className="follow-playback" onClick={() => setFollowPlayback(true)}>
+                    Follow playback
+                  </button>
+                )}
+                <div
+                  className="watch-related-transcript"
+                  ref={railCuesRef}
+                  onScroll={handleRailScroll}
                 >
-                  <div className="related-thumb">
-                    {r.video.thumbnail_url ? (
-                      <img src={r.video.thumbnail_url} alt="" />
-                    ) : (
-                      <img src="/RHRabbit.png?v=5" alt="" className="thumb-ph" />
-                    )}
-                    <span className="dur-badge">{fmtTime(r.start)}</span>
-                  </div>
-                  <div className="related-info">
-                    <span className="related-title">{displayTitle(r.video)}</span>
-                    <span className="deeper-snippet">“…{r.snippet}…”</span>
-                  </div>
-                </Link>
-              ))
-            : related.map((r) => (
-                <Link to={`/watch/${r.video_id}`} className="related-item" key={r.video_id}>
-                  <div className="related-thumb">
-                    {r.thumbnail_url ? <img src={r.thumbnail_url} alt="" /> : <img src="/RHRabbit.png?v=5" alt="" className="thumb-ph" />}
-                    {r.duration_seconds && (
-                      <span className="dur-badge">{formatDuration(r.duration_seconds)}</span>
-                    )}
-                  </div>
-                  <div className="related-info">
-                    <span className="related-title">{displayTitle(r)}</span>
-                    <span className="related-meta">{r.owner || "RabbitHole"}</span>
-                    <span className="related-meta">
-                      {r.views ?? 0} views · {relativeTime(r.created_at)}
-                    </span>
-                  </div>
-                </Link>
-              ))}
+                  {shownCues.length === 0 ? (
+                    <p className="muted transcript-note">No lines match "{cueQuery}".</p>
+                  ) : (
+                    shownCues.map((c) => (
+                      <button
+                        key={c.i}
+                        className={c.i === activeCue ? "cue active" : "cue"}
+                        aria-current={c.i === activeCue ? "true" : undefined}
+                        onClick={() => seekFromRail(c.start)}
+                      >
+                        <span className="cue-time">{fmtTime(c.start)}</span>
+                        <span className="cue-text">{c.text}</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         </aside>
       </div>
     </main>
