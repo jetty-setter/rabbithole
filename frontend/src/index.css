@@ -2619,6 +2619,20 @@ body::after {
   padding-right: 6px;
 }
 
+/* Shorter visible window at narrower widths so the transcript stays a
+   compact, searchable tool rather than dominating the screen -- the cue
+   list still scrolls internally at every size. */
+@media (max-width: 980px) {
+  .transcript-cues {
+    max-height: 300px;
+  }
+}
+@media (max-width: 560px) {
+  .transcript-cues {
+    max-height: 260px;
+  }
+}
+
 .cue {
   display: flex;
   gap: 12px;
