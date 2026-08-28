@@ -1822,17 +1822,42 @@ body {
   padding-right: 0;
 }
 
-/* The rail's own heading -- scoped so it doesn't touch .related-head's
-   shared use for Transcript/Comments section headers elsewhere on the
-   page (those keep their trailing hairline-rule treatment; this is a
-   plainer, standalone heading with no panel/kicker around it). */
-.watch-related .related-head {
-  display: block;
-  letter-spacing: 0.08em;
-  margin: 4px 0 4px;
+/* Rail tabs -- RELATED / TRANSCRIPT. Restrained text tabs, not pills or a
+   segmented control: an underline on the active item is the only chrome. */
+.rail-tabs {
+  display: flex;
+  gap: 22px;
+  margin-bottom: 14px;
 }
-.watch-related .related-head::after {
-  content: none;
+
+.rail-tab {
+  background: none;
+  border: none;
+  padding: 0 0 6px;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.rail-tab:hover {
+  color: var(--text);
+}
+
+.rail-tab.active {
+  color: var(--text);
+  border-bottom-color: var(--violet);
+}
+
+.rail-tab:focus-visible {
+  outline: 1px solid var(--violet);
+  outline-offset: 3px;
+  border-radius: 3px;
 }
 
 .related-sub {
@@ -1948,6 +1973,49 @@ body {
   line-height: 1.4;
 }
 
+/* Rail transcript panel -- reuses .transcript-search/.cue/.cue-time/
+   .cue-text/.transcript-note as-is; only the scroll container and the
+   auto-follow affordance are new. This is the ONE place the rail scrolls
+   internally (unlike RELATED, which rides the page scroll). */
+.rail-panel-transcript .transcript-search {
+  width: 100%;
+  max-width: none;
+  margin-bottom: 12px;
+}
+
+.watch-related-transcript {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.follow-playback {
+  display: inline-flex;
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0 0 8px;
+  margin: 0;
+  color: var(--violet);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.follow-playback:hover {
+  color: var(--text);
+}
+
+.follow-playback:focus-visible {
+  outline: 1px solid var(--violet);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
 @media (max-width: 980px) {
   .watch-grid {
     grid-template-columns: 1fr;
@@ -1957,6 +2025,18 @@ body {
     position: static;
     max-height: none;
     overflow: visible;
+  }
+  /* No room for a side rail once stacked -- Related stays in the normal
+     flow and the full-width Transcript section below Ask This Video
+     remains the one transcript experience, so nothing is duplicated. */
+  .rail-tabs {
+    display: none;
+  }
+  .rail-panel-transcript {
+    display: none !important;
+  }
+  .rail-panel-related {
+    display: block !important;
   }
 }
 
