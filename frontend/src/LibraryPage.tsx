@@ -33,6 +33,9 @@ export function LibraryPage() {
 
   const featured = ready.length > 0 ? ready[0] : null;
   const gridList = featured ? list.filter((v) => v.video_id !== featured.video_id) : list;
+  // Curated, not a full catalog dump: three clean rows of four, predictable
+  // page length, no awkward partial final row. The rest lives at /fresh.
+  const homeGridList = gridList.slice(0, 12);
 
   // A taste of the ways to follow curiosity here, right under the search
   // hero — otherwise Tunnels, Trail-through-search, and the Map are only
@@ -87,37 +90,49 @@ export function LibraryPage() {
           )}
           {featured && (
             <div className="home-browse">
-              <div className="section-head">
-                <h2>
-                  Start somewhere<span className="home-punct">.</span>
-                </h2>
-              </div>
-              {startTopics.length > 0 && (
-                <div className="start-row">
-                  {startTopics.map(([tag, n]) => (
-                    <Link
-                      key={tag}
-                      to={`/tunnels/${encodeURIComponent(tag)}`}
-                      className="tunnel-chip start-chip"
-                    >
-                      <span className="tunnel-tag">#{tag}</span>
-                      <span className="tunnel-count">{n}</span>
+              <div className="home-browse-inner">
+                <div className="section-head">
+                  <h2>
+                    Start somewhere<span className="home-punct">.</span>
+                  </h2>
+                </div>
+                {startTopics.length > 0 && (
+                  <div className="start-row">
+                    {startTopics.map(([tag, n]) => (
+                      <Link
+                        key={tag}
+                        to={`/tunnels/${encodeURIComponent(tag)}`}
+                        className="tunnel-chip start-chip"
+                      >
+                        <span className="tunnel-tag">#{tag}</span>
+                        <span className="tunnel-count">{n}</span>
+                      </Link>
+                    ))}
+                    <Link to="/map" className="start-map-link">
+                      <MapIcon />
+                      Explore the topic map
                     </Link>
-                  ))}
-                  <Link to="/map" className="start-map-link">
-                    <MapIcon />
-                    Explore the topic map
-                  </Link>
-                </div>
-              )}
-              <FeaturedCard v={featured} />
-              {gridList.length > 0 && (
-                <div className="home-grid">
-                  {gridList.map((v) => (
-                    <EditorialCard key={v.video_id} v={v} />
-                  ))}
-                </div>
-              )}
+                  </div>
+                )}
+                <FeaturedCard v={featured} />
+                {homeGridList.length > 0 && (
+                  <>
+                    <div className="section-head section-head-explore">
+                      <h2>
+                        Explore more<span className="home-punct">.</span>
+                      </h2>
+                    </div>
+                    <div className="home-grid">
+                      {homeGridList.map((v) => (
+                        <EditorialCard key={v.video_id} v={v} />
+                      ))}
+                    </div>
+                    <Link to="/fresh" className="archive-cta">
+                      Browse the archive <span aria-hidden="true">→</span>
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
           )}
         </>

@@ -25,6 +25,7 @@ export function FeaturedCard({ v }: { v: Video }) {
         )}
       </div>
       <div className="featured-info">
+        <span className="featured-eyebrow">Featured</span>
         <h2 className="featured-title">{displayTitle(v)}</h2>
         {v.description && <p className="featured-desc">{v.description}</p>}
         <div className="featured-by">

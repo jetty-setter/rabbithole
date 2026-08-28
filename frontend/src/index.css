@@ -368,8 +368,14 @@ body {
   margin: 0 -28px 0;
   padding: 68px 28px 56px;
 }
+/* Keeps the browse content from stretching edge-to-edge on very wide
+   screens while .home-browse's own background stays full-bleed. */
+.home-browse-inner {
+  max-width: 1220px;
+  margin: 0 auto;
+}
 .home-browse .featured {
-  margin-bottom: 40px;
+  margin-bottom: 8px;
 }
 .home-browse .section-head:first-child {
   margin-top: 0;
@@ -384,12 +390,24 @@ body {
   letter-spacing: -0.02em;
   text-transform: uppercase;
 }
+/* "Explore more." -- same treatment, generous top margin to clearly open
+   a new section after the featured story. */
+.home-browse .section-head-explore {
+  margin-top: 56px;
+}
+.home-browse .section-head-explore h2 {
+  font-family: var(--display);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
 .start-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 16px;
-  margin-bottom: 40px;
+  margin-bottom: 24px;
 }
 /* Editorial chip treatment for the homepage only -- .tunnel-chip itself
    (used on the Tunnels/Creator pages) is untouched. Squared-off corners,
@@ -624,23 +642,135 @@ body {
   letter-spacing: 0.03em;
 }
 
+/* ── Homepage-only grid/card treatment ───────────────────────
+   .ecard/.home-grid are shared with /fresh, /trail, and /trending, which
+   keep the tall poster-style card above untouched. Scoped overrides here
+   (via the .home-browse ancestor, so specificity wins regardless of
+   source order) give the homepage a 4-column, image-forward, horizontal-
+   thumbnail treatment instead -- text below the image, not stacked on
+   top of it. */
+.home-browse .home-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 22px;
+}
+.home-browse .ecard {
+  position: static;
+  aspect-ratio: auto;
+  border-radius: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: normal;
+  background: none;
+  transition: transform 220ms ease;
+}
+.home-browse .ecard:hover {
+  transform: translateY(-3px);
+}
+.home-browse .ecard::after {
+  content: none;
+}
+.home-browse .ecard-thumb {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  aspect-ratio: 16 / 10;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-2);
+  margin-bottom: 12px;
+}
+.home-browse .ecard-thumb img {
+  transition: transform 320ms ease;
+}
+.home-browse .ecard:hover .ecard-thumb img {
+  transform: scale(1.04);
+}
+.home-browse .ecard-thumb .thumb-ph {
+  font-size: 26px;
+}
+.home-browse .ecard-cat {
+  position: static;
+  z-index: auto;
+  margin-bottom: 6px;
+}
+.home-browse .ecard-title {
+  position: static;
+  z-index: auto;
+  font-size: 16px;
+  margin: 0 0 8px;
+}
+.home-browse .ecard-meta {
+  position: static;
+  z-index: auto;
+}
+
+@media (max-width: 1080px) {
+  .home-browse .home-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 760px) {
+  .home-browse .home-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 480px) {
+  .home-browse .home-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.archive-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 44px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 150ms ease, gap 150ms ease;
+}
+.archive-cta span {
+  color: var(--accent-warm);
+  transition: transform 150ms ease;
+}
+.archive-cta:hover {
+  color: var(--violet);
+  gap: 10px;
+}
+.archive-cta:hover span {
+  transform: translateX(2px);
+}
+
 /* ── Featured hero (breaks the uniform grid) ─────────────── */
 .featured {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-  gap: 28px;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 40px;
   align-items: center;
   margin-bottom: 38px;
   text-decoration: none;
   color: inherit;
 }
 
+.featured-eyebrow {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--violet);
+  margin-bottom: 10px;
+}
+
 .featured-thumb {
   position: relative;
   aspect-ratio: 16 / 9;
-  border-radius: 18px;
+  border-radius: 12px;
   overflow: hidden;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   background: var(--bg-2);
   display: flex;
   align-items: center;
