@@ -148,6 +148,11 @@ export interface Video {
   thumps?: number;
   tags?: string[];
   ai_generated?: boolean;
+  // Authoritative transcript state; has_transcript/transcribing are always
+  // derived from this on the API side (ready -> has_transcript, transcribing
+  // -> transcribing), kept for existing code that already branches on them.
+  // Absent on legacy records — treat the same as "unavailable".
+  transcript_status?: "pending" | "transcribing" | "ready" | "no_speech" | "failed";
   has_transcript?: boolean;
   transcribing?: boolean;
   transcript_url?: string | null;
@@ -341,6 +346,27 @@ export async function incrementView(id: string): Promise<void> {
 }
 
 /** Display title: the set title, else a prettified filename. */
+/** What the Transcript section should render for a video, given its
+ *  transcript_status. A transcript failure/absence should never make the
+ *  whole section silently disappear -- every ready video gets a Transcript
+ *  section, just with state-appropriate copy instead of the searchable cue
+ *  list. Legacy records with no transcript_status (and "pending"/"failed")
+ *  all collapse into "unavailable" -- the user never sees raw error detail. */
+export type TranscriptSectionState = "transcribing" | "ready" | "no_speech" | "unavailable";
+
+export function transcriptSectionState(v: { transcript_status?: Video["transcript_status"] }): TranscriptSectionState {
+  switch (v.transcript_status) {
+    case "transcribing":
+      return "transcribing";
+    case "ready":
+      return "ready";
+    case "no_speech":
+      return "no_speech";
+    default:
+      return "unavailable";
+  }
+}
+
 export function displayTitle(v: { title?: string | null; filename: string }): string {
   const t = (v.title || "").trim();
   if (t) return t;

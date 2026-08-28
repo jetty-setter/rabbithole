@@ -86,9 +86,15 @@ POLL_WAIT_SECONDS = int(os.getenv("POLL_WAIT_SECONDS", "20"))
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 AI_MODEL = os.getenv("AI_MODEL", "claude-opus-4-8")
 
-# Speech-to-text (optional). When TRANSCRIBE_ROLE_ARN is set, the worker extracts
-# audio and kicks off an AWS Transcribe job after transcode; a post-processor
-# Lambda turns the result into caption cues. Absent the role -> feature dormant.
+# Speech-to-text (optional). TRANSCRIBE_ROLE_ARN is the data-access role AWS
+# Transcribe itself assumes to read the audio we upload and write its output --
+# it is NOT just an on/off flag (see infra/transcribe.tf: the role has its own
+# S3 read/write policy, and the worker's own role is granted iam:PassRole for
+# exactly this ARN). It must actually be passed as DataAccessRoleArn below;
+# omitting it makes Transcribe unable to read same-account buckets at all
+# (BadRequestException: "The S3 URI that you provided can't be accessed"),
+# which is what silently broke every transcription job. Absent the var ->
+# feature dormant (e.g. an environment with no transcribe.tf applied).
 TRANSCRIBE_ROLE_ARN = os.getenv("TRANSCRIBE_ROLE_ARN", "")
 
 _session = boto3.session.Session(region_name=AWS_REGION)
@@ -148,33 +154,44 @@ def _ai_metadata(frames: list[Path], filename: str) -> dict | None:
         return None
 
 
-def _start_transcription(video_id: str, src: Path, workdir: Path) -> bool:
+def _start_transcription(video_id: str, src: Path, workdir: Path) -> tuple[str, str | None]:
     """Extract a mono 16 kHz FLAC track and fire an async AWS Transcribe job.
 
-    Best-effort: a clip with no speech (or no audio stream at all) just yields
-    nothing useful, so any failure is swallowed and the video proceeds normally.
-    The job writes its raw result to the streaming bucket; an EventBridge-driven
-    Lambda turns that into caption cues (see lambdas/transcribe)."""
+    Returns (transcript_status, transcript_error) where transcript_status is
+    one of "transcribing" | "no_speech" | "failed" | "pending" (the last only
+    when the feature is dormant -- TRANSCRIBE_ROLE_ARN unset). A clip with no
+    audio stream is a normal, expected outcome (no_speech), not a failure --
+    but a real error starting the job (bad permissions, throttling, etc.) is
+    recorded as failed with a concise diagnostic reason instead of silently
+    looking identical. The job writes its raw result to the streaming bucket;
+    an EventBridge-driven Lambda turns that into caption cues (see
+    lambdas/transcribe). The video itself is never blocked on any of this --
+    the caller still marks the video ready regardless of transcript_status."""
     if not TRANSCRIBE_ROLE_ARN:
-        return False
+        return "pending", None
     audio = workdir / "audio.flac"
     try:
         # -vn drop video, mono, 16 kHz — Transcribe's sweet spot and a tiny file.
         _ffmpeg(["-i", str(src), "-vn", "-ac", "1", "-ar", "16000",
                  "-c:a", "flac", str(audio)])
-    except subprocess.CalledProcessError:
-        print(f"no audio track for {video_id}; skipping transcription")
-        return False
+    except subprocess.CalledProcessError as exc:
+        tail = exc.stderr.decode(errors="ignore")[-300:] if exc.stderr else ""
+        print(f"no audio track for {video_id}; skipping transcription ({tail})")
+        return "no_speech", None
     if not audio.exists() or audio.stat().st_size == 0:
-        return False
+        print(f"empty audio extract for {video_id}; skipping transcription")
+        return "no_speech", None
     try:
         audio_key = f"{video_id}/audio.flac"
         s3.upload_file(str(audio), STREAMING_BUCKET, audio_key,
                        ExtraArgs={"ContentType": "audio/flac"})
         job = f"rh-{video_id}-{int(time.time())}"
-        # No DataAccessRoleArn: for same-account buckets Transcribe uses the
-        # caller's (worker role's) S3 permissions, which already cover streaming.
-        # (TRANSCRIBE_ROLE_ARN stays as the feature on/off flag, checked above.)
+        # DataAccessRoleArn: Transcribe assumes this role to read/write the
+        # streaming bucket. Without it, Transcribe does NOT fall back to the
+        # calling (worker) identity's permissions -- it can't read the audio
+        # at all, even same-account, and start_transcription_job raises
+        # BadRequestException. infra/transcribe.tf already grants the worker
+        # iam:PassRole for exactly this ARN; it just needs to be passed.
         transcribe.start_transcription_job(
             TranscriptionJobName=job,
             Media={"MediaFileUri": f"s3://{STREAMING_BUCKET}/{audio_key}"},
@@ -182,12 +199,14 @@ def _start_transcription(video_id: str, src: Path, workdir: Path) -> bool:
             IdentifyLanguage=True,
             OutputBucketName=STREAMING_BUCKET,
             OutputKey=f"{video_id}/transcribe-raw.json",
+            DataAccessRoleArn=TRANSCRIBE_ROLE_ARN,
         )
         print(f"transcription started for {video_id}: job={job}")
-        return True
+        return "transcribing", None
     except Exception as exc:  # noqa: BLE001
-        print(f"transcription start skipped for {video_id}: {exc}")
-        return False
+        reason = str(exc)[:300]
+        print(f"transcription start failed for {video_id}: {reason}")
+        return "failed", reason
 
 
 def _resolve_video(key: str) -> tuple[str, dict] | None:
@@ -244,8 +263,9 @@ def process_record(bucket: str, key: str) -> None:
         elapsed = time.monotonic() - started
 
         # Kick off speech-to-text while the source is still on local disk. The
-        # job runs async; the post-processor Lambda flips has_transcript later.
-        transcribing = _start_transcription(video_id, src, workdir)
+        # job runs async; the post-processor Lambda sets transcript_status
+        # (and has_transcript) to its final value later.
+        transcript_status, transcript_error = _start_transcription(video_id, src, workdir)
 
         # Auto-name untitled uploads from the freshly-extracted frame.
         ai_extra: dict = {}
@@ -270,9 +290,14 @@ def process_record(bucket: str, key: str) -> None:
         # string conversion doesn't carry binary-float noise), then Decimal.
         "duration_seconds": Decimal(str(round(elapsed, 2))),
         "cost_usd": f"{estimate_cost(elapsed):.4f}",
-        # True until the post-processor Lambda writes cues (or gives up).
-        "transcribing": transcribing,
+        "transcript_status": transcript_status,
+        # True only while a Transcribe job is actually in flight -- the
+        # post-processor Lambda clears it (and sets the final transcript_status)
+        # once the job completes, fails, or turns out to have no speech.
+        "transcribing": transcript_status == "transcribing",
     }
+    if transcript_error:
+        extra["transcript_error"] = transcript_error
     extra.update(ai_extra)
     set_status(video_id, "ready", extra)
     emit_metrics(elapsed, estimate_cost(elapsed))
