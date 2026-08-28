@@ -366,7 +366,9 @@ body {
     radial-gradient(ellipse 70% 420px at 76% 0%, rgba(154, 130, 242, 0.07), transparent 70%),
     linear-gradient(to bottom, var(--hero-black), var(--bg-2) 560px);
   margin: 0 -28px 0;
-  padding: 68px 28px 56px;
+  /* Bottom padding trimmed now that the footer supplies the page's real
+     ending -- was leaving a large empty field after the archive link. */
+  padding: 68px 28px 28px;
 }
 /* Keeps the browse content from stretching edge-to-edge on very wide
    screens while .home-browse's own background stays full-bleed. */
@@ -651,7 +653,8 @@ body {
    top of it. */
 .home-browse .home-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 22px;
+  column-gap: 22px;
+  row-gap: 32px;
 }
 .home-browse .ecard {
   position: static;
@@ -710,6 +713,9 @@ body {
 .home-browse .ecard-meta {
   position: static;
   z-index: auto;
+}
+.home-browse .ecard-dur {
+  color: rgba(251, 245, 232, 0.6);
 }
 
 @media (max-width: 1080px) {
@@ -3305,5 +3311,87 @@ body::after {
 @media (max-width: 560px) {
   .search-hit {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ── Global site footer: restrained end-credit treatment ─────
+   Rendered once in App.tsx's Layout, after every routed page -- not
+   homepage-only. Deliberately minimal: wordmark + tagline, a compact
+   nav, a quiet copyright line. No columns, no newsletter, no socials. */
+.site-footer {
+  width: 100%;
+  border-top: 1px solid rgba(251, 245, 232, 0.08);
+  background: #050505;
+  color: var(--text);
+  margin-top: 72px;
+}
+
+.site-footer-inner {
+  max-width: 1220px;
+  margin: 0 auto;
+  padding: 52px 28px 30px;
+}
+
+.site-footer-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 48px;
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-logo {
+  height: 34px;
+  width: auto;
+  display: block;
+}
+
+.footer-tagline {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  justify-content: flex-end;
+}
+
+.footer-nav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color 150ms ease;
+}
+
+.footer-nav a:hover {
+  color: var(--text);
+}
+
+.site-footer-bottom {
+  margin-top: 42px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(251, 245, 232, 0.05);
+  color: rgba(251, 245, 232, 0.42);
+  font-size: 12px;
+}
+
+@media (max-width: 700px) {
+  .site-footer-main {
+    flex-direction: column;
+  }
+  .footer-nav {
+    justify-content: flex-start;
   }
 }
