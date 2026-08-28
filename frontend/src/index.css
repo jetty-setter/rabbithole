@@ -366,9 +366,11 @@ body {
     radial-gradient(ellipse 70% 420px at 76% 0%, rgba(154, 130, 242, 0.07), transparent 70%),
     linear-gradient(to bottom, var(--hero-black), var(--bg-2) 560px);
   margin: 0 -28px 0;
-  /* Bottom padding trimmed now that the footer supplies the page's real
-     ending -- was leaving a large empty field after the archive link. */
-  padding: 68px 28px 28px;
+  /* .home-browse is now the sole source of homepage-to-footer spacing --
+     .page's bottom padding is zeroed on the homepage (.home-page) and
+     .site-footer no longer adds its own margin-top, so this is the only
+     value controlling the gap before the footer divider. */
+  padding: 68px 28px 56px;
 }
 /* Keeps the browse content from stretching edge-to-edge on very wide
    screens while .home-browse's own background stays full-bleed. */
@@ -1408,6 +1410,13 @@ body {
   max-width: none;
   margin: 0;
   padding: 32px 28px 90px;
+}
+/* .home-browse controls the intentional homepage-to-footer spacing;
+   .page's generic 90px bottom padding was stacking with it (plus the
+   footer's own margin-top) into a large empty band. Homepage only --
+   other routes keep .page's normal bottom breathing room. */
+.home-page {
+  padding-bottom: 0;
 }
 
 .search {
@@ -3323,7 +3332,10 @@ body::after {
   border-top: 1px solid rgba(251, 245, 232, 0.08);
   background: #050505;
   color: var(--text);
-  margin-top: 72px;
+  /* Routed pages already provide their own bottom spacing (.page's
+     padding-bottom, or .home-browse on the homepage) -- an additional
+     margin here was stacking into a large empty band. */
+  margin-top: 0;
 }
 
 .site-footer-inner {
