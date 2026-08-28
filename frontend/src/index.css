@@ -815,8 +815,12 @@ body {
 }
 
 .empty-logo {
-  height: 168px;
-  width: auto;
+  /* Was sized for the old, near-square stacked mark (168px tall was
+     ~292px wide at that aspect). The new wordmark is a wide 5.9:1
+     horizontal lockup, so the same height would render ~994px wide --
+     sized by width instead to keep it a sane, centered presence. */
+  width: min(360px, 80%);
+  height: auto;
   display: block;
   margin: 0 auto 20px;
 }

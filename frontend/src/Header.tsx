@@ -130,7 +130,7 @@ export function Header({
   return (
     <header className="topbar">
       <Link to="/" className="logo">
-        <img src="/rabbit-hole-logo.svg" alt="RabbitHole" className="logo-mark" />
+        <img src="/rabbit-hole-logo.png" alt="RabbitHole" className="logo-mark" />
       </Link>
 
       <ul className="nav-center">

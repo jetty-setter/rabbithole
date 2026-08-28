@@ -35,7 +35,7 @@ export function FavoritesPage() {
       </div>
       {list.length === 0 ? (
         <div className="empty">
-          <img src="/rabbit-hole-logo.svg" alt="" className="empty-mark" />
+          <img src="/rabbit-hole-logo.png" alt="" className="empty-mark" />
           <h3>Nothing saved yet</h3>
           <p>Tap the heart on any video to save it here.</p>
         </div>
