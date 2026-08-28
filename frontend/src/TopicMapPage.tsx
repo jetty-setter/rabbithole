@@ -59,9 +59,10 @@ export function TopicMapPage() {
     let ticks = 0;
     let done = false;
 
-    function finish() {
+    function finishWith(finalPositions: PositionedNode[]) {
       if (done) return;
       done = true;
+      setPositions(finalPositions);
       setSettled(true);
     }
 
@@ -72,19 +73,31 @@ export function TopicMapPage() {
       if (ticks < MAX_TICKS && sim.energy() > SETTLE_ENERGY) {
         rafRef.current = requestAnimationFrame(frame);
       } else {
-        finish();
+        finishWith(next);
       }
     }
     rafRef.current = requestAnimationFrame(frame);
 
-    // Independent of the rAF loop entirely: a backgrounded/hidden tab can
-    // throttle requestAnimationFrame down to a crawl, or a browser may
-    // suspend it outright rather than just slowing it down, in which case a
-    // check living *inside* the rAF callback would never get to run again.
-    // setTimeout doesn't depend on the loop ever ticking again, so this
-    // guarantees the graph settles (and the dynamic viewBox activates)
-    // within a bounded real-time window regardless.
-    const deadline = setTimeout(finish, SETTLE_DEADLINE_MS);
+    // Guaranteed fallback independent of the rAF loop entirely: a
+    // backgrounded/hidden tab can throttle requestAnimationFrame to a
+    // crawl, or suspend it outright rather than merely slowing it down --
+    // in the latter case `positions` never gets set even once (zero nodes
+    // render at all), and a check living only *inside* the rAF callback
+    // never gets a chance to run again. If the deadline arrives and the
+    // loop hasn't finished, run the remaining ticks synchronously right
+    // here instead of just flipping a flag, so the graph is guaranteed to
+    // actually render and settle within a bounded real-time window
+    // regardless of what rAF does.
+    const deadline = setTimeout(() => {
+      if (done) return;
+      let last: PositionedNode[] = [];
+      while (ticks < MAX_TICKS) {
+        last = sim.tick();
+        ticks += 1;
+        if (sim.energy() <= SETTLE_ENERGY) break;
+      }
+      finishWith(last);
+    }, SETTLE_DEADLINE_MS);
 
     return () => {
       clearTimeout(deadline);
