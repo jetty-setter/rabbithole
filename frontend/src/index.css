@@ -1099,6 +1099,7 @@ body {
   height: 100%;
   display: block;
   background: #000;
+  cursor: pointer;
 }
 
 /* ── Custom control bar (replaces native <video controls>, so Safari's

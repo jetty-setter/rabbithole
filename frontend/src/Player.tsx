@@ -430,7 +430,10 @@ export function Player({
       }
     });
   }
+  const wasTouchRef = useRef(false);
+
   function handleTouchStart(e: React.TouchEvent) {
+    wasTouchRef.current = true;
     if ((e.target as HTMLElement).closest(".player-controls")) return; // let the control handle its own tap
     setControlsVisible((v) => {
       const next = !v;
@@ -438,6 +441,19 @@ export function Player({
       else clearHideTimer();
       return next;
     });
+  }
+
+  // Click the video itself (not a touch tap, which handleTouchStart already
+  // handles as a show/hide) to toggle play/pause -- the conventional
+  // click-the-video behavior that native <video controls> gave up when we
+  // replaced it with the custom bar.
+  function handleVideoClick() {
+    if (wasTouchRef.current) {
+      wasTouchRef.current = false; // this is the synthetic click after a tap
+      return;
+    }
+    togglePlay();
+    showControls();
   }
 
   const needsCrossOrigin = !usesNativeHls.current && !!captionsSrc;
@@ -462,6 +478,7 @@ export function Player({
         crossOrigin={needsCrossOrigin ? "anonymous" : undefined}
         className="player-video"
         onEnded={onEnded}
+        onClick={handleVideoClick}
       >
         {effectiveCaptionsSrc && (
           <track kind="captions" src={effectiveCaptionsSrc} srcLang="en" label="English" default />
