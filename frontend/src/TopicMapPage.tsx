@@ -8,6 +8,7 @@ const WIDTH = 900;
 const HEIGHT = 560;
 const MAX_TICKS = 400;
 const SETTLE_ENERGY = 0.6;
+const SETTLE_DEADLINE_MS = 4000;
 // Rough half-width of a node's truncated label (11px, weight 600, ~18
 // chars max) and how far its text descends below the circle -- used to
 // size the dynamic viewBox so labels never get clipped at the edges.
@@ -56,12 +57,19 @@ export function TopicMapPage() {
 
     const sim = createForceSim(nodes, edges, { width: WIDTH, height: HEIGHT });
     let ticks = 0;
+    const startedAt = performance.now();
 
     function frame() {
       const next = sim.tick();
       ticks += 1;
       setPositions(next);
-      if (ticks < MAX_TICKS && sim.energy() > SETTLE_ENERGY) {
+      // Wall-clock backstop alongside the tick/energy checks: a backgrounded
+      // or throttled tab can run requestAnimationFrame far slower than 60fps,
+      // which would otherwise leave the graph "animating" (and the fixed
+      // viewBox in place) far longer than intended. Settle unconditionally
+      // once real time is up, regardless of how many ticks actually ran.
+      const timedOut = performance.now() - startedAt > SETTLE_DEADLINE_MS;
+      if (!timedOut && ticks < MAX_TICKS && sim.energy() > SETTLE_ENERGY) {
         rafRef.current = requestAnimationFrame(frame);
       } else {
         setSettled(true);
