@@ -14,6 +14,7 @@ import {
 import { useReactions, hydrateAnonReactions } from "./hooks/useReactions";
 import { useVideoList } from "./hooks/useVideoList";
 import { Header } from "./Header";
+import { Footer } from "./Footer";
 import { UploadModal } from "./UploadModal";
 import { LoginModal } from "./LoginModal";
 import { LibraryPage } from "./LibraryPage";
@@ -286,6 +287,7 @@ function Layout() {
           <Outlet context={ctx} />
         </div>
       </div>
+      <Footer />
       {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} onUploaded={refresh} />}
       {loginOpen && (
         <LoginModal
