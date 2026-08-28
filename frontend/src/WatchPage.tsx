@@ -497,7 +497,6 @@ export function WatchPage() {
 
           {video.has_transcript && (
             <section className="feature-panel ask-video">
-              <span className="feature-kicker">AI · grounded in this video's transcript</span>
               <h2 className="feature-head">Ask this video</h2>
               <form className="ask-form" onSubmit={submitAsk}>
                 <input
@@ -512,6 +511,7 @@ export function WatchPage() {
                   {asking ? "Asking…" : "Ask"}
                 </button>
               </form>
+              <p className="ask-hint">Answers are based on this video's transcript.</p>
               {asking && (
                 <p className="muted ask-note">
                   <span className="proc-spinner sm" /> Reading the transcript…
