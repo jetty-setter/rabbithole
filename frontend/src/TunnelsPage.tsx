@@ -1,9 +1,46 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useApp } from "./App";
 import { VideoCard } from "./VideoCard";
 import { SkeletonFeed } from "./Skeleton";
 import { useDocumentMeta } from "./hooks/useDocumentMeta";
+import type { Video } from "./api";
+
+// Rough average brightness (0-255) of a thumbnail, sampled at a tiny size
+// via an offscreen canvas -- generic, no per-video/per-tag special-casing.
+// If the image can't be read (CORS-tainted canvas, load failure), resolves
+// to a neutral mid-value so the caller just falls back to its normal pick
+// rather than breaking.
+function averageBrightness(url: string): Promise<number> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      try {
+        const size = 12;
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(128);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, size, size);
+        const { data } = ctx.getImageData(0, 0, size, size);
+        let sum = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          sum += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        }
+        resolve(sum / (data.length / 4));
+      } catch {
+        resolve(128); // tainted canvas -- treat as unknown, don't block the pick
+      }
+    };
+    img.onerror = () => resolve(0);
+    img.src = url;
+  });
+}
 
 // Default number of tunnels shown before "View all tunnels" -- this must
 // NOT scale with the catalog size (see the page-height rule in the Browse
@@ -95,21 +132,88 @@ export function TunnelsPage() {
     return [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0]));
   }, [tags]);
 
-  // The top 3 tunnels by video count, each paired with a representative
-  // thumbnail: the most-viewed video in that tunnel (falling back to the
-  // most recent if nothing has views yet). Real data only -- no invented
-  // copy, no separate "featured" flag to maintain.
-  const featuredTunnels = useMemo(
-    () =>
-      tags.slice(0, 3).map(([t, n]) => {
-        const inTunnel = ready.filter((v) => (v.tags || []).includes(t));
-        const rep = [...inTunnel].sort(
-          (a, b) => (b.views ?? 0) - (a.views ?? 0) || (b.created_at || "").localeCompare(a.created_at || ""),
-        )[0];
-        return { tag: t, count: n, thumbnail: rep?.thumbnail_url || null };
-      }),
-    [tags, ready],
-  );
+  // The top 3 tunnels by video count. Each is paired with a representative
+  // thumbnail chosen generically (no per-tag special-casing) in priority
+  // order: has a poster at all > not already used by an earlier featured
+  // card in this pass > most-viewed (falling back to most recent) within
+  // that tunnel. A card only repeats another's image if the tunnel
+  // genuinely has no other option.
+  const top3 = useMemo(() => tags.slice(0, 3), [tags]);
+
+  type FeaturedPick = { tag: string; count: number; thumbnail: string | null };
+
+  const rankedByTag = useMemo(() => {
+    const map = new Map<string, Video[]>();
+    for (const [t] of top3) {
+      map.set(
+        t,
+        ready
+          .filter((v: Video) => (v.tags || []).includes(t))
+          .sort(
+            (a, b) => (b.views ?? 0) - (a.views ?? 0) || (b.created_at || "").localeCompare(a.created_at || ""),
+          ),
+      );
+    }
+    return map;
+  }, [top3, ready]);
+
+  // Synchronous dedup-only pick -- renders immediately, no flash of an
+  // empty section while brightness is sampled.
+  const defaultFeatured = useMemo<FeaturedPick[]>(() => {
+    const usedThumbs = new Set<string>();
+    return top3.map(([t, n]) => {
+      const ranked = rankedByTag.get(t) || [];
+      const fresh = ranked.find((v) => v.thumbnail_url && !usedThumbs.has(v.thumbnail_url));
+      const rep = fresh || ranked.find((v) => v.thumbnail_url) || ranked[0];
+      if (rep?.thumbnail_url) usedThumbs.add(rep.thumbnail_url);
+      return { tag: t, count: n, thumbnail: rep?.thumbnail_url || null };
+    });
+  }, [top3, rankedByTag]);
+
+  const [featuredTunnels, setFeaturedTunnels] = useState<FeaturedPick[]>(defaultFeatured);
+
+  useEffect(() => {
+    setFeaturedTunnels(defaultFeatured);
+    let live = true;
+
+    // Upgrade pass: among each tunnel's unused-poster candidates, swap in
+    // one that isn't noticeably dark, if sampling turns one up. Runs after
+    // the synchronous pick above is already on screen.
+    async function upgrade() {
+      const usedThumbs = new Set<string>();
+      const picks: FeaturedPick[] = [];
+
+      for (const [t, n] of top3) {
+        const ranked = rankedByTag.get(t) || [];
+        const withThumb = ranked.filter((v) => v.thumbnail_url);
+        const candidates = [
+          ...withThumb.filter((v) => !usedThumbs.has(v.thumbnail_url as string)),
+          ...withThumb.filter((v) => usedThumbs.has(v.thumbnail_url as string)),
+        ];
+
+        let rep = candidates[0] ?? ranked[0];
+        const shortlist = candidates.slice(0, 4);
+        if (shortlist.length > 1) {
+          const brightness = await Promise.all(
+            shortlist.map((v) => averageBrightness(v.thumbnail_url as string)),
+          );
+          const brightEnoughIdx = brightness.findIndex((b) => b > 26);
+          if (brightEnoughIdx >= 0) rep = shortlist[brightEnoughIdx];
+        }
+
+        if (rep?.thumbnail_url) usedThumbs.add(rep.thumbnail_url);
+        picks.push({ tag: t, count: n, thumbnail: rep?.thumbnail_url || null });
+      }
+
+      if (live) setFeaturedTunnels(picks);
+    }
+
+    if (top3.length > 0) upgrade();
+
+    return () => {
+      live = false;
+    };
+  }, [top3, rankedByTag, defaultFeatured]);
 
   useDocumentMeta(
     tag ? `#${tag} tunnel` : "Tunnels",
@@ -211,7 +315,7 @@ export function TunnelsPage() {
                 ))}
               </div>
               <button type="button" className="link-btn tunnel-view-toggle" onClick={() => setBrowseAll(false)}>
-                ← Show top tunnels
+                Show less
               </button>
             </>
           ) : (
