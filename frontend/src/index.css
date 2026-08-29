@@ -3232,7 +3232,7 @@ body::after {
 }
 
 .tunnel-search-input {
-  width: 260px;
+  width: 400px;
   max-width: 100%;
   padding: 7px 12px;
   border: 1px solid var(--border);
@@ -3343,7 +3343,7 @@ body::after {
 .tunnel-feat-scrim {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.1) 55%, transparent 78%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.08) 55%, transparent 78%);
 }
 
 .tunnel-feat-info {
