@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { normalizeTag } from "./api";
 
 /** Editable hashtag chips — used in the upload modal and the watch-page edit
  *  form so both behave identically. */
@@ -14,7 +15,7 @@ export function TagEditor({
   const [tagInput, setTagInput] = useState("");
 
   function addTag(raw: string) {
-    const t = raw.trim().replace(/^#+/, "").toLowerCase().slice(0, 30);
+    const t = normalizeTag(raw);
     if (t && !tags.includes(t) && tags.length < max) setTags([...tags, t]);
     setTagInput("");
   }

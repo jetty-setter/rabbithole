@@ -31,8 +31,7 @@ export function FeaturedCard({ v }: { v: Video }) {
         <div className="featured-by">
           <Avatar name={v.owner || "RabbitHole"} />
           <span>
-            {v.owner || "RabbitHole"} · {v.views ?? 0} views ·{" "}
-            {relativeTime(v.created_at) || "just now"}
+            {v.owner || "RabbitHole"} · {relativeTime(v.created_at) || "just now"}
           </span>
         </div>
       </div>

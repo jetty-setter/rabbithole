@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { displayTitle, fetchCues, formatDuration, relativeTime, transcriptSectionState } from "../api";
+import { displayTitle, fetchCues, formatDuration, normalizeTag, relativeTime, transcriptSectionState } from "../api";
 
 describe("transcriptSectionState", () => {
   it("shows transcribing while a job is in flight", () => {
@@ -34,6 +34,29 @@ describe("displayTitle", () => {
 
   it("prettifies the filename when there's no title", () => {
     expect(displayTitle({ title: null, filename: "my_cool-clip.mp4" })).toBe("my cool clip");
+  });
+});
+
+describe("normalizeTag", () => {
+  it("lowercases, trims, and drops a leading #", () => {
+    expect(normalizeTag("  #Space ")).toBe("space");
+  });
+
+  it("renders internal whitespace/underscore runs as a single hyphen", () => {
+    expect(normalizeTag("true   crime")).toBe("true-crime");
+    expect(normalizeTag("cold_case")).toBe("cold-case");
+    expect(normalizeTag("True-Crime")).toBe("true-crime");
+  });
+
+  it("does not merge genuinely different spellings", () => {
+    expect(normalizeTag("truecrime")).toBe("truecrime");
+    expect(normalizeTag("space")).not.toBe(normalizeTag("spaceflight"));
+  });
+
+  it("trims stray hyphens and caps length at 30", () => {
+    expect(normalizeTag("-weird-")).toBe("weird");
+    expect(normalizeTag("a".repeat(50))).toBe("a".repeat(30));
+    expect(normalizeTag("#")).toBe("");
   });
 });
 
