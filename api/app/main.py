@@ -34,7 +34,7 @@ def parse_ai_metadata(text: str) -> dict | None:
         return None
     title = (data.get("title") or "").strip().strip('"')[:120]
     description = (data.get("description") or "").strip()[:1000]
-    tags = [str(t).strip().lower()[:30] for t in (data.get("tags") or []) if str(t).strip()][:5]
+    tags = clean_tags(data.get("tags"), limit=5)
     out: dict = {}
     if title:
         out["title"] = title
@@ -96,6 +96,43 @@ _UNSAFE = re.compile(r"[^A-Za-z0-9._-]+")
 def _safe_filename(name: str) -> str:
     cleaned = _UNSAFE.sub("", name.strip().replace(" ", "_"))
     return cleaned or "video.mp4"
+
+
+_TAG_SEP = re.compile(r"[\s_]+")
+_TAG_HYPHEN_RUN = re.compile(r"-{2,}")
+
+
+def normalize_tag(raw: object) -> str:
+    """Canonical form for a single tag / tunnel label.
+
+    Mechanical normalization only, so the same concept typed slightly
+    differently lands in one tunnel instead of several:
+      * lowercase
+      * strip surrounding whitespace and any leading '#'
+      * collapse internal whitespace / underscore runs to a single hyphen
+      * collapse repeated hyphens, trim leading/trailing hyphens
+      * cap length at 30 chars
+
+    Different *spellings* are deliberately left alone -- "True Crime",
+    "true crime" and "true-crime" converge, but "truecrime" stays its own
+    tag. No synonym mapping. Returns "" for junk input.
+    """
+    s = str(raw).strip().lstrip("#").strip().lower()
+    s = _TAG_SEP.sub("-", s)
+    s = _TAG_HYPHEN_RUN.sub("-", s).strip("-")
+    return s[:30]
+
+
+def clean_tags(raw: object, limit: int = 8) -> list[str]:
+    """Normalize a list of raw tag inputs: canonicalize each via
+    ``normalize_tag``, drop blanks, dedupe (order-preserving), cap the count.
+    This is the single point every write path funnels tags through."""
+    out: list[str] = []
+    for t in raw or []:
+        tag = normalize_tag(t)
+        if tag and tag not in out:
+            out.append(tag)
+    return out[:limit]
 
 
 
@@ -374,10 +411,7 @@ def create_upload(req: UploadRequest, user: str = Depends(require_auth)) -> Uplo
     if req.description and req.description.strip():
         item["description"] = req.description.strip()[:5000]
     if req.tags:
-        clean = [
-            t2 for t in req.tags
-            if (t2 := str(t).strip().lstrip("#").lower()[:30])
-        ][:8]
+        clean = clean_tags(req.tags)
         if clean:
             item["tags"] = clean
     aws.videos_table().put_item(Item=item)
@@ -619,9 +653,7 @@ def update_video(video_id: str, body: UpdateVideo, user: str = Depends(require_a
     if body.description is not None:
         updates["description"] = body.description.strip()[:5000]
     if body.tags is not None:
-        updates["tags"] = [
-            t2 for t in body.tags if (t2 := str(t).strip().lstrip("#").lower()[:30])
-        ][:8]
+        updates["tags"] = clean_tags(body.tags)
     if body.visibility is not None:
         updates["visibility"] = _norm_visibility(body.visibility)
     if updates:

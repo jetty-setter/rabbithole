@@ -13,7 +13,7 @@
   --danger: #ff5468;
   --warning: #fbbf24;
 
-  --display: "Nunito", system-ui, sans-serif;
+  --display: "Archivo", system-ui, sans-serif;
   --sans: "Inter", system-ui, -apple-system, sans-serif;
 }
 
@@ -168,8 +168,9 @@ body {
 
 .feed-head h1 {
   font-family: var(--display);
-  font-size: clamp(34px, 6vw, 56px);
-  letter-spacing: 1px;
+  font-weight: 700;
+  font-size: clamp(34px, 6vw, 54px);
+  letter-spacing: -0.01em;
   text-transform: uppercase;
   margin: 0;
 }
@@ -263,10 +264,10 @@ body {
 }
 .home-h1 {
   font-family: var(--display);
-  font-weight: 700;
-  font-size: clamp(50px, 6.6vw, 94px);
-  line-height: 0.91;
-  letter-spacing: -0.045em;
+  font-weight: 800;
+  font-size: clamp(50px, 6.6vw, 92px);
+  line-height: 0.92;
+  letter-spacing: -0.028em;
   text-transform: uppercase;
   margin: 0 0 30px;
 }
@@ -389,9 +390,9 @@ body {
    changes. */
 .home-browse .section-head:first-child h2 {
   font-family: var(--display);
-  font-size: 30px;
+  font-size: 29px;
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.012em;
   text-transform: uppercase;
 }
 /* "Explore more." -- same treatment, generous top margin to clearly open
@@ -401,9 +402,9 @@ body {
 }
 .home-browse .section-head-explore h2 {
   font-family: var(--display);
-  font-size: 30px;
+  font-size: 29px;
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.012em;
   text-transform: uppercase;
 }
 .start-row {
@@ -522,8 +523,9 @@ body {
 
 .section-head h2 {
   font-family: var(--display);
+  font-weight: 600;
   font-size: 22px;
-  letter-spacing: 1px;
+  letter-spacing: 0.005em;
   text-transform: uppercase;
   margin: 0;
 }
@@ -613,7 +615,8 @@ body {
   font-family: var(--display);
   font-weight: 600;
   font-size: 18px;
-  line-height: 1.2;
+  line-height: 1.22;
+  letter-spacing: -0.006em;
   color: var(--text);
   margin: 0 0 14px;
 }
@@ -813,9 +816,10 @@ body {
 
 .featured-title {
   font-family: var(--display);
-  font-size: clamp(28px, 3.6vw, 46px);
-  line-height: 1.02;
-  letter-spacing: 0.5px;
+  font-weight: 700;
+  font-size: clamp(28px, 3.6vw, 44px);
+  line-height: 1.05;
+  letter-spacing: -0.015em;
   text-transform: uppercase;
   margin: 0 0 14px;
 }
@@ -973,8 +977,9 @@ body {
 
 .empty h3 {
   font-family: var(--display);
+  font-weight: 700;
   font-size: 26px;
-  letter-spacing: 1px;
+  letter-spacing: 0.005em;
   text-transform: uppercase;
   margin: 0 0 8px;
 }
@@ -1017,8 +1022,9 @@ body {
 
 .modal-head h2 {
   font-family: var(--display);
+  font-weight: 700;
   font-size: 22px;
-  letter-spacing: 1px;
+  letter-spacing: 0.005em;
   text-transform: uppercase;
   margin: 0;
 }
@@ -1334,8 +1340,9 @@ body {
 
 .hstat-num {
   font-family: var(--display);
+  font-weight: 700;
   font-size: 26px;
-  letter-spacing: 0.5px;
+  letter-spacing: -0.01em;
 }
 
 .hstat-num.accent {
@@ -1673,8 +1680,9 @@ body {
 
 .admin-head h1 {
   font-family: var(--display);
+  font-weight: 700;
   font-size: 32px;
-  letter-spacing: 1px;
+  letter-spacing: -0.005em;
   text-transform: uppercase;
   margin: 0;
 }
@@ -2083,8 +2091,9 @@ body {
   align-items: center;
   gap: 12px;
   font-family: var(--display);
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.04em;
   font-size: 18px;
   margin: 4px 0 16px;
 }
@@ -2765,8 +2774,9 @@ body {
 .related-head,
 .comments-head {
   font-family: var(--display);
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.04em;
   font-size: 18px;
 }
 
@@ -2916,8 +2926,9 @@ body::after {
 
 .feature-head {
   font-family: var(--display);
+  font-weight: 700;
   font-size: clamp(21px, 2.6vw, 28px);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.005em;
   text-transform: uppercase;
   margin: 0 0 14px;
 }
@@ -3359,8 +3370,9 @@ body::after {
 
 .tunnel-feat-tag {
   font-family: var(--display);
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: -0.005em;
   font-size: clamp(19px, 2.2vw, 26px);
 }
 .tunnel-feat-primary .tunnel-feat-tag {
@@ -3416,8 +3428,9 @@ body::after {
 
 .creator-id h1 {
   font-family: var(--display);
+  font-weight: 700;
   font-size: clamp(26px, 4vw, 38px);
-  letter-spacing: 0.5px;
+  letter-spacing: -0.015em;
   margin: 0;
 }
 
@@ -3442,8 +3455,9 @@ body::after {
 
 .creator-stat-n {
   font-family: var(--display);
+  font-weight: 700;
   font-size: 22px;
-  letter-spacing: 0.5px;
+  letter-spacing: -0.01em;
 }
 
 .creator-stat-label {
@@ -3566,8 +3580,10 @@ body::after {
 }
 .den-num {
   font-family: var(--display);
+  font-weight: 700;
   font-size: 30px;
   line-height: 1;
+  letter-spacing: -0.01em;
   color: var(--violet);
 }
 .den-label {
@@ -3581,8 +3597,9 @@ body::after {
 }
 .search-query-title {
   font-family: var(--display);
+  font-weight: 700;
   font-size: clamp(26px, 4.2vw, 40px);
-  letter-spacing: 0.3px;
+  letter-spacing: -0.02em;
   text-transform: none;
   margin: 0;
 }

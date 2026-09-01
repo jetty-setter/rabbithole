@@ -373,6 +373,23 @@ export function displayTitle(v: { title?: string | null; filename: string }): st
   return v.filename.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").trim();
 }
 
+/** Canonical form for one tag / tunnel label. Mechanical only: lowercase,
+ *  trim, drop a leading '#', and render internal whitespace/underscore runs as
+ *  a single hyphen so "True Crime", "true crime" and "true-crime" land in one
+ *  tunnel. Different spellings are left alone ("truecrime" stays its own tag).
+ *  Must mirror `normalize_tag` in the API (api/app/main.py). */
+export function normalizeTag(raw: string): string {
+  return String(raw)
+    .trim()
+    .replace(/^#+/, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/g, "-")
+    .replace(/-{2,}/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 30);
+}
+
 /** Seconds string -> "m:ss". */
 export function formatDuration(s?: string | null): string {
   const n = Number(s);

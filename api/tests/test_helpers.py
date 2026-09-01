@@ -1,6 +1,14 @@
 """Unit tests for pure helpers in app.main (no AWS needed)."""
 
-from app.main import _cdn_url, _norm_visibility, _safe_filename
+import pytest
+
+from app.main import (
+    _cdn_url,
+    _norm_visibility,
+    _safe_filename,
+    clean_tags,
+    normalize_tag,
+)
 
 
 def test_norm_visibility_valid():
@@ -32,3 +40,46 @@ def test_cdn_url_builds_https():
 def test_cdn_url_none_for_missing_key():
     assert _cdn_url(None) is None
     assert _cdn_url("") is None
+
+
+# ── Tag normalization (mechanical only) ───────────────────────────────────
+
+@pytest.mark.parametrize(
+    "raw,expected",
+    [
+        ("Space", "space"),
+        ("  space  ", "space"),
+        ("#space", "space"),
+        ("##  Space Flight ", "space-flight"),
+        ("true crime", "true-crime"),
+        ("True-Crime", "true-crime"),
+        ("true   crime", "true-crime"),
+        ("cold_case", "cold-case"),
+        ("cold - case", "cold-case"),
+        ("-weird-", "weird"),
+        ("", ""),
+        ("#", ""),
+        ("   ", ""),
+    ],
+)
+def test_normalize_tag_mechanical(raw, expected):
+    assert normalize_tag(raw) == expected
+
+
+def test_normalize_tag_does_not_merge_different_spellings():
+    # Spacing/casing converge, but genuinely different spellings stay distinct.
+    assert normalize_tag("true crime") == normalize_tag("true-crime") == "true-crime"
+    assert normalize_tag("truecrime") == "truecrime"
+    assert normalize_tag("space") != normalize_tag("spaceflight")
+
+
+def test_normalize_tag_caps_length_at_30():
+    assert normalize_tag("a" * 50) == "a" * 30
+
+
+def test_clean_tags_dedupes_and_caps():
+    assert clean_tags(["Space", "space", " space "]) == ["space"]
+    assert clean_tags(["true crime", "true-crime"]) == ["true-crime"]
+    assert clean_tags([f"tag{i}" for i in range(20)]) == [f"tag{i}" for i in range(8)]
+    assert clean_tags(["a", "", "  ", "#", "b"], limit=5) == ["a", "b"]
+    assert clean_tags(None) == []
