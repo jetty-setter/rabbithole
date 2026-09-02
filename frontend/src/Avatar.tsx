@@ -1,12 +1,12 @@
 // Per-user circular avatar, deterministic from the name: dark fill, cream
-// outline, initial in one of the brand's two accents. Circular to match the
-// organic mark/hero language instead of the old tech-hexagon shape.
+// outline, initial in one of two tones from the brand's violet family.
+// Circular to match the organic mark/hero language.
 const VIOLET = "#9a82f2";
-const WARM = "#d56b52";
+const VIOLET_LIGHT = "#c4b5fd";
 const CREAM = "#fbf5e8";
 const FILL = "#131316";
 
-const VARIANTS = [VIOLET, WARM];
+const VARIANTS = [VIOLET, VIOLET_LIGHT];
 
 function variantFor(name: string) {
   let h = 0;
