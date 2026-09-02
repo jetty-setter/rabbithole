@@ -239,8 +239,8 @@ body {
 .home-hero {
   position: relative;
   z-index: 2;
-  width: min(600px, 44vw);
-  max-width: 600px;
+  width: min(664px, 48vw);
+  max-width: 664px;
 }
 
 .home-hero-grid::after {
@@ -337,59 +337,43 @@ body {
 .home-h1 {
   font-family: var(--display);
   font-weight: 800;
-  font-size: clamp(50px, 6.6vw, 92px);
-  line-height: 0.92;
-  letter-spacing: -0.028em;
+  font-size: clamp(44px, 5.4vw, 80px);
+  line-height: 0.94;
+  letter-spacing: -0.03em;
   text-transform: uppercase;
-  margin: 0 0 22px;
+  margin: 0 0 24px;
 }
+/* Both lines share the same size / weight / line-height / left edge — one
+   headline block, not a headline plus a subtitle. Each stays on its own
+   single line. */
 .home-h1-line {
   display: block;
+  white-space: nowrap;
 }
-/* The period after CURIOSITY — a small, quiet brand signature in light
-   lavender against the ivory headline. Not animated, not a glow. */
+/* The final period is a quiet light-lavender brand signature against the
+   ivory headline. Not animated, not a glow. */
 .home-hero-dot {
   color: var(--violet-light);
 }
-.home-hero-sub {
-  margin: 0 0 22px;
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--muted);
-  max-width: 390px;
+/* Three plain sentences with a subtly emphasised opening word — read as
+   editorial copy, not a two-column table. No bullets/icons/rules. */
+.home-hero-points {
+  margin: 0 0 26px;
 }
-/* Quiet example searches under the field — "Try:" muted, the queries in
-   ivory, secondary to the field itself. Not chips, no borders. */
-.home-search-eg {
-  margin: 12px 0 0;
-  font-size: 12.5px;
-  line-height: 1.7;
-  color: var(--muted);
-  max-width: 560px;
-}
-.home-search-eg-label {
+.home-hero-point {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.5;
   color: var(--muted);
 }
-.home-search-eg-sep {
-  color: var(--muted);
-  opacity: 0.6;
+.home-hero-point + .home-hero-point {
+  margin-top: 8px;
 }
-.home-search-eg-item {
-  background: none;
-  border: none;
-  padding: 0;
-  font: inherit;
-  color: var(--text);
-  cursor: pointer;
-  border-radius: 3px;
-  transition: color 130ms ease;
-}
-.home-search-eg-item:hover {
-  color: var(--violet-light);
-}
-.home-search-eg-item:focus-visible {
-  outline: 2px solid var(--violet-light);
-  outline-offset: 3px;
+.home-hero-point-verb {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--violet-soft);
 }
 .home-search-form {
   display: flex;
@@ -4322,33 +4306,22 @@ body::after {
    without a specificity hack) ───────────────────────────────────────── */
 @media (max-width: 900px) {
   .home-h1 {
-    font-size: clamp(38px, 12vw, 56px);
-    margin-bottom: 22px;
+    font-size: clamp(34px, 11vw, 54px);
+    margin-bottom: 20px;
   }
-  .home-hero-sub {
-    max-width: none;
+  /* Phone: a line may wrap gracefully on a very narrow viewport rather
+     than overflow. */
+  .home-h1-line {
+    white-space: normal;
   }
   .home-hero-eyebrow {
     margin-bottom: 12px;
   }
-  /* Example queries: stack one per line with a real tap height instead of
-     three tiny inline links separated by dots. */
-  .home-search-eg {
-    line-height: 1.4;
+  .home-hero-points {
+    margin-bottom: 22px;
   }
-  .home-search-eg-sep {
-    display: none;
-  }
-  .home-search-eg-item {
-    display: block;
-    width: 100%;
-    text-align: left;
-    padding: 10px 0;
-    color: var(--violet-light);
-  }
-  .home-search-eg-label {
-    display: block;
-    margin-bottom: 2px;
+  .home-hero-point {
+    font-size: 15px;
   }
 }
 
