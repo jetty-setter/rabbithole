@@ -8,8 +8,15 @@
   --border-2: #33333f;
   --text: #fbf5e8;
   --muted: #aaa3a0;
+  /* Tonal violet is the entire accent system now: --violet for primary
+     interaction and brand, --violet-soft as a restrained intermediate step,
+     --violet-light for occasional higher-emphasis marks on black. The
+     hierarchy stays black > ivory > violet > lavender; the content
+     (thumbnails, featured imagery) supplies the rest of the colour. */
   --violet: #9a82f2;
-  --accent-warm: #d56b52;
+  --violet-soft: #b29cf8;
+  --violet-light: #c4b5fd;
+  /* Semantic states only — never decorative. */
   --danger: #ff5468;
   --warning: #fbbf24;
 
@@ -274,8 +281,10 @@ body {
 .home-h1-line {
   display: block;
 }
+/* The period after CURIOSITY — a small, quiet brand signature in light
+   lavender against the ivory headline. Not animated, not a glow. */
 .home-hero-dot {
-  color: var(--accent-warm);
+  color: var(--violet-light);
 }
 .home-hero-sub {
   margin: 0 0 24px;
@@ -339,7 +348,7 @@ body {
   background: transparent;
   border: none;
   box-shadow: none;
-  color: var(--accent-warm);
+  color: var(--violet);
   cursor: pointer;
   transition: transform 180ms ease, background 180ms ease;
 }
@@ -350,7 +359,7 @@ body {
 .home-search-btn svg {
   width: 15px;
   height: 15px;
-  color: var(--accent-warm);
+  color: var(--violet);
 }
 /* One continuous dark surface — the homepage stays in the same universe as
    the hero rather than switching to a light editorial section. A slightly
@@ -751,7 +760,7 @@ body {
   transition: color 150ms ease, gap 150ms ease;
 }
 .archive-cta span {
-  color: var(--accent-warm);
+  color: var(--violet);
   font-size: 18px;
   transition: transform 150ms ease;
 }
@@ -1449,7 +1458,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(213, 107, 82, 0.88);
+  background: var(--violet);
   border: none;
   border-radius: 999px;
   padding: 7px 16px;
@@ -1466,7 +1475,7 @@ body {
 }
 
 .tumble-action:hover {
-  background: var(--accent-warm);
+  background: var(--violet-light);
   transform: translateY(-1px);
 }
 
@@ -2629,13 +2638,17 @@ body {
   background: rgba(154, 130, 242, 0.12);
 }
 
+/* Nay is a reaction, not an error or a destructive action — so its selected
+   state is a neutral bright-ivory treatment (full --text plus a faint ivory
+   wash and the shared vote-pop), deliberately distinct from Yay's violet.
+   State is also carried by aria-pressed, position, and the label text. */
 .vote-btn.nay.on,
 .vote-btn.nay.on .vote-count {
-  color: var(--accent-warm);
+  color: var(--text);
 }
 
 .vote-btn.nay.on {
-  background: rgba(213, 107, 82, 0.12);
+  background: rgba(251, 245, 232, 0.12);
 }
 
 /* Tag editor in the upload modal */
@@ -2931,11 +2944,11 @@ body::after {
   background: rgba(154, 130, 242, 0.1);
 }
 .cue.active .cue-text {
-  color: #c8b8ff;
+  color: var(--violet-light);
   font-weight: 600;
 }
 .cue.active .cue-time {
-  color: #b3a0f7;
+  color: var(--violet-soft);
 }
 
 .cue-time {
