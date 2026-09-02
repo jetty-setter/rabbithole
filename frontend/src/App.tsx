@@ -50,6 +50,9 @@ export interface AppCtx {
   trail: string[];
   recordTrail: (id: string) => void;
   clearTrail: () => void;
+  /** The homepage hero sets this while its big search field is on screen, so
+   *  the nav's Search trigger can step aside until the hero scrolls away. */
+  setHeroSearchVisible: (visible: boolean) => void;
 }
 
 export const useApp = () => useOutletContext<AppCtx>();
@@ -76,6 +79,7 @@ function Layout() {
   const [loginMode, setLoginMode] = useState<"login" | "signup">("login");
   const [live, setLive] = useState(false);
   const [query, setQuery] = useState("");
+  const [heroSearchVisible, setHeroSearchVisible] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [trail, setTrail] = useState<string[]>(loadTrail);
@@ -222,6 +226,7 @@ function Layout() {
     trail,
     recordTrail,
     clearTrail,
+    setHeroSearchVisible,
   };
 
   return (
@@ -243,6 +248,7 @@ function Layout() {
         onTumble={tumble}
         query={query}
         setQuery={setQuery}
+        suppressSearch={heroSearchVisible}
       />
       <div className="main">
         <div className="route-fade" key={location.pathname}>

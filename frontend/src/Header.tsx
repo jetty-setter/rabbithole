@@ -89,6 +89,13 @@ const IconAdmin = () => (
   </svg>
 );
 
+const IconUpload = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 15V4M8 8l4-4 4 4" />
+    <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+  </svg>
+);
+
 const navCls = ({ isActive }: { isActive: boolean }) => (isActive ? "navlink active" : "navlink");
 
 export function Header({
@@ -102,6 +109,7 @@ export function Header({
   onTumble,
   query,
   setQuery,
+  suppressSearch = false,
 }: {
   authed: boolean;
   username: string | null;
@@ -113,6 +121,9 @@ export function Header({
   onTumble: () => void;
   query: string;
   setQuery: (s: string) => void;
+  /** Homepage hides the nav Search while its own big hero search is on
+   *  screen — the search "follows" the user into the nav once it scrolls away. */
+  suppressSearch?: boolean;
 }) {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -162,7 +173,14 @@ export function Header({
       </ul>
 
       <div className="nav-right">
-        <button type="button" className="nav-search-trigger" onClick={() => setSearchOpen(true)}>
+        <button
+          type="button"
+          className={suppressSearch ? "nav-search-trigger is-suppressed" : "nav-search-trigger"}
+          onClick={() => setSearchOpen(true)}
+          aria-label="Search"
+          aria-hidden={suppressSearch || undefined}
+          tabIndex={suppressSearch ? -1 : undefined}
+        >
           <IconSearch />
           <span className="nav-search-trigger-label">Search</span>
         </button>
@@ -198,9 +216,47 @@ export function Header({
               <div className="menu-backdrop" onClick={() => setMenuOpen(false)} />
               <div className="account-menu">
                 {authed && <div className="menu-user">@{username}</div>}
-                {/* Primary nav collapses out of the topbar below 720px -- mirror
-                    it here so mobile visitors don't lose Tunnels/Map/Trail/Tumble. */}
+                {/* Primary nav + primary actions collapse out of the topbar
+                    below 720px -- mirror them here so mobile visitors keep
+                    Tunnels/Map/Trail/Tumble, Upload (authed), and sign-in. */}
                 <div className="menu-mobile-primary">
+                  {authed ? (
+                    <button
+                      type="button"
+                      className="menu-item"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        onUpload();
+                      }}
+                    >
+                      <IconUpload />
+                      Upload
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        className="menu-item"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          onLogin();
+                        }}
+                      >
+                        Sign in
+                      </button>
+                      <button
+                        type="button"
+                        className="menu-item"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          onSignup();
+                        }}
+                      >
+                        Sign up
+                      </button>
+                    </>
+                  )}
+                  <div className="menu-sep" />
                   <Link to="/" className="menu-item" onClick={() => setMenuOpen(false)}>
                     <IconWatch />
                     Discover
