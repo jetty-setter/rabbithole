@@ -3521,75 +3521,272 @@ body::after {
   margin-bottom: 16px;
 }
 
-/* ── Topic map (force-directed tag graph) ──────────────────── */
+/* ── Topic map ─────────────────────────────────────────────────
+   Progressive-disclosure graph: the default view shows only the strongest
+   ~two dozen topics with quiet structural hints. Hover/focus traces a
+   topic's neighbourhood; selection locks it and opens the panel below.
+   Hierarchy is carried entirely by size / opacity / stroke weight / label
+   visibility — no categorical colour, no legend. */
+.feed-head-note {
+  color: var(--muted);
+  margin: 4px 0 0;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.topic-map-tools {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
 .topic-map {
+  position: relative;
+  display: flex;
+  justify-content: center;
   border: 1px solid rgba(251, 245, 232, 0.07);
   border-radius: 10px;
   background: #080809;
-  padding: 8px;
+  padding: 12px;
 }
 
 .topic-map-svg {
   display: block;
-  width: 100%;
-  height: auto;
-  max-height: 72vh;
+  /* sized by height so a roughly-square graph doesn't force a huge
+     full-width box; centred by the flex parent */
+  height: min(62vh, 580px);
+  width: auto;
+  max-width: 100%;
+  animation: fade 280ms ease both;
 }
 
-/* Below the graph's native 900px width, scaling the SVG down shrinks its
-   11px node labels into illegible specks. Hold it at native size inside a
-   scroll/pinch-zoom container instead of squeezing the whole coordinate
-   system into the viewport. */
-@media (max-width: 940px) {
+@media (max-width: 860px) {
   .topic-map {
-    overflow-x: auto;
-    padding: 8px 0;
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 720px) {
+  .topic-map {
+    padding: 8px;
   }
   .topic-map-svg {
-    width: 900px;
-    max-width: none;
-    max-height: none;
+    height: auto;
+    width: 100%;
   }
 }
 
+/* ── Edges ─────────────────────────────────────────────────── */
 .topic-edge {
-  stroke: var(--border-2);
-  opacity: 0.7;
   transition: opacity 160ms ease;
 }
-.topic-edge.dim {
-  opacity: 0.08;
+/* Faint always-on structural hints (shared-video count ≥ 2). */
+.topic-edge.structural {
+  stroke: var(--border-2);
+  opacity: 0.32;
+}
+/* A focused topic's own connections, ranked by shared-video count. */
+.topic-edge.focus {
+  stroke: var(--violet);
+  opacity: 0.55;
 }
 
+/* ── Nodes ─────────────────────────────────────────────────── */
 .topic-node {
   cursor: pointer;
   transition: opacity 160ms ease;
 }
-.topic-node.dim {
-  opacity: 0.28;
+.topic-node .topic-node-dot {
+  fill: rgba(154, 130, 242, 0.07);
+  stroke: rgba(154, 130, 242, 0.45);
+  stroke-width: 1.4;
+  transition: fill 160ms ease, stroke 160ms ease, stroke-width 160ms ease;
 }
 
-.topic-node circle {
-  fill: rgba(154, 130, 242, 0.14);
-  stroke: var(--violet);
-  stroke-width: 1.5;
-  transition: fill 160ms ease, stroke 160ms ease;
+/* Invisible larger tap/click target. */
+.topic-node .topic-node-hit {
+  fill: transparent;
+  stroke: none;
 }
-.topic-node:hover circle,
-.topic-node:focus-visible circle {
-  fill: rgba(154, 130, 242, 0.22);
+
+/* Neighbours of the focused/selected topic — kept fully legible. */
+.topic-node.neighbor .topic-node-dot {
+  fill: rgba(154, 130, 242, 0.12);
   stroke: var(--violet);
+  stroke-width: 1.6;
 }
-.topic-node:focus-visible {
+
+/* Hovered / keyboard-focused. */
+.topic-node.focus .topic-node-dot,
+.topic-node:hover .topic-node-dot {
+  fill: rgba(154, 130, 242, 0.18);
+  stroke: var(--violet-light);
+  stroke-width: 2;
+}
+
+/* Selected — the strongest state, distinguished by stroke weight and the
+   outer ring (not colour or glow alone). */
+.topic-node.selected .topic-node-dot {
+  fill: rgba(154, 130, 242, 0.26);
+  stroke: var(--violet-light);
+  stroke-width: 2.6;
+}
+.topic-node .topic-node-ring {
+  fill: none;
+  stroke: var(--violet);
+  stroke-width: 1;
+  opacity: 0.5;
+}
+
+/* Everything unrelated to the current focus — strongly faded, still present. */
+.topic-node.dim {
+  opacity: 0.12;
+}
+
+/* Kill the UA focus ring on mouse click; keyboard focus gets a clear dashed
+   ring offset from the node (the invisible hit circle), plus the brighter
+   fill/stroke that onFocus already triggers via the .focus class. */
+.topic-node:focus {
   outline: none;
 }
+.topic-node:focus-visible .topic-node-hit {
+  stroke: var(--violet-light);
+  stroke-width: 2;
+  stroke-dasharray: 3 3;
+}
 
-.topic-node text {
+.topic-label {
   fill: var(--text);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   text-anchor: middle;
   pointer-events: none;
+  transition: opacity 160ms ease;
+}
+.topic-label.off {
+  opacity: 0;
+}
+.topic-node.focus .topic-label,
+.topic-node.selected .topic-label {
+  font-weight: 700;
+}
+
+/* ── Selected-topic panel ─────────────────────────────────────
+   A small contextual card — floats in the graph's quiet bottom-left corner
+   on wide screens, drops below the graph on phones. Not a drawer or modal. */
+.topic-panel {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 2;
+  width: 288px;
+  border: 1px solid var(--border-2);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 15px 16px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 860px) {
+  .topic-panel {
+    position: static;
+    width: auto;
+    margin-top: 12px;
+    box-shadow: none;
+  }
+}
+
+.topic-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.topic-panel-head h2 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.topic-panel-count {
+  display: block;
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.topic-panel-close {
+  flex: none;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1;
+  padding: 4px;
+  cursor: pointer;
+}
+.topic-panel-close:hover {
+  color: var(--text);
+}
+
+.topic-panel-conn {
+  margin: 14px 0 4px;
+}
+.topic-panel-conn h3 {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--violet);
+  margin: 0 0 8px;
+}
+.topic-panel-conn ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.topic-panel-conn li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13.5px;
+}
+.topic-conn-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+.topic-conn-link:hover {
+  color: var(--violet-light);
+}
+.topic-conn-shared {
+  flex: none;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.topic-panel-cta.btn-primary {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px;
+  text-align: center;
+  text-decoration: none;
+}
+
+@media (max-width: 720px) {
+  .topic-panel {
+    max-width: none;
+  }
 }
 
 /* ── Trail header (title + clear button) ───────────────────── */
