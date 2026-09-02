@@ -1,47 +1,86 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useApp } from "./App";
-import { buildTopicGraph, createForceSim, radiusFor, type PositionedNode } from "./topicGraph";
+import {
+  buildTopicGraph,
+  connectionsFor,
+  createForceSim,
+  neighborhoodTags,
+  primaryTopics,
+  radiusFor,
+  scoreTopics,
+  seededRng,
+  structuralEdges,
+  toggleSelection,
+  tunnelPath,
+  visibleTopicTags,
+  type PositionedNode,
+} from "./topicGraph";
 import { SkeletonFeed } from "./Skeleton";
 
 const WIDTH = 900;
 const HEIGHT = 560;
-const MAX_TICKS = 400;
+const MAX_TICKS = 500;
 const SETTLE_ENERGY = 0.6;
-const SETTLE_DEADLINE_MS = 4000;
-// Rough half-width of a node's truncated label (11px, weight 600, ~18
-// chars max) and how far its text descends below the circle -- used to
-// size the dynamic viewBox so labels never get clipped at the edges.
-const LABEL_HALF_WIDTH = 65;
-const LABEL_DROP = 24;
-const VIEWBOX_PAD = 20;
+
+// How many topics the default (curated) view shows, and how many carry a
+// persistent label. Narrow screens get a lighter graph.
+const PRIMARY_LIMIT = { wide: 24, narrow: 14 };
+const LABEL_LIMIT = { wide: 12, narrow: 6 };
+const NARROW_QUERY = "(max-width: 720px)";
+
+const LABEL_HALF_WIDTH = 62;
+const LABEL_DROP = 22;
+const VIEWBOX_PAD = 26;
 
 function truncate(s: string, n = 18): string {
   return s.length > n ? `${s.slice(0, n - 1)}…` : s;
 }
 
-/** A visual map of the library's topics: every tag is a node (sized by how
- *  many videos carry it), and an edge forms wherever two tags share a video
- *  — a lightweight, dependency-free force layout over data that already
- *  exists (no separate topic model). Click a node to browse that tunnel. */
+function edgeKey(a: string, b: string): string {
+  return a < b ? `${a}|${b}` : `${b}|${a}`;
+}
+
+/** A map of how the library's topics connect: every tag is a node (sized by
+ *  how many videos carry it), edges form where two tags share videos. The
+ *  default view shows only the strongest ~two dozen topics; hovering traces a
+ *  topic's neighbourhood, selecting locks it and opens a small panel with the
+ *  strongest connections and a link into that tunnel. */
 export function TopicMapPage() {
   const { videos, loading } = useApp();
-  const navigate = useNavigate();
   const [positions, setPositions] = useState<PositionedNode[] | null>(null);
   const [settled, setSettled] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
-  const rafRef = useRef<number>();
+  const [selected, setSelected] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  const [narrow, setNarrow] = useState(
+    () => typeof window !== "undefined" && window.matchMedia(NARROW_QUERY).matches,
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia(NARROW_QUERY);
+    const on = () => setNarrow(mq.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+
+  // Esc clears a locked selection.
+  useEffect(() => {
+    if (!selected) return;
+    const on = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelected(null);
+    };
+    window.addEventListener("keydown", on);
+    return () => window.removeEventListener("keydown", on);
+  }, [selected]);
 
   const { nodes, edges } = useMemo(() => {
     const ready = videos.filter((v) => v.status === "ready" && !!v.playback_url);
     return buildTopicGraph(ready);
   }, [videos]);
 
-  // The video list re-polls every 15s and hands back a fresh array even when
-  // nothing changed, which would otherwise re-trigger buildTopicGraph's
-  // useMemo with new (but equal) array references and restart the whole
-  // settle animation on a loop. Keying the simulation effect on the graph's
-  // actual content, not object identity, keeps it stable across those polls.
+  // Re-polling hands back a fresh (but equal) array every 15s; key the
+  // simulation on the graph's actual content so it doesn't restart on a loop.
   const graphKey = useMemo(
     () =>
       `${nodes.map((n) => `${n.tag}:${n.count}`).join(",")}|` +
@@ -49,89 +88,59 @@ export function TopicMapPage() {
     [nodes, edges],
   );
 
+  const scored = useMemo(() => scoreTopics(nodes, edges), [nodes, edges]);
+  const scoreByTag = useMemo(
+    () => new Map(scored.map((s) => [s.tag, s.score])),
+    [scored],
+  );
+  const countByTag = useMemo(
+    () => new Map(nodes.map((n) => [n.tag, n.count])),
+    [nodes],
+  );
+
+  const primaryLimit = narrow ? PRIMARY_LIMIT.narrow : PRIMARY_LIMIT.wide;
+  const labelLimit = narrow ? LABEL_LIMIT.narrow : LABEL_LIMIT.wide;
+
+  const primaryTags = useMemo(
+    () => new Set(primaryTopics(scored, primaryLimit).map((s) => s.tag)),
+    [scored, primaryLimit],
+  );
+  const majorLabelTags = useMemo(
+    () => new Set(scored.slice(0, labelLimit).map((s) => s.tag)),
+    [scored, labelLimit],
+  );
+
+  // Reset transient interaction state whenever the graph itself changes.
   useEffect(() => {
-    setPositions(null);
-    setSettled(false);
     setHovered(null);
-    if (nodes.length === 0) return;
-
-    const sim = createForceSim(nodes, edges, { width: WIDTH, height: HEIGHT });
-    let ticks = 0;
-    let done = false;
-
-    function finishWith(finalPositions: PositionedNode[]) {
-      if (done) return;
-      done = true;
-      setPositions(finalPositions);
-      setSettled(true);
-    }
-
-    function frame() {
-      const next = sim.tick();
-      ticks += 1;
-      setPositions(next);
-      if (ticks < MAX_TICKS && sim.energy() > SETTLE_ENERGY) {
-        rafRef.current = requestAnimationFrame(frame);
-      } else {
-        finishWith(next);
-      }
-    }
-    rafRef.current = requestAnimationFrame(frame);
-
-    // Guaranteed fallback independent of the rAF loop entirely: a
-    // backgrounded/hidden tab can throttle requestAnimationFrame to a
-    // crawl, or suspend it outright rather than merely slowing it down --
-    // in the latter case `positions` never gets set even once (zero nodes
-    // render at all), and a check living only *inside* the rAF callback
-    // never gets a chance to run again. If the deadline arrives and the
-    // loop hasn't finished, run the remaining ticks synchronously right
-    // here instead of just flipping a flag, so the graph is guaranteed to
-    // actually render and settle within a bounded real-time window
-    // regardless of what rAF does.
-    const deadline = setTimeout(() => {
-      if (done) return;
-      let last: PositionedNode[] = [];
-      while (ticks < MAX_TICKS) {
-        last = sim.tick();
-        ticks += 1;
-        if (sim.energy() <= SETTLE_ENERGY) break;
-      }
-      finishWith(last);
-    }, SETTLE_DEADLINE_MS);
-
-    return () => {
-      clearTimeout(deadline);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setSelected(null);
+    setShowAll(false);
   }, [graphKey]);
 
-  // Fill the canvas instead of leaving the settled graph as a small cluster
-  // inside a fixed 900x560 box: once the simulation stops moving, compute a
-  // tight viewBox around the actual node bounds (including radius and label
-  // room) instead of the full fixed coordinate system. Only recomputed once
-  // settled -- doing this every tick during the animation would make the
-  // viewBox itself jitter as nodes are still moving.
-  const viewBox = useMemo(() => {
-    if (!settled || !positions || positions.length === 0) return `0 0 ${WIDTH} ${HEIGHT}`;
-    let minX = Infinity;
-    let maxX = -Infinity;
-    let minY = Infinity;
-    let maxY = -Infinity;
-    for (const p of positions) {
-      const r = radiusFor(p.count);
-      const halfW = Math.max(r, LABEL_HALF_WIDTH);
-      minX = Math.min(minX, p.x - halfW);
-      maxX = Math.max(maxX, p.x + halfW);
-      minY = Math.min(minY, p.y - r);
-      maxY = Math.max(maxY, p.y + r + LABEL_DROP);
+  // Settle the layout synchronously over every node (so toggling "show all"
+  // never moves anything that was already on screen), with a seeded RNG so
+  // the layout is the same every visit. No per-frame animation — the graph
+  // simply appears settled rather than drifting in like particles.
+  useEffect(() => {
+    if (nodes.length === 0) {
+      setPositions(null);
+      setSettled(false);
+      return;
     }
-    minX -= VIEWBOX_PAD;
-    minY -= VIEWBOX_PAD;
-    const w = maxX - minX + VIEWBOX_PAD;
-    const h = maxY - minY + VIEWBOX_PAD;
-    return `${minX} ${minY} ${w} ${h}`;
-  }, [settled, positions]);
+    const sim = createForceSim(nodes, edges, {
+      width: WIDTH,
+      height: HEIGHT,
+      rng: seededRng(0x5eed),
+    });
+    let last: PositionedNode[] = [];
+    for (let i = 0; i < MAX_TICKS; i++) {
+      last = sim.tick();
+      if (i > 40 && sim.energy() <= SETTLE_ENERGY) break;
+    }
+    setPositions(last);
+    setSettled(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [graphKey]);
 
   const byTag = useMemo(() => {
     const m = new Map<string, PositionedNode>();
@@ -139,23 +148,95 @@ export function TopicMapPage() {
     return m;
   }, [positions]);
 
-  const neighbors = useMemo(() => {
-    if (!hovered) return null;
-    const set = new Set<string>([hovered]);
-    for (const e of edges) {
-      if (e.source === hovered) set.add(e.target);
-      if (e.target === hovered) set.add(e.source);
+  const allTags = useMemo(() => nodes.map((n) => n.tag), [nodes]);
+
+  // hovered wins over selected: hover to peek a neighbourhood, click to lock.
+  const focusTag = hovered ?? selected;
+  const focusNeighborhood = useMemo(
+    () => (focusTag ? neighborhoodTags(focusTag, edges, scoreByTag) : null),
+    [focusTag, edges, scoreByTag],
+  );
+  const selectedConnections = useMemo(
+    () => (selected ? connectionsFor(selected, edges, scoreByTag) : []),
+    [selected, edges, scoreByTag],
+  );
+
+  const visibleTags = useMemo(
+    () => visibleTopicTags(allTags, primaryTags, { showAll, focusNeighborhood }),
+    [allTags, primaryTags, showAll, focusNeighborhood],
+  );
+
+  const structural = useMemo(
+    () => structuralEdges(edges, visibleTags),
+    [edges, visibleTags],
+  );
+
+  // The frame is defined by the default/opened node set, not by focus-revealed
+  // neighbours, so locking a selection doesn't lurch the viewport.
+  const framedTags = useMemo(
+    () => (showAll ? new Set(allTags) : primaryTags),
+    [showAll, allTags, primaryTags],
+  );
+  // The settled cluster is roughly circular; nudge the framed viewBox toward
+  // a comfortable aspect range (landscape on desktop, near-square on phones)
+  // so the graph fills its box instead of sitting in a letterboxed strip.
+  const [minAspect, maxAspect] = narrow ? [0.72, 1.4] : [1.55, 2.3];
+  const [vx, vy, vw, vh] = useMemo<[number, number, number, number]>(() => {
+    if (!settled || !positions || positions.length === 0)
+      return [0, 0, WIDTH, HEIGHT];
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (const p of positions) {
+      if (!framedTags.has(p.tag)) continue;
+      const r = radiusFor(p.count);
+      const halfW = Math.max(r, LABEL_HALF_WIDTH);
+      minX = Math.min(minX, p.x - halfW);
+      maxX = Math.max(maxX, p.x + halfW);
+      minY = Math.min(minY, p.y - r);
+      maxY = Math.max(maxY, p.y + r + LABEL_DROP);
+    }
+    if (!Number.isFinite(minX)) return [0, 0, WIDTH, HEIGHT];
+    minX -= VIEWBOX_PAD;
+    minY -= VIEWBOX_PAD;
+    let w = maxX - minX + VIEWBOX_PAD;
+    let h = maxY - minY + VIEWBOX_PAD;
+    if (w / h < minAspect) {
+      const nw = h * minAspect;
+      minX -= (nw - w) / 2;
+      w = nw;
+    } else if (w / h > maxAspect) {
+      const nh = w / maxAspect;
+      minY -= (nh - h) / 2;
+      h = nh;
+    }
+    return [minX, minY, w, h];
+  }, [settled, positions, framedTags, minAspect, maxAspect]);
+  const viewBox = `${vx} ${vy} ${vw} ${vh}`;
+
+  const focusEdgeKeys = useMemo(() => {
+    if (!focusTag) return null;
+    const set = new Set<string>();
+    for (const c of connectionsFor(focusTag, edges, scoreByTag)) {
+      set.add(edgeKey(focusTag, c.tag));
     }
     return set;
-  }, [hovered, edges]);
+  }, [focusTag, edges, scoreByTag]);
 
   if (loading && nodes.length === 0) return <SkeletonFeed />;
+
+  const total = nodes.length;
+  const hiddenCount = total - primaryTags.size;
 
   return (
     <main className="page standard-page">
       <div className="feed-head">
         <h1>Map</h1>
-        <p>Every tag is a topic, connected wherever videos share both — click one to dig in.</p>
+        <p>
+          See how topics connect. Hover to trace a path, or choose one to dig deeper.
+        </p>
+        <p className="feed-head-note">Larger topics contain more videos.</p>
       </div>
 
       {nodes.length === 0 ? (
@@ -163,64 +244,184 @@ export function TopicMapPage() {
           <p>No topics yet — they appear as videos pick up tags.</p>
         </div>
       ) : (
-        <div className="topic-map">
-          <svg
-            className="topic-map-svg"
-            viewBox={viewBox}
-            role="img"
-            aria-label="Topic map — a graph of tags connected by shared videos"
-          >
-            <g className="topic-map-edges">
-              {edges.map((e) => {
-                const a = byTag.get(e.source);
-                const b = byTag.get(e.target);
-                if (!a || !b) return null;
-                const dim = neighbors && (!neighbors.has(e.source) || !neighbors.has(e.target));
-                return (
-                  <line
-                    key={`${e.source}|${e.target}`}
-                    x1={a.x}
-                    y1={a.y}
-                    x2={b.x}
-                    y2={b.y}
-                    className={dim ? "topic-edge dim" : "topic-edge"}
-                    strokeWidth={Math.min(1 + e.weight * 0.8, 5)}
-                  />
-                );
-              })}
-            </g>
-            <g className="topic-map-nodes">
-              {(positions || []).map((n) => {
-                const r = radiusFor(n.count);
-                const dim = neighbors && !neighbors.has(n.tag);
-                return (
-                  <g
-                    key={n.tag}
-                    className={dim ? "topic-node dim" : "topic-node"}
-                    transform={`translate(${n.x} ${n.y})`}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`#${n.tag}, ${n.count} video${n.count === 1 ? "" : "s"}`}
-                    onMouseEnter={() => setHovered(n.tag)}
-                    onMouseLeave={() => setHovered(null)}
-                    onFocus={() => setHovered(n.tag)}
-                    onBlur={() => setHovered(null)}
-                    onClick={() => navigate(`/tunnels/${encodeURIComponent(n.tag)}`)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        navigate(`/tunnels/${encodeURIComponent(n.tag)}`);
+        <>
+          {hiddenCount > 0 && (
+            <div className="topic-map-tools">
+              <button
+                type="button"
+                className="link-btn"
+                aria-pressed={showAll}
+                onClick={() => setShowAll((v) => !v)}
+              >
+                {showAll
+                  ? "Show fewer topics"
+                  : `Show all ${total} topics`}
+              </button>
+            </div>
+          )}
+
+          <div className="topic-map">
+            <svg
+              className="topic-map-svg"
+              viewBox={viewBox}
+              role="img"
+              aria-label="Topic map — a graph of tags connected by shared videos"
+            >
+              <rect
+                x={vx}
+                y={vy}
+                width={vw}
+                height={vh}
+                fill="transparent"
+                onClick={() => setSelected(null)}
+              />
+
+              <g className="topic-map-edges">
+                {(focusTag
+                  ? edges.filter(
+                      (e) =>
+                        (e.source === focusTag || e.target === focusTag) &&
+                        focusEdgeKeys?.has(edgeKey(e.source, e.target)),
+                    )
+                  : structural
+                ).map((e) => {
+                  const a = byTag.get(e.source);
+                  const b = byTag.get(e.target);
+                  if (!a || !b) return null;
+                  return (
+                    <line
+                      key={edgeKey(e.source, e.target)}
+                      x1={a.x}
+                      y1={a.y}
+                      x2={b.x}
+                      y2={b.y}
+                      className={focusTag ? "topic-edge focus" : "topic-edge structural"}
+                      strokeWidth={
+                        focusTag ? Math.min(1.2 + e.weight * 0.9, 4.5) : 1
                       }
-                    }}
-                  >
-                    <circle r={r} />
-                    <text y={r + 15}>{truncate(n.tag)}</text>
-                  </g>
-                );
-              })}
-            </g>
-          </svg>
-        </div>
+                    />
+                  );
+                })}
+              </g>
+
+              <g className="topic-map-nodes">
+                {(positions || [])
+                  .filter((n) => visibleTags.has(n.tag))
+                  .map((n) => {
+                    const r = radiusFor(n.count);
+                    const isSelected = n.tag === selected;
+                    const isFocus = n.tag === focusTag;
+                    const inFocus = focusNeighborhood?.has(n.tag) ?? false;
+                    const dim = !!focusTag && !isFocus && !inFocus;
+                    const showLabel =
+                      !dim &&
+                      (majorLabelTags.has(n.tag) || isFocus || inFocus || isSelected);
+                    const cls = [
+                      "topic-node",
+                      isSelected ? "selected" : "",
+                      isFocus ? "focus" : "",
+                      inFocus && !isFocus ? "neighbor" : "",
+                      dim ? "dim" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ");
+                    return (
+                      <g
+                        key={n.tag}
+                        className={cls}
+                        transform={`translate(${n.x} ${n.y})`}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`${n.tag}, ${n.count} video${n.count === 1 ? "" : "s"}`}
+                        aria-pressed={isSelected}
+                        onMouseEnter={() => setHovered(n.tag)}
+                        onMouseLeave={() => setHovered(null)}
+                        onFocus={() => setHovered(n.tag)}
+                        onBlur={() => setHovered(null)}
+                        // Click selects without stealing focus (and without the
+                        // browser scrolling the node into view); keyboard users
+                        // still Tab to focus and Enter/Space to select.
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => setSelected((cur) => toggleSelection(cur, n.tag))}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setSelected((cur) => toggleSelection(cur, n.tag));
+                          }
+                        }}
+                      >
+                        {isSelected && <circle className="topic-node-ring" r={r + 6} />}
+                        <circle className="topic-node-dot" r={r} />
+                        <circle className="topic-node-hit" r={r + 12} />
+                        <text
+                          className={showLabel ? "topic-label" : "topic-label off"}
+                          y={r + 14}
+                        >
+                          {truncate(n.tag)}
+                        </text>
+                      </g>
+                    );
+                  })}
+              </g>
+            </svg>
+
+            {selected && (
+            <aside
+              className="topic-panel"
+              aria-live="polite"
+              aria-label={`Selected topic: ${selected}`}
+            >
+              <div className="topic-panel-head">
+                <div>
+                  <h2>#{selected}</h2>
+                  <span className="topic-panel-count">
+                    {countByTag.get(selected) ?? 0} video
+                    {(countByTag.get(selected) ?? 0) === 1 ? "" : "s"}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="topic-panel-close"
+                  onClick={() => setSelected(null)}
+                  aria-label="Clear selection"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {selectedConnections.length > 0 && (
+                <div className="topic-panel-conn">
+                  <h3>Connected to</h3>
+                  <ul>
+                    {selectedConnections.map((c) => (
+                      <li key={c.tag}>
+                        <button
+                          type="button"
+                          className="topic-conn-link"
+                          onMouseEnter={() => setHovered(c.tag)}
+                          onMouseLeave={() => setHovered(null)}
+                          onFocus={() => setHovered(c.tag)}
+                          onBlur={() => setHovered(null)}
+                          onClick={() => setSelected(c.tag)}
+                        >
+                          #{c.tag}
+                        </button>
+                        <span className="topic-conn-shared">
+                          {c.shared} shared video{c.shared === 1 ? "" : "s"}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <Link className="btn-primary topic-panel-cta" to={tunnelPath(selected)}>
+                Explore this tunnel →
+              </Link>
+            </aside>
+            )}
+          </div>
+        </>
       )}
     </main>
   );
