@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useApp } from "./App";
 import { pickFeatured } from "./api";
@@ -7,13 +7,12 @@ import { FeaturedCard } from "./FeaturedCard";
 import { SkeletonFeed } from "./Skeleton";
 import { MapIcon } from "./Icons";
 
-// Real curiosities, not tags — each returns a strong transcript-search result
-// against the current catalogue and points at a different corner of it
-// (animal behaviour · spaceflight · social history).
-const SEARCH_EXAMPLES = [
-  "how animals survive winter",
-  "apollo 11 moon landing",
-  "the history of immigration",
+// The hero's three-line product statement: each reads as a plain sentence
+// with a subtly emphasised opening word.
+const HERO_POINTS: [string, string][] = [
+  ["Search", "what was said."],
+  ["Jump", "to the moment."],
+  ["Explore", "what connects."],
 ];
 
 export function LibraryPage() {
@@ -22,14 +21,10 @@ export function LibraryPage() {
   const [homeQuery, setHomeQuery] = useState("");
   const heroSearchRef = useRef<HTMLFormElement>(null);
 
-  function runSearch(term: string) {
-    const t = term.trim();
-    if (t) navigate(`/search?q=${encodeURIComponent(t)}`);
-  }
-
   function submitHomeSearch(e: FormEvent) {
     e.preventDefault();
-    runSearch(homeQuery);
+    const term = homeQuery.trim();
+    if (term) navigate(`/search?q=${encodeURIComponent(term)}`);
   }
 
   const mine = useMemo(
@@ -118,15 +113,17 @@ export function LibraryPage() {
                 <p className="home-hero-eyebrow">Search beneath the surface</p>
                 <h1 className="home-h1">
                   <span className="home-h1-line">Go deeper.</span>
-                  <span className="home-h1-line">Follow</span>
                   <span className="home-h1-line">
-                    Curiosity<span className="home-hero-dot">.</span>
+                    Wonder more<span className="home-hero-dot">.</span>
                   </span>
                 </h1>
-                <p className="home-hero-sub">
-                  Search what was actually said. Jump to the exact moment. Follow
-                  the idea wherever it leads.
-                </p>
+                <div className="home-hero-points">
+                  {HERO_POINTS.map(([verb, rest]) => (
+                    <p className="home-hero-point" key={verb}>
+                      <span className="home-hero-point-verb">{verb}</span> {rest}
+                    </p>
+                  ))}
+                </div>
                 <form className="home-search-form" ref={heroSearchRef} onSubmit={submitHomeSearch}>
                   <svg className="home-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
                   <input
@@ -139,23 +136,6 @@ export function LibraryPage() {
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
                   </button>
                 </form>
-                <p className="home-search-eg">
-                  <span className="home-search-eg-label">Try:</span>{" "}
-                  {SEARCH_EXAMPLES.map((ex, i) => (
-                    <Fragment key={ex}>
-                      {i > 0 && (
-                        <span className="home-search-eg-sep" aria-hidden="true"> · </span>
-                      )}
-                      <button
-                        type="button"
-                        className="home-search-eg-item"
-                        onClick={() => runSearch(ex)}
-                      >
-                        {ex}
-                      </button>
-                    </Fragment>
-                  ))}
-                </p>
               </div>
               {/* Phone-only: a real, portrait-cropped hero plate that sits
                   below the text rather than the wide desktop plate scaled
