@@ -1761,6 +1761,39 @@ body {
   background: rgba(255, 84, 104, 0.12);
 }
 
+/* Homepage-Featured toggle in the Operations table — a restrained text
+   control in the existing admin language, not a new component. Selected
+   state uses the same violet the rest of admin uses for "active". */
+.feature-toggle {
+  background: transparent;
+  border: 1px solid var(--border-2);
+  color: var(--muted);
+  border-radius: 7px;
+  padding: 5px 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+}
+
+.feature-toggle:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--text);
+}
+
+.feature-toggle.on {
+  color: var(--violet);
+  border-color: var(--violet);
+  background: rgba(154, 130, 242, 0.12);
+}
+
+.feature-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 @media (max-width: 560px) {
   .topbar,
   .page {

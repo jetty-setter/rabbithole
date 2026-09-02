@@ -72,6 +72,7 @@ from .models import (
     CommentCreate,
     Creator,
     Credentials,
+    FeatureRequest,
     ReactionRequest,
     SuggestRequest,
     UpdateVideo,
@@ -458,6 +459,7 @@ def _to_video(item: dict) -> Video:
         thumps=int(item.get("thumps") or 0),
         tags=[str(t) for t in (item.get("tags") or [])],
         ai_generated=bool(item.get("ai_generated") or False),
+        featured=bool(item.get("featured") or False),
         transcript_status=status,
         # Derived, not independently trusted -- ready is the only status that
         # means "usable transcript exists," so has_transcript can never
@@ -664,6 +666,78 @@ def update_video(video_id: str, body: UpdateVideo, user: str = Depends(require_a
             ExpressionAttributeNames={f"#{k}": k for k in updates},
             ExpressionAttributeValues={f":{k}": v for k, v in updates.items()},
         )
+    return get_video(video_id)
+
+
+def _featurable(item: dict) -> bool:
+    """Can this record legitimately sit in the homepage Featured slot?
+    A curator can only feature a usable, public, ready video."""
+    return (
+        item.get("status") == "ready"
+        and bool(item.get("hls_key"))
+        and _norm_visibility(item.get("visibility")) == "public"
+    )
+
+
+def _clear_featured(except_id: str | None = None) -> list[str]:
+    """Set featured=False on every video currently flagged featured, except
+    `except_id`. Returns the ids cleared. This is what keeps "only one
+    Featured video" true server-side regardless of prior (or racey) state."""
+    cleared: list[str] = []
+    scan_kwargs: dict = {"FilterExpression": Attr("featured").eq(True)}
+    while True:
+        resp = aws.videos_table().scan(**scan_kwargs)
+        for it in resp.get("Items", []):
+            vid = it["video_id"]
+            if vid == except_id:
+                continue
+            aws.videos_table().update_item(
+                Key={"video_id": vid},
+                UpdateExpression="SET #f = :false",
+                ExpressionAttributeNames={"#f": "featured"},
+                ExpressionAttributeValues={":false": False},
+            )
+            cleared.append(vid)
+        if "LastEvaluatedKey" not in resp:
+            return cleared
+        scan_kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
+
+
+@app.put("/videos/{video_id}/featured", response_model=Video)
+def set_featured(video_id: str, body: FeatureRequest, user: str = Depends(require_auth)) -> Video:
+    """Designate (or clear) the single homepage Featured video. Admin only.
+
+    Marking a video featured atomically-enough clears any other featured
+    record: the target is set first, then every other featured row is
+    unset, so the invariant ("at most one featured") holds even if the UI
+    is stale or two requests race. Idempotent."""
+    if not is_admin(user):
+        raise HTTPException(status_code=403, detail="not allowed")
+    item = aws.videos_table().get_item(Key={"video_id": video_id}).get("Item")
+    if not item:
+        raise HTTPException(status_code=404, detail="video not found")
+
+    if body.featured:
+        if not _featurable(item):
+            raise HTTPException(
+                status_code=409,
+                detail="only a public, ready video can be featured on the homepage",
+            )
+        aws.videos_table().update_item(
+            Key={"video_id": video_id},
+            UpdateExpression="SET #f = :true",
+            ExpressionAttributeNames={"#f": "featured"},
+            ExpressionAttributeValues={":true": True},
+        )
+        _clear_featured(except_id=video_id)
+    else:
+        aws.videos_table().update_item(
+            Key={"video_id": video_id},
+            UpdateExpression="SET #f = :false",
+            ExpressionAttributeNames={"#f": "featured"},
+            ExpressionAttributeValues={":false": False},
+        )
+
     return get_video(video_id)
 
 

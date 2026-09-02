@@ -28,6 +28,11 @@ class UploadResponse(BaseModel):
     key: str
 
 
+class FeatureRequest(BaseModel):
+    # Admin-only: designate (or clear) the single homepage Featured video.
+    featured: bool = True
+
+
 class ReactionRequest(BaseModel):
     # "hop" (approve), "thump" (disapprove), or null to clear.
     reaction: str | None = None
@@ -79,6 +84,10 @@ class Video(BaseModel):
     thumps: int = 0
     tags: list[str] = []
     ai_generated: bool = False
+    # Curated homepage Featured slot. Exactly one video is featured at a time
+    # (enforced server-side); legacy records with no `featured` attribute read
+    # as False.
+    featured: bool = False
     # Authoritative transcript state. has_transcript is kept for existing
     # frontend code that already branches on it, but is always derived from
     # this field (ready -> true, everything else -> false) so the two can

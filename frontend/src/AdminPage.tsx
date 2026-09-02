@@ -1,9 +1,29 @@
+import { useState } from "react";
 import { useApp } from "./App";
-import { STATUS_LABEL } from "./api";
+import { STATUS_LABEL, setFeatured, type Video } from "./api";
 import { SkeletonAdmin } from "./Skeleton";
 
 export function AdminPage() {
-  const { videos, live, authed, isAdmin, requireLogin, loading } = useApp();
+  const { videos, live, authed, isAdmin, requireLogin, loading, refresh } = useApp();
+  const [pendingFeature, setPendingFeature] = useState<string | null>(null);
+  const [featureError, setFeatureError] = useState<string | null>(null);
+
+  async function toggleFeatured(v: Video) {
+    setPendingFeature(v.video_id);
+    setFeatureError(null);
+    try {
+      await setFeatured(v.video_id, !v.featured);
+      refresh();
+    } catch {
+      setFeatureError(
+        v.featured
+          ? "Couldn't clear the Featured video. Try again."
+          : "Couldn't feature that video. Try again.",
+      );
+    } finally {
+      setPendingFeature(null);
+    }
+  }
 
   if (!isAdmin) {
     return (
@@ -69,12 +89,14 @@ export function AdminPage() {
       </p>
 
       <h2 className="admin-sub">All videos</h2>
+      {featureError && <p className="err">{featureError}</p>}
       <div className="table-wrap">
         <table className="admin-table">
           <thead>
             <tr>
               <th>Video</th>
               <th>Status</th>
+              <th>Homepage</th>
               <th>Duration</th>
               <th>Cost</th>
               <th>Created</th>
@@ -87,6 +109,26 @@ export function AdminPage() {
                 <td>
                   <span className={`tag s-${v.status}`}>{STATUS_LABEL[v.status] ?? v.status}</span>
                 </td>
+                <td>
+                  {v.status === "ready" ? (
+                    <button
+                      type="button"
+                      className={v.featured ? "feature-toggle on" : "feature-toggle"}
+                      onClick={() => toggleFeatured(v)}
+                      disabled={pendingFeature !== null}
+                      aria-pressed={!!v.featured}
+                      title={
+                        v.featured
+                          ? "This is the homepage Featured video — click to clear it"
+                          : "Make this the homepage Featured video (replaces the current one)"
+                      }
+                    >
+                      {v.featured ? "Featured on homepage" : "Feature on homepage"}
+                    </button>
+                  ) : (
+                    "—"
+                  )}
+                </td>
                 <td>{v.duration_seconds ? `${v.duration_seconds}s` : "—"}</td>
                 <td>{v.cost_usd ? `$${v.cost_usd}` : "—"}</td>
                 <td>{v.created_at ? new Date(v.created_at).toLocaleString() : "—"}</td>
@@ -94,7 +136,7 @@ export function AdminPage() {
             ))}
             {videos.length === 0 && (
               <tr>
-                <td colSpan={5} className="table-empty">
+                <td colSpan={6} className="table-empty">
                   No videos yet.
                 </td>
               </tr>
