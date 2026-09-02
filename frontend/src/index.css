@@ -3521,271 +3521,282 @@ body::after {
   margin-bottom: 16px;
 }
 
-/* ── Topic map ─────────────────────────────────────────────────
-   Progressive-disclosure graph: the default view shows only the strongest
-   ~two dozen topics with quiet structural hints. Hover/focus traces a
-   topic's neighbourhood; selection locks it and opens the panel below.
-   Hierarchy is carried entirely by size / opacity / stroke weight / label
-   visibility — no categorical colour, no legend. */
-.feed-head-note {
-  color: var(--muted);
-  margin: 4px 0 0;
-  font-size: 13px;
-  opacity: 0.8;
-}
+/* ── Topic map: guided topic navigator ────────────────────────
+   Not a network diagram. You pick a topic, see its strongest connections
+   arranged around it, and follow one to re-centre — a hub-and-spoke
+   "rabbit hole", one step at a time. Palette only: near-black, ivory,
+   violet, lavender. No category colour, no legend. */
 
-.topic-map-tools {
+/* Opening view: a handful of distinct starting topics. */
+.topic-starts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  max-width: 760px;
+}
+.topic-start {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 8px;
-}
-
-.topic-map {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  border: 1px solid rgba(251, 245, 232, 0.07);
-  border-radius: 10px;
-  background: #080809;
-  padding: 12px;
-}
-
-.topic-map-svg {
-  display: block;
-  /* sized by height so a roughly-square graph doesn't force a huge
-     full-width box; centred by the flex parent */
-  height: min(62vh, 580px);
-  width: auto;
-  max-width: 100%;
-  animation: fade 280ms ease both;
-}
-
-@media (max-width: 860px) {
-  .topic-map {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-
-@media (max-width: 720px) {
-  .topic-map {
-    padding: 8px;
-  }
-  .topic-map-svg {
-    height: auto;
-    width: 100%;
-  }
-}
-
-/* ── Edges ─────────────────────────────────────────────────── */
-.topic-edge {
-  transition: opacity 160ms ease;
-}
-/* Faint always-on structural hints (shared-video count ≥ 2). */
-.topic-edge.structural {
-  stroke: var(--border-2);
-  opacity: 0.32;
-}
-/* A focused topic's own connections, ranked by shared-video count. */
-.topic-edge.focus {
-  stroke: var(--violet);
-  opacity: 0.55;
-}
-
-/* ── Nodes ─────────────────────────────────────────────────── */
-.topic-node {
-  cursor: pointer;
-  transition: opacity 160ms ease;
-}
-.topic-node .topic-node-dot {
-  fill: rgba(154, 130, 242, 0.07);
-  stroke: rgba(154, 130, 242, 0.45);
-  stroke-width: 1.4;
-  transition: fill 160ms ease, stroke 160ms ease, stroke-width 160ms ease;
-}
-
-/* Invisible larger tap/click target. */
-.topic-node .topic-node-hit {
-  fill: transparent;
-  stroke: none;
-}
-
-/* Neighbours of the focused/selected topic — kept fully legible. */
-.topic-node.neighbor .topic-node-dot {
-  fill: rgba(154, 130, 242, 0.12);
-  stroke: var(--violet);
-  stroke-width: 1.6;
-}
-
-/* Hovered / keyboard-focused. */
-.topic-node.focus .topic-node-dot,
-.topic-node:hover .topic-node-dot {
-  fill: rgba(154, 130, 242, 0.18);
-  stroke: var(--violet-light);
-  stroke-width: 2;
-}
-
-/* Selected — the strongest state, distinguished by stroke weight and the
-   outer ring (not colour or glow alone). */
-.topic-node.selected .topic-node-dot {
-  fill: rgba(154, 130, 242, 0.26);
-  stroke: var(--violet-light);
-  stroke-width: 2.6;
-}
-.topic-node .topic-node-ring {
-  fill: none;
-  stroke: var(--violet);
-  stroke-width: 1;
-  opacity: 0.5;
-}
-
-/* Everything unrelated to the current focus — strongly faded, still present. */
-.topic-node.dim {
-  opacity: 0.12;
-}
-
-/* Kill the UA focus ring on mouse click; keyboard focus gets a clear dashed
-   ring offset from the node (the invisible hit circle), plus the brighter
-   fill/stroke that onFocus already triggers via the .focus class. */
-.topic-node:focus {
-  outline: none;
-}
-.topic-node:focus-visible .topic-node-hit {
-  stroke: var(--violet-light);
-  stroke-width: 2;
-  stroke-dasharray: 3 3;
-}
-
-.topic-label {
-  fill: var(--text);
-  font-size: 13px;
-  font-weight: 600;
-  text-anchor: middle;
-  pointer-events: none;
-  transition: opacity 160ms ease;
-}
-.topic-label.off {
-  opacity: 0;
-}
-.topic-node.focus .topic-label,
-.topic-node.selected .topic-label {
-  font-weight: 700;
-}
-
-/* ── Selected-topic panel ─────────────────────────────────────
-   A small contextual card — floats in the graph's quiet bottom-left corner
-   on wide screens, drops below the graph on phones. Not a drawer or modal. */
-.topic-panel {
-  position: absolute;
-  left: 16px;
-  bottom: 16px;
-  z-index: 2;
-  width: 288px;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  padding: 16px 18px;
   border: 1px solid var(--border-2);
   border-radius: 12px;
-  background: var(--panel);
-  padding: 15px 16px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  background: rgba(154, 130, 242, 0.04);
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
 }
-
-@media (max-width: 860px) {
-  .topic-panel {
-    position: static;
-    width: auto;
-    margin-top: 12px;
-    box-shadow: none;
-  }
+.topic-start:hover {
+  border-color: var(--violet);
+  background: rgba(154, 130, 242, 0.1);
+  transform: translateY(-2px);
 }
-
-.topic-panel-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
+.topic-start:focus-visible {
+  outline: 2px solid var(--violet-light);
+  outline-offset: 2px;
 }
-.topic-panel-head h2 {
+.topic-start-tag {
   font-family: var(--display);
   font-weight: 700;
-  font-size: 20px;
+  font-size: 18px;
   letter-spacing: -0.01em;
-  margin: 0;
+  color: var(--text);
 }
-.topic-panel-count {
-  display: block;
-  margin-top: 2px;
+.topic-start-meta {
   font-size: 12.5px;
   color: var(--muted);
 }
-.topic-panel-close {
-  flex: none;
-  background: none;
-  border: none;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1;
-  padding: 4px;
-  cursor: pointer;
-}
-.topic-panel-close:hover {
-  color: var(--text);
+
+/* ── The navigator ───────────────────────────────────────────── */
+.topic-nav {
+  max-width: 760px;
 }
 
-.topic-panel-conn {
-  margin: 14px 0 4px;
-}
-.topic-panel-conn h3 {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--violet);
-  margin: 0 0 8px;
-}
-.topic-panel-conn ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+/* Breadcrumb of followed topics. */
+.topic-path {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 18px;
+  scrollbar-width: none;
 }
-.topic-panel-conn li {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: 13.5px;
+.topic-path::-webkit-scrollbar {
+  display: none;
 }
-.topic-conn-link {
+.topic-path-sep {
+  color: var(--muted);
+  flex: none;
+  font-size: 12px;
+}
+.topic-path-step {
+  flex: none;
   background: none;
   border: none;
   padding: 0;
   font: inherit;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--text);
-  cursor: pointer;
-}
-.topic-conn-link:hover {
-  color: var(--violet-light);
-}
-.topic-conn-shared {
-  flex: none;
   color: var(--muted);
-  font-size: 12.5px;
+  cursor: pointer;
+  transition: color 120ms ease;
+}
+.topic-path-step:hover {
+  color: var(--text);
+}
+.topic-path-step.is-current {
+  color: var(--violet-light);
+  cursor: default;
 }
 
-.topic-panel-cta.btn-primary {
-  display: block;
+.topic-nav-head {
+  margin-bottom: 8px;
+}
+.topic-nav-head h2 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(24px, 4vw, 32px);
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+.topic-nav-head p {
+  margin: 4px 0 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.topic-nav-empty {
+  margin: 28px 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ── Radial hub (wider screens) ──────────────────────────────── */
+.topic-hub {
+  position: relative;
   width: 100%;
-  margin-top: 16px;
-  padding: 12px;
-  text-align: center;
-  text-decoration: none;
+  max-width: 520px;
+  margin: 8px auto 4px;
+  aspect-ratio: 1 / 1;
+  animation: fade 220ms ease both;
+}
+.topic-hub-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.topic-hub-lines line {
+  stroke: var(--violet);
+  opacity: 0.28;
 }
 
-@media (max-width: 720px) {
-  .topic-panel {
-    max-width: none;
+.topic-hub-center,
+.topic-hub-spoke {
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+
+/* Current topic — the clear centre, strongest emphasis (no glow). */
+.topic-hub-center {
+  left: 50%;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 44%;
+  padding: 12px 18px;
+  border: 2px solid var(--violet-light);
+  border-radius: 999px;
+  background: rgba(154, 130, 242, 0.22);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(15px, 2.4vw, 19px);
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-align: center;
+}
+
+/* Connected topics — restrained violet, always labelled. */
+.topic-hub-spoke {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: max-content;
+  max-width: 150px;
+  padding: 9px 14px;
+  border: 1px solid rgba(154, 130, 242, 0.45);
+  border-radius: 12px;
+  background: rgba(154, 130, 242, 0.08);
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease, transform 120ms ease;
+}
+.topic-hub-spoke:hover {
+  border-color: var(--violet);
+  background: rgba(154, 130, 242, 0.16);
+  transform: translate(-50%, -50%) scale(1.03);
+}
+.topic-hub-spoke:focus-visible {
+  outline: 2px solid var(--violet-light);
+  outline-offset: 2px;
+}
+.topic-hub-spoke-dot {
+  width: var(--dot, 9px);
+  height: var(--dot, 9px);
+  border-radius: 50%;
+  background: var(--violet);
+  margin-bottom: 1px;
+}
+.topic-hub-spoke-tag {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.topic-hub-spoke-meta {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ── Vertical list (phones) ──────────────────────────────────── */
+.topic-spoke-list {
+  list-style: none;
+  margin: 12px 0 4px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: fade 220ms ease both;
+}
+.topic-spoke-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid rgba(154, 130, 242, 0.4);
+  border-radius: 12px;
+  background: rgba(154, 130, 242, 0.06);
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+.topic-spoke-row:hover {
+  border-color: var(--violet);
+  background: rgba(154, 130, 242, 0.14);
+}
+.topic-spoke-row:focus-visible {
+  outline: 2px solid var(--violet-light);
+  outline-offset: 2px;
+}
+.topic-spoke-tag {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+}
+.topic-spoke-meta {
+  flex: none;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+/* ── Footer: the tunnel CTA + back / start over ──────────────── */
+.topic-nav-foot {
+  margin-top: 18px;
+}
+.topic-nav-cta.btn-primary {
+  display: inline-block;
+  text-decoration: none;
+  padding: 11px 20px;
+}
+.topic-nav-controls {
+  display: flex;
+  gap: 20px;
+  margin-top: 14px;
+}
+
+@media (max-width: 640px) {
+  .topic-nav-head h2 {
+    font-size: 24px;
+  }
+  .topic-nav-cta.btn-primary {
+    display: block;
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topic-hub,
+  .topic-spoke-list {
+    animation: none;
   }
 }
 

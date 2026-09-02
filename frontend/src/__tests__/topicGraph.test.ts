@@ -1,18 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   buildTopicGraph,
+  connectionCount,
   connectionsFor,
-  createForceSim,
-  neighborhoodTags,
-  NODE_R_MAX,
-  NODE_R_MIN,
-  primaryTopics,
-  radiusFor,
+  followTopic,
+  jumpToStep,
   scoreTopics,
-  structuralEdges,
-  toggleSelection,
+  startingTopics,
+  stepBack,
   tunnelPath,
-  visibleTopicTags,
 } from "../topicGraph";
 
 describe("buildTopicGraph", () => {
@@ -61,7 +57,8 @@ describe("buildTopicGraph", () => {
   });
 });
 
-// A small synthetic library the Map-logic tests share.
+// A synthetic library with two clearly separate clusters (space, history) plus
+// a bridge topic, so the diversity logic has something to chew on.
 const LIBRARY = [
   { tags: ["space", "nasa", "moon"] },
   { tags: ["space", "nasa"] },
@@ -71,7 +68,10 @@ const LIBRARY = [
   { tags: ["history", "war"] },
   { tags: ["history", "war", "politics"] },
   { tags: ["history", "culture"] },
-  { tags: ["ocean"] },
+  { tags: ["history", "archaeology"] },
+  { tags: ["ocean", "science"] },
+  { tags: ["ocean", "climate"] },
+  { tags: ["climate", "science"] },
 ];
 
 function fixture() {
@@ -82,86 +82,27 @@ function fixture() {
 }
 
 describe("scoreTopics", () => {
-  it("scores each topic as videoCount + weightedConnectionCount", () => {
+  it("scores each topic as videoCount + weightedConnectionCount, ranked, deterministic", () => {
     const { scored } = fixture();
     const nasa = scored.find((s) => s.tag === "nasa")!;
     expect(nasa.count).toBe(4);
     expect(nasa.weightedDegree).toBe(6); // 3 (space) + 1 + 1 + 1
     expect(nasa.score).toBe(10);
-    const ocean = scored.find((s) => s.tag === "ocean")!;
-    expect(ocean.score).toBe(1); // isolated node: count only
-  });
 
-  it("is deterministic and ranks strongest first, ties broken stably", () => {
-    const g1 = buildTopicGraph(LIBRARY);
-    const g2 = buildTopicGraph(LIBRARY);
-    const a = scoreTopics(g1.nodes, g1.edges);
-    const b = scoreTopics(g2.nodes, g2.edges);
-    expect(a.map((s) => s.tag)).toEqual(b.map((s) => s.tag));
-    // space & nasa tie on score(10) and count(4) -> tag name breaks it.
-    expect(a.slice(0, 4).map((s) => s.tag)).toEqual(["nasa", "space", "history", "war"]);
-    expect(a[a.length - 1].tag).toBe("ocean");
+    const g = buildTopicGraph(LIBRARY);
+    expect(scoreTopics(g.nodes, g.edges).map((s) => s.tag)).toEqual(
+      scored.map((s) => s.tag),
+    );
+    // strongest first
+    expect(scored[0].score).toBeGreaterThanOrEqual(scored[scored.length - 1].score);
   });
 });
 
-describe("primaryTopics", () => {
-  it("returns the top N topics for the curated default view", () => {
-    const { scored } = fixture();
-    expect(primaryTopics(scored, 3).map((s) => s.tag)).toEqual(["nasa", "space", "history"]);
-  });
-
-  it("returns everything when the limit exceeds the topic count, and nothing at 0", () => {
-    const { scored } = fixture();
-    expect(primaryTopics(scored, 999)).toHaveLength(scored.length);
-    expect(primaryTopics(scored, 0)).toEqual([]);
-  });
-});
-
-describe("radiusFor", () => {
-  it("maps a bigger video count to a bigger (or equal) node, monotonically", () => {
-    expect(radiusFor(2)).toBeGreaterThan(radiusFor(1));
-    expect(radiusFor(9)).toBeGreaterThan(radiusFor(3));
-    expect(radiusFor(20)).toBeGreaterThanOrEqual(radiusFor(9));
-  });
-
-  it("stays within a restrained clamped range", () => {
-    expect(radiusFor(1)).toBe(NODE_R_MIN);
-    expect(radiusFor(0)).toBe(NODE_R_MIN);
-    expect(radiusFor(100000)).toBe(NODE_R_MAX);
-  });
-});
-
-describe("structuralEdges (default edge visibility)", () => {
-  it("shows only relationships backed by 2+ shared videos", () => {
-    const { edges, nodes } = fixture();
-    const visible = new Set(nodes.map((n) => n.tag));
-    const kept = structuralEdges(edges, visible);
-    const pairs = kept.map((e) => [e.source, e.target].sort().join("+")).sort();
-    // space-nasa (3) and history-war (2) — every weak one-off pair is dropped.
-    expect(pairs).toEqual(["history+war", "nasa+space"]);
-  });
-
-  it("never shows an edge with a hidden endpoint", () => {
-    const { edges } = fixture();
-    expect(structuralEdges(edges, new Set(["space"]))).toEqual([]);
-    expect(structuralEdges(edges, new Set(["space", "nasa"])).length).toBe(1);
-  });
-
-  it("honours a custom threshold", () => {
-    const { edges, nodes } = fixture();
-    const visible = new Set(nodes.map((n) => n.tag));
-    expect(structuralEdges(edges, visible, 3).map((e) => [e.source, e.target].sort().join("+"))).toEqual([
-      "nasa+space",
-    ]);
-  });
-});
-
-describe("connectionsFor (focus / selected neighbourhood)", () => {
-  it("ranks connections by shared-video count, then by the neighbour's prominence", () => {
+describe("connectionsFor", () => {
+  it("ranks a topic's connections by shared-video count, then neighbour prominence", () => {
     const { edges, scoreByTag } = fixture();
     const conn = connectionsFor("space", edges, scoreByTag);
     expect(conn[0]).toEqual({ tag: "nasa", shared: 3 });
-    // the weak-tie tail is ordered by the neighbour's own score, not randomly.
     expect(conn.map((c) => c.tag)).toEqual(["nasa", "apollo", "moon", "exploration"]);
   });
 
@@ -170,51 +111,83 @@ describe("connectionsFor (focus / selected neighbourhood)", () => {
     const conn = connectionsFor("nasa", edges, scoreByTag, 2);
     expect(conn).toHaveLength(2);
     expect(conn[0].tag).toBe("space");
-    expect(conn.some((c) => c.tag === "history")).toBe(false);
+    expect(conn.some((c) => c.tag === "war")).toBe(false);
   });
 
-  it("returns nothing for a topic with no edges", () => {
+  it("returns an empty list for a topic with no connections", () => {
+    const { nodes, edges } = buildTopicGraph([{ tags: ["lonely"] }]);
+    expect(nodes).toEqual([{ tag: "lonely", count: 1 }]);
+    expect(connectionsFor("lonely", edges, new Map())).toEqual([]);
+  });
+
+  it("returns fewer than the cap when that's all there is", () => {
     const { edges, scoreByTag } = fixture();
-    expect(connectionsFor("ocean", edges, scoreByTag)).toEqual([]);
+    expect(connectionsFor("apollo", edges, scoreByTag).length).toBeLessThan(8);
+    expect(connectionsFor("apollo", edges, scoreByTag).map((c) => c.tag)).toContain("space");
   });
 });
 
-describe("neighborhoodTags", () => {
-  it("is the focus tag plus its strongest connections, and excludes the rest", () => {
-    const { edges, scoreByTag } = fixture();
-    const n = neighborhoodTags("space", edges, scoreByTag);
-    expect(n.has("space")).toBe(true);
-    expect(n.has("nasa")).toBe(true);
-    expect(n.has("history")).toBe(false);
+describe("connectionCount", () => {
+  it("counts every distinct topic a topic connects to, uncapped", () => {
+    const { edges } = fixture();
+    // nasa connects to space, moon, apollo, science
+    expect(connectionCount("nasa", edges)).toBe(4);
+    expect(connectionCount("nobody", edges)).toBe(0);
   });
 });
 
-describe("visibleTopicTags", () => {
-  const all = ["a", "b", "c", "d"];
-  const primary = new Set(["a", "b"]);
-
-  it("defaults to just the primary set", () => {
-    expect([...visibleTopicTags(all, primary, { showAll: false })].sort()).toEqual(["a", "b"]);
+describe("startingTopics", () => {
+  it("returns a small deterministic set of starting topics", () => {
+    const { scored, edges, scoreByTag } = fixture();
+    const a = startingTopics(scored, edges, scoreByTag);
+    const b = startingTopics(scored, edges, scoreByTag);
+    expect(a.map((s) => s.tag)).toEqual(b.map((s) => s.tag));
+    expect(a.length).toBeGreaterThanOrEqual(1);
+    expect(a.length).toBeLessThanOrEqual(7);
   });
 
-  it("show-all opens it to every topic", () => {
-    expect([...visibleTopicTags(all, primary, { showAll: true })].sort()).toEqual(all);
+  it("offers different doors: two topics strongly linked to each other don't both start", () => {
+    const { scored, edges, scoreByTag } = fixture();
+    const tags = startingTopics(scored, edges, scoreByTag).map((s) => s.tag);
+    // space<->nasa share 3 videos — at most one of them is a starting topic.
+    expect(tags.includes("space") && tags.includes("nasa")).toBe(false);
+    // the history cluster should still get a door of its own.
+    expect(tags).toContain("history");
   });
 
-  it("a focused neighbourhood is pulled into view even when not primary", () => {
-    const v = visibleTopicTags(all, primary, {
-      showAll: false,
-      focusNeighborhood: new Set(["a", "d"]),
-    });
-    expect([...v].sort()).toEqual(["a", "b", "d"]);
+  it("tops up from the plain ranking if diversity filtering leaves it short", () => {
+    const { scored, edges, scoreByTag } = fixture();
+    // ask for more than the diverse set can supply -> still returns that many
+    const many = startingTopics(scored, edges, scoreByTag, scored.length);
+    expect(many.length).toBe(scored.length);
+    expect(new Set(many.map((s) => s.tag)).size).toBe(scored.length);
+  });
+
+  it("never returns a zero-video topic", () => {
+    const { scored, edges, scoreByTag } = fixture();
+    for (const s of startingTopics(scored, edges, scoreByTag, 50)) {
+      expect(s.count).toBeGreaterThanOrEqual(1);
+    }
   });
 });
 
-describe("toggleSelection", () => {
-  it("selects a new topic, and clears when the same one is chosen again", () => {
-    expect(toggleSelection(null, "space")).toBe("space");
-    expect(toggleSelection("space", "space")).toBeNull();
-    expect(toggleSelection("space", "nasa")).toBe("nasa");
+describe("path traversal", () => {
+  it("followTopic appends the new centre", () => {
+    expect(followTopic(["space"], "nasa")).toEqual(["space", "nasa"]);
+    expect(followTopic([], "space")).toEqual(["space"]);
+  });
+
+  it("jumpToStep returns to an earlier point in the path", () => {
+    const path = ["space", "nasa", "moon"];
+    expect(jumpToStep(path, 0)).toEqual(["space"]);
+    expect(jumpToStep(path, 1)).toEqual(["space", "nasa"]);
+    expect(jumpToStep(path, 2)).toEqual(path);
+  });
+
+  it("stepBack drops the current centre; from the first centre it returns to the starting view", () => {
+    expect(stepBack(["space", "nasa", "moon"])).toEqual(["space", "nasa"]);
+    expect(stepBack(["space"])).toEqual([]);
+    expect(stepBack([])).toEqual([]);
   });
 });
 
@@ -222,57 +195,5 @@ describe("tunnelPath", () => {
   it("routes a topic to its tunnel, URL-encoded", () => {
     expect(tunnelPath("true-crime")).toBe("/tunnels/true-crime");
     expect(tunnelPath("cold war")).toBe("/tunnels/cold%20war");
-  });
-});
-
-describe("createForceSim", () => {
-  it("keeps every node within the canvas bounds after many ticks", () => {
-    const { nodes, edges } = buildTopicGraph([
-      { tags: ["a", "b", "c"] },
-      { tags: ["c", "d"] },
-      { tags: ["d", "e", "f"] },
-    ]);
-    const sim = createForceSim(nodes, edges, { width: 800, height: 600, rng: () => 0.5 });
-    let positions = sim.tick();
-    for (let i = 0; i < 300; i++) positions = sim.tick();
-    for (const p of positions) {
-      expect(p.x).toBeGreaterThanOrEqual(0);
-      expect(p.x).toBeLessThanOrEqual(800);
-      expect(p.y).toBeGreaterThanOrEqual(0);
-      expect(p.y).toBeLessThanOrEqual(600);
-    }
-  });
-
-  it("settles toward a low-motion equilibrium (energy trends down)", () => {
-    const { nodes, edges } = buildTopicGraph([
-      { tags: ["a", "b"] },
-      { tags: ["b", "c"] },
-      { tags: ["c", "a"] },
-    ]);
-    const sim = createForceSim(nodes, edges, { width: 800, height: 600, rng: () => 0.5 });
-    for (let i = 0; i < 20; i++) sim.tick();
-    const earlyEnergy = sim.energy();
-    for (let i = 0; i < 200; i++) sim.tick();
-    const lateEnergy = sim.energy();
-    expect(lateEnergy).toBeLessThan(earlyEnergy);
-  });
-
-  it("pulls a connected pair closer together than two isolated nodes end up, on average", () => {
-    // Two components: a-b are connected by an edge; c and d share no edges
-    // with anyone. After settling, the connected pair should be closer.
-    const nodes = [
-      { tag: "a", count: 1 },
-      { tag: "b", count: 1 },
-      { tag: "c", count: 1 },
-      { tag: "d", count: 1 },
-    ];
-    const edges = [{ source: "a", target: "b", weight: 5 }];
-    const sim = createForceSim(nodes, edges, { width: 800, height: 600, rng: () => 0.5 });
-    let positions = sim.tick();
-    for (let i = 0; i < 400; i++) positions = sim.tick();
-    const byTag = Object.fromEntries(positions.map((p) => [p.tag, p]));
-    const dist = (x: { x: number; y: number }, y: { x: number; y: number }) =>
-      Math.hypot(x.x - y.x, x.y - y.y);
-    expect(dist(byTag.a, byTag.b)).toBeLessThan(dist(byTag.c, byTag.d));
   });
 });
