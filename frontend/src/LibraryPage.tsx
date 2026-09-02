@@ -117,13 +117,6 @@ export function LibraryPage() {
                     Wonder more<span className="home-hero-dot">.</span>
                   </span>
                 </h1>
-                <div className="home-hero-points">
-                  {HERO_POINTS.map(([verb, rest]) => (
-                    <p className="home-hero-point" key={verb}>
-                      <span className="home-hero-point-verb">{verb}</span> {rest}
-                    </p>
-                  ))}
-                </div>
                 <form className="home-search-form" ref={heroSearchRef} onSubmit={submitHomeSearch}>
                   <svg className="home-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
                   <input
@@ -136,6 +129,13 @@ export function LibraryPage() {
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
                   </button>
                 </form>
+                <div className="home-hero-points">
+                  {HERO_POINTS.map(([verb, rest]) => (
+                    <p className="home-hero-point" key={verb}>
+                      <span className="home-hero-point-verb">{verb}</span> {rest}
+                    </p>
+                  ))}
+                </div>
               </div>
               {/* Phone-only: a real, portrait-cropped hero plate that sits
                   below the text rather than the wide desktop plate scaled
