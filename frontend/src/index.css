@@ -341,7 +341,8 @@ body {
   line-height: 0.94;
   letter-spacing: -0.03em;
   text-transform: uppercase;
-  margin: 0 0 20px;
+  /* Gap down to the hero search, which now follows the headline directly. */
+  margin: 0 0 24px;
 }
 /* Both lines share the same size / weight / line-height / left edge — one
    headline block, not a headline plus a subtitle. Each stays on its own
@@ -355,19 +356,21 @@ body {
 .home-hero-dot {
   color: var(--violet-light);
 }
-/* Three plain sentences with a subtly emphasised opening word — read as
-   editorial copy, not a two-column table. No bullets/icons/rules. */
+/* Three plain sentences with a subtly emphasised opening word, sitting
+   BELOW the search now — the search is the primary action, so this reads a
+   touch quieter. Editorial copy, not a two-column table; no bullets/rules. */
 .home-hero-points {
-  margin: 0 0 22px;
+  margin: 20px 0 0;
 }
 .home-hero-point {
   margin: 0;
-  font-size: 15.5px;
+  font-size: 15px;
   line-height: 1.5;
   color: var(--muted);
+  opacity: 0.92;
 }
 .home-hero-point + .home-hero-point {
-  margin-top: 9px;
+  margin-top: 7px;
 }
 .home-hero-point-verb {
   font-weight: 600;
@@ -4307,7 +4310,7 @@ body::after {
 @media (max-width: 900px) {
   .home-h1 {
     font-size: clamp(33px, 10.5vw, 52px);
-    margin-bottom: 16px;
+    margin-bottom: 20px;
   }
   /* Phone: a line may wrap gracefully on a very narrow viewport rather
      than overflow. */
@@ -4318,13 +4321,10 @@ body::after {
     margin-bottom: 14px;
   }
   .home-hero-points {
-    margin-bottom: 18px;
-  }
-  .home-hero-point {
-    font-size: 15px;
+    margin-top: 16px;
   }
   .home-hero-point + .home-hero-point {
-    margin-top: 8px;
+    margin-top: 6px;
   }
 }
 
