@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { displayTitle, fetchCues, formatDuration, normalizeTag, relativeTime, transcriptSectionState } from "../api";
+import { displayTitle, fetchCues, formatDuration, normalizeTag, pickFeatured, relativeTime, transcriptSectionState, type Video } from "../api";
 
 describe("transcriptSectionState", () => {
   it("shows transcribing while a job is in flight", () => {
@@ -34,6 +34,56 @@ describe("displayTitle", () => {
 
   it("prettifies the filename when there's no title", () => {
     expect(displayTitle({ title: null, filename: "my_cool-clip.mp4" })).toBe("my cool clip");
+  });
+});
+
+describe("pickFeatured", () => {
+  const ready = (over: Partial<Video>): Video => ({
+    video_id: "x",
+    filename: "x.mp4",
+    status: "ready",
+    created_at: "2026-01-01T00:00:00Z",
+    playback_url: "https://cdn/x.m3u8",
+    visibility: "public",
+    ...over,
+  });
+
+  it("returns null for an empty list", () => {
+    expect(pickFeatured([])).toBeNull();
+  });
+
+  it("falls back to the first ready video when none is curated", () => {
+    const list = [ready({ video_id: "a" }), ready({ video_id: "b" })];
+    expect(pickFeatured(list)?.video_id).toBe("a");
+  });
+
+  it("an explicitly featured video wins over the first ready video", () => {
+    const list = [ready({ video_id: "a" }), ready({ video_id: "b", featured: true })];
+    expect(pickFeatured(list)?.video_id).toBe("b");
+  });
+
+  it("ignores a featured video that is unlisted and uses the fallback", () => {
+    const list = [
+      ready({ video_id: "a" }),
+      ready({ video_id: "b", featured: true, visibility: "unlisted" }),
+    ];
+    expect(pickFeatured(list)?.video_id).toBe("a");
+  });
+
+  it("ignores a featured video that is not ready / not playable", () => {
+    const list = [
+      ready({ video_id: "a" }),
+      ready({ video_id: "b", featured: true, playback_url: null }),
+      ready({ video_id: "c", featured: true, status: "processing" }),
+    ];
+    expect(pickFeatured(list)?.video_id).toBe("a");
+  });
+
+  it("treats a legacy video with no featured field as not featured", () => {
+    const list = [ready({ video_id: "a" }), ready({ video_id: "b" })];
+    delete list[0].featured;
+    delete list[1].featured;
+    expect(pickFeatured(list)?.video_id).toBe("a");
   });
 });
 

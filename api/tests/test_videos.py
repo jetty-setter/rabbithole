@@ -224,3 +224,69 @@ def test_legacy_record_with_no_transcript_fields_at_all(client, videos_table):
     body = client.get("/videos").json()[0]
     assert body["transcript_status"] is None
     assert body["has_transcript"] is False
+
+
+# ── Homepage Featured control (PUT /videos/{id}/featured) ─────────────────
+def test_featured_defaults_false_and_legacy_records_read_false(client, videos_table):
+    seed_video(videos_table, video_id="v1")  # no `featured` attribute at all
+    body = client.get("/videos/v1").json()
+    assert body["featured"] is False
+
+
+def test_admin_can_feature_a_ready_public_video(client, videos_table):
+    seed_video(videos_table, video_id="v1", visibility="public")
+    r = client.put("/videos/v1/featured", json={"featured": True}, headers=auth("admin"))
+    assert r.status_code == 200
+    assert r.json()["featured"] is True
+    assert videos_table.get_item(Key={"video_id": "v1"})["Item"]["featured"] is True
+
+
+def test_non_admin_cannot_feature(client, videos_table):
+    seed_video(videos_table, video_id="v1", owner="alice")
+    r = client.put("/videos/v1/featured", json={"featured": True}, headers=auth("alice"))
+    assert r.status_code == 403
+    assert "featured" not in videos_table.get_item(Key={"video_id": "v1"})["Item"]
+
+
+def test_featuring_one_video_clears_the_previous(client, videos_table):
+    seed_video(videos_table, video_id="a", visibility="public")
+    seed_video(videos_table, video_id="b", visibility="public")
+    client.put("/videos/a/featured", json={"featured": True}, headers=auth("admin"))
+    client.put("/videos/b/featured", json={"featured": True}, headers=auth("admin"))
+
+    featured = {v["video_id"]: v["featured"] for v in client.get("/videos").json()}
+    assert featured == {"a": False, "b": True}
+
+
+def test_featuring_is_idempotent(client, videos_table):
+    seed_video(videos_table, video_id="a", visibility="public")
+    client.put("/videos/a/featured", json={"featured": True}, headers=auth("admin"))
+    client.put("/videos/a/featured", json={"featured": True}, headers=auth("admin"))
+    featured = [v for v in client.get("/videos").json() if v["featured"]]
+    assert [v["video_id"] for v in featured] == ["a"]
+
+
+def test_cannot_feature_an_unlisted_video(client, videos_table):
+    seed_video(videos_table, video_id="v1", visibility="unlisted", owner="alice")
+    r = client.put("/videos/v1/featured", json={"featured": True}, headers=auth("admin"))
+    assert r.status_code == 409
+    assert "featured" not in videos_table.get_item(Key={"video_id": "v1"})["Item"]
+
+
+def test_cannot_feature_a_non_ready_video(client, videos_table):
+    seed_video(videos_table, video_id="v1", status="processing", visibility="public")
+    r = client.put("/videos/v1/featured", json={"featured": True}, headers=auth("admin"))
+    assert r.status_code == 409
+
+
+def test_admin_can_clear_the_featured_video(client, videos_table):
+    seed_video(videos_table, video_id="v1", visibility="public")
+    client.put("/videos/v1/featured", json={"featured": True}, headers=auth("admin"))
+    r = client.put("/videos/v1/featured", json={"featured": False}, headers=auth("admin"))
+    assert r.status_code == 200
+    assert r.json()["featured"] is False
+
+
+def test_feature_missing_video_404(client):
+    r = client.put("/videos/nope/featured", json={"featured": True}, headers=auth("admin"))
+    assert r.status_code == 404

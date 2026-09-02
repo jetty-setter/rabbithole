@@ -1,6 +1,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useApp } from "./App";
+import { pickFeatured } from "./api";
 import { EditorialCard } from "./EditorialCard";
 import { FeaturedCard } from "./FeaturedCard";
 import { SkeletonFeed } from "./Skeleton";
@@ -31,7 +32,9 @@ export function LibraryPage() {
 
   const hasAny = mine.length + ready.length > 0;
 
-  const featured = ready.length > 0 ? ready[0] : null;
+  // An admin-curated video wins the Featured slot; otherwise the newest ready
+  // video, so the homepage never breaks if nothing is curated yet.
+  const featured = pickFeatured(ready);
   const gridList = featured ? list.filter((v) => v.video_id !== featured.video_id) : list;
   // Curated, not a full catalog dump: three clean rows of four, predictable
   // page length, no awkward partial final row. The rest lives at /fresh.

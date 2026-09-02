@@ -148,6 +148,9 @@ export interface Video {
   thumps?: number;
   tags?: string[];
   ai_generated?: boolean;
+  // Curated homepage Featured slot. Server enforces exactly one at a time;
+  // absent on legacy records — treat as false.
+  featured?: boolean;
   // Authoritative transcript state; has_transcript/transcribing are always
   // derived from this on the API side (ready -> has_transcript, transcribing
   // -> transcribing), kept for existing code that already branches on them.
@@ -343,6 +346,38 @@ export async function updateVideo(
 
 export async function incrementView(id: string): Promise<void> {
   await fetch(`${API_URL}/videos/${id}/view`, { method: "POST" });
+}
+
+/** Admin: designate (featured=true) or clear (featured=false) the single
+ *  homepage Featured video. The server clears any previous Featured record. */
+export async function setFeatured(id: string, featured: boolean): Promise<Video> {
+  const res = await fetch(`${API_URL}/videos/${id}/featured`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify({ featured }),
+  });
+  if (!res.ok) throw new Error(`feature failed (${res.status})`);
+  return res.json();
+}
+
+/** Is this video usable in the homepage Featured slot on its own merits:
+ *  a ready, playable, publicly visible video. */
+export function isFeaturable(v: Video): boolean {
+  return (
+    v.status === "ready" &&
+    !!v.playback_url &&
+    (v.visibility ?? "public") === "public"
+  );
+}
+
+/** The homepage Featured video. An explicitly curated (`featured === true`)
+ *  video wins; otherwise the first ready video, so the slot is never empty
+ *  while any ready video exists. `ready` is the already-filtered list of
+ *  ready + playable videos. A stale `featured` flag on a video that is no
+ *  longer eligible (deleted, unlisted, not ready) is ignored — the fallback
+ *  takes over. Selection only; never reorders the catalog. */
+export function pickFeatured(ready: Video[]): Video | null {
+  return ready.find((v) => v.featured === true && isFeaturable(v)) ?? ready[0] ?? null;
 }
 
 /** Display title: the set title, else a prettified filename. */
