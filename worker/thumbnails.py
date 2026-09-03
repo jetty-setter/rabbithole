@@ -43,6 +43,13 @@ SHORT_FRACTIONS = (0.12, 0.28, 0.44, 0.60, 0.76, 0.90)
 SHORT_CLIP_SECONDS = 8.0
 EDGE_GUARD_SECONDS = 0.15   # never sample within this many seconds of either end when there's room
 
+# Baked-in black bars (4:3 footage in a 16:9 container, archival letterbox) are
+# part of the source, not the frame choice -- detect and crop them before the
+# thumbnail is rendered so the actual picture fills the card. Conservative: only
+# act on a clear, safe crop.
+CROP_MIN_KEEP = 0.60       # a crop must keep at least this fraction of each dimension
+CROP_MIN_TRIM_FRAC = 0.035 # ...and remove at least this much off some edge to be worth doing
+
 # A pixel at/under BLACK_LUMA (0-255) counts as "black"; at/over WHITE_LUMA, "blown".
 BLACK_LUMA = 24
 WHITE_LUMA = 232
@@ -96,6 +103,7 @@ class ThumbnailChoice:
     score: float | None
     best_index: int | None
     candidates: list[Candidate] = field(default_factory=list)
+    crop: str | None = None           # ffmpeg "W:H:X:Y" if the source is letterboxed
 
 
 # ── Timestamp sampling ───────────────────────────────────────────────
@@ -123,12 +131,90 @@ def sample_positions(duration: float) -> list[float]:
 
 # ── Frame extraction ─────────────────────────────────────────────────
 
-def _extract_frame(src: Path, t: float, dest: Path, width: int, quality: int = 3) -> bool:
+BAR_LUMA = 34             # a row/column this dark (mean and near-max) counts as a black bar
+
+
+def _bar_extent(im: "Image.Image") -> tuple[int, int, int, int]:
+    """Pixels of solid black bar on (left, right, top, bottom) of one frame."""
+    g = im.convert("L")
+    w, h = g.size
+    px = g.load()
+
+    def col_dark(x: int) -> bool:
+        vals = [px[x, y] for y in range(0, h, max(1, h // 40))]
+        return max(vals) < BAR_LUMA + 20 and sum(vals) / len(vals) < BAR_LUMA
+
+    def row_dark(y: int) -> bool:
+        vals = [px[x, y] for x in range(0, w, max(1, w // 40))]
+        return max(vals) < BAR_LUMA + 20 and sum(vals) / len(vals) < BAR_LUMA
+
+    left = 0
+    while left < w // 2 and col_dark(left):
+        left += 1
+    right = 0
+    while right < w // 2 and col_dark(w - 1 - right):
+        right += 1
+    top = 0
+    while top < h // 2 and row_dark(top):
+        top += 1
+    bottom = 0
+    while bottom < h // 2 and row_dark(h - 1 - bottom):
+        bottom += 1
+    return left, right, top, bottom
+
+
+def detect_bars(frame_paths: list[Path]) -> str | None:
+    """Find baked-in black letterbox/pillarbox bars common to every sampled
+    frame. Returns an ffmpeg ``crop`` geometry ``"W:H:X:Y"`` (relative to the
+    ORIGINAL source, since these frames are scaled copies -> expressed as
+    fractions ffmpeg resolves with ``iw``/``ih``) or ``None``.
+
+    A bar only counts if it's dark in *all* frames -- so a single dark shot
+    doesn't cause a crop. Conservative safety guards prevent over-cropping.
+    """
+    if Image is None or not frame_paths:
+        return None
+    exts: list[tuple[int, int, int, int]] = []
+    dims: list[tuple[int, int]] = []
+    for p in frame_paths:
+        try:
+            im = Image.open(p)
+        except Exception:  # noqa: BLE001
+            return None
+        dims.append(im.size)
+        exts.append(_bar_extent(im))
+    w, h = dims[0]
+    if any(d != (w, h) for d in dims) or not w or not h:
+        return None
+    # tightest common bar = min across frames
+    left = min(e[0] for e in exts)
+    right = min(e[1] for e in exts)
+    top = min(e[2] for e in exts)
+    bottom = min(e[3] for e in exts)
+
+    keep_w, keep_h = w - left - right, h - top - bottom
+    trimmed_frac = max(left + right, top + bottom) / max(w, h)
+    if trimmed_frac < CROP_MIN_TRIM_FRAC:
+        return None
+    if keep_w < CROP_MIN_KEEP * w or keep_h < CROP_MIN_KEEP * h:
+        return None
+    # As fractions of the source, so it applies to the full-res original too.
+    fx, fy = left / w, top / h
+    fw, fh = keep_w / w, keep_h / h
+    return (
+        f"iw*{fw:.5f}:ih*{fh:.5f}:iw*{fx:.5f}:ih*{fy:.5f}"
+    )
+
+
+def _extract_frame(
+    src: Path, t: float, dest: Path, width: int, quality: int = 3, crop: str | None = None
+) -> bool:
     dest.parent.mkdir(parents=True, exist_ok=True)
+    vf = f"crop={crop},scale={width}:-2" if crop else f"scale={width}:-2"
     try:
         _ffmpeg([
             "-ss", f"{max(0.0, t):.2f}", "-i", str(src), "-vframes", "1",
-            "-vf", f"scale={width}:-2", "-q:v", str(quality), str(dest),
+            "-vf", vf, "-q:v", str(quality), str(dest),
         ])
     except subprocess.CalledProcessError:
         return False
@@ -136,7 +222,8 @@ def _extract_frame(src: Path, t: float, dest: Path, width: int, quality: int = 3
 
 
 def extract_candidates(
-    src: Path, outdir: Path, positions: list[float], width: int = CANDIDATE_WIDTH
+    src: Path, outdir: Path, positions: list[float],
+    width: int = CANDIDATE_WIDTH, crop: str | None = None,
 ) -> list[tuple[float, Path]]:
     """Pull one small frame per timestamp. Frames that fail to extract are
     simply skipped -- a few missing candidates don't matter."""
@@ -144,18 +231,20 @@ def extract_candidates(
     got: list[tuple[float, Path]] = []
     for i, t in enumerate(positions):
         dest = outdir / f"cand_{i:02d}.jpg"
-        if _extract_frame(src, t, dest, width):
+        if _extract_frame(src, t, dest, width, crop=crop):
             got.append((t, dest))
     return got
 
 
 def render_thumbnail(
-    src: Path, timestamp: float, dest: Path, width: int = OUTPUT_WIDTH
+    src: Path, timestamp: float, dest: Path,
+    width: int = OUTPUT_WIDTH, crop: str | None = None,
 ) -> bool:
     """Extract the final production thumbnail from the original source at the
-    chosen timestamp, at output quality. Source aspect ratio is preserved
-    (``scale=W:-2``); the image is never stretched."""
-    return _extract_frame(src, timestamp, dest, width, quality=2)
+    chosen timestamp, at output quality. Baked-in black bars are cropped when
+    detected; the remaining picture's aspect ratio is preserved
+    (``scale=W:-2``) and never stretched."""
+    return _extract_frame(src, timestamp, dest, width, quality=2, crop=crop)
 
 
 # ── Scoring ──────────────────────────────────────────────────────────
@@ -277,6 +366,14 @@ def select_thumbnail(src: Path, workdir: Path) -> ThumbnailChoice:
     cand_dir = workdir / "cand"
     raw = extract_candidates(src, cand_dir, positions) if positions else []
 
+    # Baked-in black bars (4:3 footage in a 16:9 container, archival letterbox)
+    # are part of the source, not the frame choice -- crop them from the final
+    # thumbnail so the picture fills the card. Detected from the candidate
+    # frames themselves (a bar must be dark in every one).
+    crop = detect_bars([p for _, p in raw])
+    if crop:
+        print(f"thumbnail: cropping baked-in black bars ({crop})")
+
     candidates: list[Candidate] = []
     for t, p in raw:
         s = score_frame(p)
@@ -303,6 +400,7 @@ def select_thumbnail(src: Path, workdir: Path) -> ThumbnailChoice:
             score=best.score.total,
             best_index=best.index,
             candidates=candidates,
+            crop=crop,
         )
 
     # Smart selection produced nothing usable -- fall back to safe timestamps.
@@ -312,9 +410,11 @@ def select_thumbnail(src: Path, workdir: Path) -> ThumbnailChoice:
     fallbacks.append(("1s", 1.0))
     for label, t in fallbacks:
         dest = cand_dir / "fallback.jpg"
-        if _extract_frame(src, t, dest, CANDIDATE_WIDTH):
+        if _extract_frame(src, t, dest, CANDIDATE_WIDTH, crop=crop):
             print(f"thumbnail: smart selection unavailable for this clip, using {label} frame")
-            return ThumbnailChoice(timestamp=t, source="auto-fallback", score=None, best_index=None)
+            return ThumbnailChoice(
+                timestamp=t, source="auto-fallback", score=None, best_index=None, crop=crop
+            )
 
     print("thumbnail: no frame could be extracted; leaving the video without a thumbnail")
     return ThumbnailChoice(timestamp=0.0, source="auto-fallback", score=None, best_index=None)

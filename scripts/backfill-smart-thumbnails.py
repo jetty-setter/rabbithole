@@ -160,7 +160,7 @@ def process(table, s3, item: dict, *, dry_run: bool, force: bool) -> tuple[str, 
             return "dry-run", improved
 
         thumb = workdir / "thumb.jpg"
-        if not render_thumbnail(src, choice.timestamp, thumb) or not thumb.exists():
+        if not render_thumbnail(src, choice.timestamp, thumb, crop=choice.crop) or not thumb.exists():
             print(f"  FAIL {video_id}: could not render the production thumbnail")
             return "failed", False
 

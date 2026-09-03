@@ -139,12 +139,59 @@ def test_positions_avoid_the_exact_end():
         assert max(tn.sample_positions(dur)) < dur
 
 
+# ── letterbox / pillarbox bar detection ────────────────────────────
+
+def _framed(path: Path, *, pillar=0, letter=0, size=(640, 360)) -> Path:
+    """A bright, detailed centre with solid black bars of the given width."""
+    w, h = size
+    img = Image.new("L", size, 0)
+    px = img.load()
+    for y in range(letter, h - letter):
+        for x in range(pillar, w - pillar):
+            px[x, y] = 70 if ((x // 12) + (y // 12)) % 2 else 190
+    return _save(img, path)
+
+
+def test_detects_pillarbox_common_to_all_frames(tmp_path):
+    frames = [_framed(tmp_path / f"p{i}.jpg", pillar=96) for i in range(4)]
+    crop = tn.detect_bars(frames)
+    assert crop is not None and crop.startswith("iw*")
+    # keeps ~448/640 of the width, offset ~96/640
+    assert "0.70" in crop or "0.69" in crop or "0.71" in crop
+
+
+def test_detects_letterbox(tmp_path):
+    frames = [_framed(tmp_path / f"l{i}.jpg", letter=54) for i in range(3)]
+    assert tn.detect_bars(frames) is not None
+
+
+def test_no_crop_when_frames_are_full_bleed(tmp_path):
+    frames = [_framed(tmp_path / f"f{i}.jpg") for i in range(3)]
+    assert tn.detect_bars(frames) is None
+
+
+def test_no_crop_when_bar_is_not_in_every_frame(tmp_path):
+    frames = [
+        _framed(tmp_path / "a.jpg", pillar=96),
+        _framed(tmp_path / "b.jpg", pillar=0),  # this shot fills the frame
+        _framed(tmp_path / "c.jpg", pillar=96),
+    ]
+    assert tn.detect_bars(frames) is None
+
+
+def test_no_crop_from_empty_or_tiny_input(tmp_path):
+    assert tn.detect_bars([]) is None
+    # a 4px border is below the "worth it" threshold
+    assert tn.detect_bars([_framed(tmp_path / "t.jpg", pillar=4)]) is None
+
+
 # ── selection / fallback ─────────────────────────────────────────────
 
 def _patch_extraction(monkeypatch, frames: list[tuple[float, Path]], dur: float):
     monkeypatch.setattr(tn, "duration_seconds", lambda _src: dur)
+    monkeypatch.setattr(tn, "detect_bars", lambda *a, **k: None)
 
-    def fake_extract(src, outdir, positions, width=tn.CANDIDATE_WIDTH):
+    def fake_extract(src, outdir, positions, width=tn.CANDIDATE_WIDTH, crop=None):
         outdir.mkdir(parents=True, exist_ok=True)
         out = []
         for i, (t, srcpath) in enumerate(frames):
@@ -172,11 +219,12 @@ def test_selects_the_highest_scoring_candidate(tmp_path, monkeypatch):
 
 def test_falls_back_when_no_candidates_can_be_extracted(tmp_path, monkeypatch):
     monkeypatch.setattr(tn, "duration_seconds", lambda _src: 42.0)
+    monkeypatch.setattr(tn, "detect_bars", lambda *a, **k: None)
     monkeypatch.setattr(tn, "extract_candidates", lambda *a, **k: [])
 
     calls: list[float] = []
 
-    def fake_single(src, t, dest, width, quality=3):
+    def fake_single(src, t, dest, width, quality=3, crop=None):
         calls.append(t)
         dest.parent.mkdir(parents=True, exist_ok=True)
         _solid(120, dest)
@@ -191,8 +239,9 @@ def test_falls_back_when_no_candidates_can_be_extracted(tmp_path, monkeypatch):
 
 def test_fallback_when_duration_unknown_tries_one_second(tmp_path, monkeypatch):
     monkeypatch.setattr(tn, "duration_seconds", lambda _src: 0.0)
+    monkeypatch.setattr(tn, "detect_bars", lambda *a, **k: None)
 
-    def fake_single(src, t, dest, width, quality=3):
+    def fake_single(src, t, dest, width, quality=3, crop=None):
         dest.parent.mkdir(parents=True, exist_ok=True)
         _solid(120, dest)
         return True

@@ -77,7 +77,7 @@ def test_original_key_none_without_filename_or_key():
 
 def _fake_choice(**over):
     c = types.SimpleNamespace(
-        timestamp=12.0, source="auto", score=0.66, best_index=None, candidates=[]
+        timestamp=12.0, source="auto", score=0.66, best_index=None, candidates=[], crop=None
     )
     for k, v in over.items():
         setattr(c, k, v)
