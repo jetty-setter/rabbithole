@@ -233,7 +233,7 @@ def _build_thumbnail(video_id: str, src: Path, thumb: Path, workdir: Path) -> di
         from thumbnails import render_thumbnail, select_thumbnail
 
         choice = select_thumbnail(src, workdir)
-        rendered = render_thumbnail(src, choice.timestamp, thumb)
+        rendered = render_thumbnail(src, choice.timestamp, thumb, crop=choice.crop)
         cand_meta: list[dict] = []
         for c in choice.candidates:
             key = f"{video_id}/thumbs/cand_{c.index:02d}.jpg"
