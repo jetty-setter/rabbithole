@@ -148,6 +148,10 @@ export interface Video {
   thumps?: number;
   tags?: string[];
   ai_generated?: boolean;
+  // Smart-thumbnail provenance: "auto" = frame chosen by the scoring pass,
+  // "manual" = an admin picked a specific frame. Absent on legacy records.
+  thumbnail_source?: "auto" | "manual" | null;
+  thumbnail_timestamp?: number | null;
   // Curated homepage Featured slot. Server enforces exactly one at a time;
   // absent on legacy records — treat as false.
   featured?: boolean;
@@ -357,6 +361,46 @@ export async function setFeatured(id: string, featured: boolean): Promise<Video>
     body: JSON.stringify({ featured }),
   });
   if (!res.ok) throw new Error(`feature failed (${res.status})`);
+  return res.json();
+}
+
+export interface ThumbnailCandidate {
+  index: number;
+  timestamp: number;
+  score: number;
+  url: string | null;
+  is_auto: boolean;
+  is_current: boolean;
+}
+
+export interface ThumbnailCandidates {
+  candidates: ThumbnailCandidate[];
+  source: "auto" | "manual";
+  current_index: number | null;
+  auto_index: number | null;
+}
+
+/** Admin: the generated candidate frames for the thumbnail picker. */
+export async function getThumbnailCandidates(id: string): Promise<ThumbnailCandidates> {
+  const res = await fetch(`${API_URL}/videos/${id}/thumbnail/candidates`, {
+    headers: { ...authHeaders() },
+  });
+  if (!res.ok) throw new Error(`thumbnail candidates failed (${res.status})`);
+  return res.json();
+}
+
+/** Admin: pin a specific candidate frame as the thumbnail (`manual`), or
+ *  restore the automatic best-frame choice (`auto`). */
+export async function selectThumbnail(
+  id: string,
+  body: { mode: "manual"; index: number } | { mode: "auto" },
+): Promise<Video> {
+  const res = await fetch(`${API_URL}/videos/${id}/thumbnail`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`thumbnail select failed (${res.status})`);
   return res.json();
 }
 

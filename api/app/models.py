@@ -33,6 +33,14 @@ class FeatureRequest(BaseModel):
     featured: bool = True
 
 
+class ThumbnailSelectRequest(BaseModel):
+    # Admin-only thumbnail override.
+    #   mode="manual" + index -> make that generated candidate frame the thumbnail
+    #   mode="auto"           -> restore the automatic best-frame choice
+    mode: str = "manual"
+    index: int | None = None
+
+
 class ReactionRequest(BaseModel):
     # "hop" (approve), "thump" (disapprove), or null to clear.
     reaction: str | None = None
@@ -84,6 +92,13 @@ class Video(BaseModel):
     thumps: int = 0
     tags: list[str] = []
     ai_generated: bool = False
+    # Smart-thumbnail provenance. "auto" = frame chosen by the scoring pass,
+    # "manual" = an admin picked a specific candidate frame. Absent on legacy
+    # records (they predate smart thumbnails) -> reads as None, treated as
+    # legacy/auto. thumbnail_timestamp is the point in the source the frame
+    # was taken from. Internal scoring detail is not exposed here.
+    thumbnail_source: str | None = None
+    thumbnail_timestamp: float | None = None
     # Curated homepage Featured slot. Exactly one video is featured at a time
     # (enforced server-side); legacy records with no `featured` attribute read
     # as False.

@@ -8,6 +8,6 @@ RUN apt-get update \
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY worker.py metrics.py status.py storage.py transcoder.py .
+COPY worker.py metrics.py status.py storage.py transcoder.py thumbnails.py .
 
 CMD ["python", "worker.py"]
