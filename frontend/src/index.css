@@ -241,6 +241,11 @@ body {
   z-index: 2;
   width: min(620px, 45vw);
   max-width: 620px;
+  /* Nudge the whole left stack down off the top-left corner so it reads as
+     a settled composition rather than content pinned to the header. The
+     artwork is a centered background on .home-hero-grid, so this doesn't
+     move it, and the grid's min-height still governs hero height. */
+  padding-top: 20px;
 }
 
 .home-hero-grid::after {
@@ -296,7 +301,7 @@ body {
   }
   .home-hero {
     width: 100%;
-    padding: 0 16px;
+    padding: 6px 16px 0;
   }
   .home-hero-art {
     display: block;
@@ -327,7 +332,7 @@ body {
 /* Small editorial eyebrow above the headline — quiet, not a second title,
    not a pill. */
 .home-hero-eyebrow {
-  margin: 0 0 20px;
+  margin: 0 0 28px;
   font-size: 11.5px;
   font-weight: 700;
   letter-spacing: 0.19em;
@@ -338,11 +343,15 @@ body {
   font-family: var(--display);
   font-weight: 800;
   font-size: clamp(42px, 5.1vw, 76px);
-  line-height: 0.94;
+  /* A touch looser than before (~0.94) so "Go deeper." and "Wonder more."
+     get a sliver of air between them — still one headline block, not a
+     headline plus a subtitle. Size/weight/alignment/left edge unchanged. */
+  line-height: 1.03;
   letter-spacing: -0.03em;
   text-transform: uppercase;
-  /* Gap down to the hero search, which now follows the headline directly. */
-  margin: 0 0 24px;
+  /* The most noticeable spacing step in the hero: the search sits clearly
+     apart from the headline while still reading as its next beat. */
+  margin: 0 0 37px;
 }
 /* Both lines share the same size / weight / line-height / left edge — one
    headline block, not a headline plus a subtitle. Each stays on its own
@@ -360,7 +369,7 @@ body {
    BELOW the search now — the search is the primary action, so this reads a
    touch quieter. Editorial copy, not a two-column table; no bullets/rules. */
 .home-hero-points {
-  margin: 20px 0 0;
+  margin: 29px 0 0;
 }
 .home-hero-point {
   margin: 0;
@@ -370,7 +379,7 @@ body {
   opacity: 0.92;
 }
 .home-hero-point + .home-hero-point {
-  margin-top: 7px;
+  margin-top: 9px;
 }
 .home-hero-point-verb {
   font-weight: 600;
@@ -4310,7 +4319,9 @@ body::after {
 @media (max-width: 900px) {
   .home-h1 {
     font-size: clamp(33px, 10.5vw, 52px);
-    margin-bottom: 20px;
+    /* Scaled-down versions of the desktop breathing room — calmer than
+       before, without making the phone hero run long. */
+    margin-bottom: 26px;
   }
   /* Phone: a line may wrap gracefully on a very narrow viewport rather
      than overflow. */
@@ -4318,13 +4329,13 @@ body::after {
     white-space: normal;
   }
   .home-hero-eyebrow {
-    margin-bottom: 14px;
+    margin-bottom: 20px;
   }
   .home-hero-points {
-    margin-top: 16px;
+    margin-top: 22px;
   }
   .home-hero-point + .home-hero-point {
-    margin-top: 6px;
+    margin-top: 8px;
   }
 }
 
