@@ -213,6 +213,74 @@ def _start_transcription(video_id: str, src: Path, workdir: Path) -> tuple[str, 
         return "failed", reason
 
 
+def _build_thumbnail(video_id: str, src: Path, thumb: Path, workdir: Path) -> dict:
+    """Pick and render the production thumbnail, and upload the candidate frames
+    the admin picker offers. Returns the DynamoDB fields to merge into the
+    ready-state update. Never raises: on any failure it drops back to an early
+    frame so the video still gets *a* thumbnail.
+
+    Metadata written:
+      thumbnail_source     "auto" (a manual admin choice later overrides this)
+      thumbnail_timestamp  seconds into the source the frame was taken from
+      thumbnail_score      0..1 usefulness score of the auto pick (debug only)
+      thumbnail_updated_at epoch seconds -- the frontend cache-buster
+      thumbnail_candidates [{i, t, score}, ...] for the admin frame picker
+      thumbnail_auto_index index of the automatic pick within that list
+    """
+    now = int(time.time())
+    t0 = time.monotonic()
+    try:
+        from thumbnails import render_thumbnail, select_thumbnail
+
+        choice = select_thumbnail(src, workdir)
+        rendered = render_thumbnail(src, choice.timestamp, thumb)
+        cand_meta: list[dict] = []
+        for c in choice.candidates:
+            key = f"{video_id}/thumbs/cand_{c.index:02d}.jpg"
+            s3.upload_file(str(c.path), STREAMING_BUCKET, key,
+                           ExtraArgs={"ContentType": "image/jpeg"})
+            cand_meta.append({
+                "i": c.index,
+                "t": Decimal(str(round(c.t, 2))),
+                "score": Decimal(str(round(c.score.total, 4))),
+            })
+        print(
+            f"thumbnail candidates: {len(choice.candidates)}  "
+            f"selected: {choice.timestamp:.1f}s  "
+            f"score: {choice.score if choice.score is not None else 'n/a'}  "
+            f"source: {choice.source}  ({time.monotonic() - t0:.1f}s)"
+        )
+        extra: dict = {
+            "thumbnail_source": "auto",
+            "thumbnail_timestamp": Decimal(str(round(choice.timestamp, 2))),
+            "thumbnail_updated_at": now,
+        }
+        if choice.score is not None:
+            extra["thumbnail_score"] = Decimal(str(round(choice.score, 4)))
+        if cand_meta:
+            extra["thumbnail_candidates"] = cand_meta
+            extra["thumbnail_auto_index"] = choice.best_index
+        if rendered and thumb.exists() and thumb.stat().st_size > 0:
+            return extra
+        print(f"thumbnail render produced no file for {video_id}; using fallback frame")
+    except Exception as exc:  # noqa: BLE001 - thumbnails never fail an ingest
+        print(f"smart thumbnail failed for {video_id}: {exc!r}; using fallback frame")
+
+    # Fallback: the old fixed early-frame behaviour.
+    try:
+        _ffmpeg(["-ss", "00:00:01", "-i", str(src), "-vframes", "1",
+                 "-vf", "scale=640:-2", str(thumb)])
+    except subprocess.CalledProcessError as exc:
+        tail = exc.stderr.decode(errors="ignore")[-300:] if exc.stderr else ""
+        print(f"fallback thumbnail also failed for {video_id}: {tail}")
+        return {"thumbnail_source": "auto", "thumbnail_updated_at": now}
+    return {
+        "thumbnail_source": "auto",
+        "thumbnail_timestamp": Decimal("1.0"),
+        "thumbnail_updated_at": now,
+    }
+
+
 def _resolve_video(key: str) -> tuple[str, dict] | None:
     """Parse video_id from the S3 key and look up the DynamoDB record.
 
@@ -247,21 +315,24 @@ def process_record(bucket: str, key: str) -> None:
         thumb = workdir / "thumb.jpg"
         try:
             transcode_hls(src, hls_dir)
-            _ffmpeg([
-                "-ss", "00:00:01", "-i", str(src),
-                "-vframes", "1", "-vf", "scale=640:-2", str(thumb),
-            ])
         except subprocess.CalledProcessError as exc:
             tail = exc.stderr.decode(errors="ignore")[-500:] if exc.stderr else ""
             print(f"ffmpeg failed for {video_id}: {tail}")
             set_status(video_id, "failed")
             raise
 
+        # Smart thumbnail: sample frames across the clip, score them, pick the
+        # most useful one. Best-effort -- a scoring/extraction failure falls
+        # back to an early frame (the old fixed-timestamp behaviour) and never
+        # fails an otherwise-playable video.
+        thumb_extra = _build_thumbnail(video_id, src, thumb, workdir)
+
         upload_tree(hls_dir, STREAMING_BUCKET, f"{video_id}/hls", s3_client=s3)
-        s3.upload_file(
-            str(thumb), STREAMING_BUCKET, f"{video_id}/thumb.jpg",
-            ExtraArgs={"ContentType": "image/jpeg"},
-        )
+        if thumb.exists() and thumb.stat().st_size > 0:
+            s3.upload_file(
+                str(thumb), STREAMING_BUCKET, f"{video_id}/thumb.jpg",
+                ExtraArgs={"ContentType": "image/jpeg"},
+            )
 
         # Timing covers transcode only — measure before the (network-bound) AI call.
         elapsed = time.monotonic() - started
@@ -295,6 +366,7 @@ def process_record(bucket: str, key: str) -> None:
         "duration_seconds": Decimal(str(round(elapsed, 2))),
         "cost_usd": f"{estimate_cost(elapsed):.4f}",
         "transcript_status": transcript_status,
+        **thumb_extra,
         # True only while a Transcribe job is actually in flight -- the
         # post-processor Lambda clears it (and sets the final transcript_status)
         # once the job completes, fails, or turns out to have no speech.
