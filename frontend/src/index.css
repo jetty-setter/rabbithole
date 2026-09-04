@@ -207,9 +207,14 @@ body {
 /* Full-bleed cinematic background plate -- the page opens directly into the
    alley rather than a photograph sitting inside a black page. `cover` +
    edge-to-edge sizing means the environment fills the hero with no visible
-   image box; the colour-graded 3840x2160 plate is the authoritative source
-   asset, unregenerated (see RabbitHole_Hero_3840x2160.webp for the original
-   and the _Violet derivative's own grading notes). */
+   image box; the composition is the authoritative, unregenerated source
+   (RabbitHole_Hero_3840x2160.webp). _Final.webp is a selective colour grade
+   on top of it -- the portal/reflections/rim-light were reading hot-pink
+   magenta (hue ~266-294deg) instead of the UI's own violet (~253-256deg);
+   hue-corrected and radially desaturated with distance from the portal so
+   the glow stays the strongest colour note and the wall/pavement settle
+   back to neutral charcoal. Warm streetlight amber was already corrected
+   in an earlier pass and carries through unchanged. */
 .home-hero-grid {
   position: relative;
   width: 100vw;
@@ -239,7 +244,7 @@ body {
   overflow: hidden;
   isolation: isolate;
   background-color: var(--hero-black);
-  background-image: url("/RabbitHole_Hero_3840x2160_Violet.webp");
+  background-image: url("/RabbitHole_Hero_3840x2160_Final.webp");
   background-repeat: no-repeat;
   background-size: cover;
   /* The manhole lid sits only ~10px from the source plate's true right
@@ -345,9 +350,11 @@ body {
   }
   /* Small dark backing on the phone-only supporting lines: they can graze
      the rabbit's rim-lit ears, and a bright spot behind one glyph would
-     drop local contrast. Not a glow -- the opposite. Desktop keeps its
-     unshadowed copy (there it sits on the artwork's own black). */
-  .home-hero-point {
+     drop local contrast. Not a glow -- the opposite. Desktop's own (much
+     lighter) shadow lives on the base .home-hero-point rule; the extra
+     selector here just outweighs it on specificity so mobile keeps its
+     stronger backing regardless of the two rules' source order. */
+  .home-hero-grid .home-hero-point {
     text-shadow: 0 1px 7px rgba(3, 1, 5, 0.9);
   }
 }
@@ -438,8 +445,13 @@ body {
   margin: 0;
   font-size: 15px;
   line-height: 1.5;
-  color: var(--muted);
-  opacity: 0.92;
+  /* A shade lighter than --muted (170,163,160 -> ~184,178,174) and at full
+     opacity -- still clearly secondary to the H1/search, but the plain
+     "what was said." / "to the moment." / "what connects." portions were
+     sitting a touch low-contrast against the now-visible pavement behind
+     them. The verb keeps its own violet-soft colour below. */
+  color: #b8b1ad;
+  text-shadow: 0 1px 4px rgba(3, 1, 5, 0.35);
 }
 .home-hero-point + .home-hero-point {
   margin-top: 9px;
