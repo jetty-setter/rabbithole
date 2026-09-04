@@ -254,19 +254,40 @@ body {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  /* Horizontal left-side readability veil only. The hero stays
-     --hero-black all the way to its bottom edge -- no fade back to --bg
-     inside the hero itself, which just reintroduced the tonal boundary
-     this token was added to remove. The section below handles its own
-     separation via its panel background/border. */
-  background: linear-gradient(
-    90deg,
-    rgba(3, 1, 5, 0.94) 0%,
-    rgba(3, 1, 5, 0.72) 22%,
-    rgba(3, 1, 5, 0.3) 38%,
-    rgba(3, 1, 5, 0.06) 50%,
-    transparent 58%
-  );
+  /* Three stacked layers, all in the plate's own near-black (rgb(3,1,5) ==
+     --hero-black), so the left side reads as the SAME photograph the rest
+     of the hero shows -- just shaded for legibility -- not a separate
+     black panel. No colour is introduced; the violet in the scene is the
+     artwork's own.
+
+     1. Headline pocket -- an upper-left shadow so GO DEEPER. / WONDER MORE.
+        stay the darkest, highest-contrast region. Fades out above the
+        search field and well before mid-width.
+     2. Left readability veil -- softened hard from the old near-opaque wall
+        (0.94 -> 0.64 at the edge, gone by ~66% width) so wet-pavement
+        texture, alley depth and the scene's existing reflections stay
+        faintly visible behind the search field and, most of all, behind
+        the supporting lines lower down.
+     3. Bottom fade -- only the lower quarter: the image dissolves into the
+        same near-black the section below opens on, removing the hard
+        photo-to-page seam without a visible gradient band. */
+  background:
+    radial-gradient(88% 64% at 0% 0%,
+      rgba(3, 1, 5, 0.8) 0%,
+      rgba(3, 1, 5, 0.56) 30%,
+      rgba(3, 1, 5, 0.26) 52%,
+      rgba(3, 1, 5, 0.08) 68%,
+      transparent 80%),
+    linear-gradient(90deg,
+      rgba(3, 1, 5, 0.64) 0%,
+      rgba(3, 1, 5, 0.4) 19%,
+      rgba(3, 1, 5, 0.19) 37%,
+      rgba(3, 1, 5, 0.06) 52%,
+      transparent 66%),
+    linear-gradient(180deg,
+      transparent 75%,
+      rgba(3, 1, 5, 0.48) 90%,
+      var(--hero-black) 100%);
 }
 
 /* Desktop: the hero IS .home-hero-grid's background plate; this phone-only
