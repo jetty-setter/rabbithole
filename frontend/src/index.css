@@ -300,46 +300,58 @@ body {
       var(--hero-black) 100%);
 }
 
-/* ── Phone hero: ONE scene, not a text block above a plate ────────
+/* ── Phone hero: copy first, scene second, portal as payoff ───────
    The portrait plate (RabbitHole_Hero_Mobile.webp, 1500x1800 -- already
-   the only hero asset a phone downloads) becomes the hero's own full-bleed
-   background, bottom-anchored so the rabbit / hole stay put. The copy sits
-   over the darker upper alley with a vertical veil: strong behind the
-   headline, easing off down the stack so the search and the supporting
-   lines feel embedded in the pavement. Stronger than the desktop veil --
-   small text needs it -- but the alley is still clearly there. */
+   the only hero asset a phone downloads) is deliberately rendered SMALLER
+   than the hero and bottom-anchored, not stretched to `cover` the whole
+   height. That does two things at once: the rabbit/hole render at a
+   visibly smaller scale (no new asset needed -- see the background-size
+   note below), and the freed space above the image is pure --hero-black,
+   giving the eyebrow/headline/search real dark breathing room instead of
+   sitting on top of the image. The copy block reads first; the rabbit
+   begins clearly below the supporting lines, not behind them. */
 @media (max-width: 900px) {
   .home-hero-grid {
     display: flex;
     flex-direction: column;
-    /* Sized so the copy block (pinned to the top) just clears the rabbit --
-       with the image bottom-anchored, height controls how far the
-       rabbit/hole sit below the supporting lines. Not taller than needed,
-       or the alley's dark mid-section stretches into a dead band. This
-       baseline suits tablet-portrait widths; narrower phones (where `cover`
-       zooms in and the rabbit rides higher) get more height just below. */
-    min-height: 88svh;
+    /* Tuned so the copy column (fixed height, pinned to the top) clears
+       the rabbit's ears with real margin across the primary phone sizes
+       (375x667 - 430x932) without an oversized dead zone below the fold. */
+    min-height: 104svh;
     padding: 40px 0 0;
     background-image: url("/RabbitHole_Hero_Mobile.webp");
     background-repeat: no-repeat;
+    /* Bottom-anchored so the rabbit/hole/lid stay put; centred horizontally
+       keeps the hole (not the rabbit's off-centre body) on the visual
+       midline across every phone width in the UAT set. */
     background-position: center bottom;
-    background-size: cover;
+    /* The actual "reduce rabbit scale ~15-20%" lever: at these aspect
+       ratios `cover` is height-constrained (image height == container
+       height, i.e. the subject renders at 100% scale). Fixing the height
+       to 82% of the container -- width left to `auto` so the source aspect
+       ratio is preserved, nothing stretched -- renders the whole scene
+       ~18% smaller and, being bottom-anchored, pushes it down rather than
+       just shrinking it in place. Width at 82% height still covers the
+       widest phone in the UAT set with room to spare, so this never opens
+       a gap at the sides. */
+    background-size: auto 82%;
   }
   .home-hero-grid::after {
     display: block;
-    /* Vertical veil: strong behind the headline, easing down the stack so
-       the search and supporting lines sit in visible pavement while staying
-       readable, then fully released by ~67% so the rabbit / hole / glow are
-       untouched. Plus a short bottom fade so the pavement dissolves into
-       the next section. */
+    /* Vertical veil, now doing less work than before -- the image itself
+       no longer starts until partway down the hero, so the top of the
+       veil sits over flat --hero-black already. Still: strong behind the
+       headline, easing through the search, lighter behind the supporting
+       lines, fully released well above the rabbit. Plus the usual short
+       bottom fade so the pavement dissolves into the next section. */
     background:
       linear-gradient(180deg,
         rgba(3, 1, 5, 0.72) 0%,
-        rgba(3, 1, 5, 0.58) 18%,
-        rgba(3, 1, 5, 0.46) 33%,
-        rgba(3, 1, 5, 0.34) 45%,
-        rgba(3, 1, 5, 0.12) 58%,
-        transparent 67%),
+        rgba(3, 1, 5, 0.56) 16%,
+        rgba(3, 1, 5, 0.4) 28%,
+        rgba(3, 1, 5, 0.24) 38%,
+        rgba(3, 1, 5, 0.08) 48%,
+        transparent 56%),
       linear-gradient(180deg,
         transparent 95%,
         var(--hero-black) 100%);
@@ -348,8 +360,9 @@ body {
     width: 100%;
     padding: 6px 16px 0;
   }
-  /* Small dark backing on the phone-only supporting lines: they can graze
-     the rabbit's rim-lit ears, and a bright spot behind one glyph would
+  /* Small dark backing on the phone-only supporting lines: even pushed
+     down and shrunk, the rabbit's rim-lit ears can still graze the last
+     line on the shortest phones, and a bright spot behind one glyph would
      drop local contrast. Not a glow -- the opposite. Desktop's own (much
      lighter) shadow lives on the base .home-hero-point rule; the extra
      selector here just outweighs it on specificity so mobile keeps its
@@ -357,24 +370,28 @@ body {
   .home-hero-grid .home-hero-point {
     text-shadow: 0 1px 7px rgba(3, 1, 5, 0.9);
   }
-}
-
-/* Phones: `cover` crops the sides harder, so the rabbit sits larger and
-   higher in frame -- the hero needs to be taller to drop it below the
-   supporting lines. */
-@media (max-width: 620px) {
-  .home-hero-grid {
-    min-height: 106svh;
+  /* Mobile-only: a slightly smaller footprint than the desktop field --
+     full width within the standard 16px gutters (already true via
+     .home-hero's own padding above), shorter, and a touch less internal
+     padding so it doesn't dominate the viewport as the primary action
+     among several. Extra selector weight (matching .home-hero-grid
+     .home-hero-point below) so this wins on specificity, not source
+     order, over the unconditional base .home-search-form rule that
+     comes later in the file. */
+  .home-hero-grid .home-search-form {
+    max-width: none;
+    min-height: 58px;
+    padding: 7px 10px 7px 18px;
   }
 }
 
-/* Short phones (e.g. 375x667): trim the top air, and give the hero extra
-   proportional height so the fixed-height copy block still clears the
-   bottom-anchored rabbit on a small screen. */
+/* Short phones (e.g. 375x667): trim the top air, and give the hero a
+   little extra proportional height so the fixed-height copy block still
+   clears the bottom-anchored rabbit when there's less of it to work with. */
 @media (max-width: 900px) and (max-height: 700px) {
   .home-hero-grid {
     padding-top: 28px;
-    min-height: 116svh;
+    min-height: 108svh;
   }
 }
 /* Small editorial eyebrow above the headline — quiet, not a second title,
@@ -4533,9 +4550,8 @@ body::after {
 @media (max-width: 900px) {
   .home-h1 {
     font-size: clamp(33px, 10.5vw, 52px);
-    /* Scaled-down versions of the desktop breathing room — calmer than
-       before, without making the phone hero run long. */
-    margin-bottom: 26px;
+    /* Headline -> search gap, ~28-32px target. */
+    margin-bottom: 30px;
   }
   /* Phone: a line may wrap gracefully on a very narrow viewport rather
      than overflow. */
@@ -4545,11 +4561,13 @@ body::after {
   .home-hero-eyebrow {
     margin-bottom: 20px;
   }
+  /* Search -> supporting-copy gap, ~22-26px target. */
   .home-hero-points {
-    margin-top: 22px;
+    margin-top: 24px;
   }
+  /* Supporting-line row spacing, ~8-10px target. */
   .home-hero-point + .home-hero-point {
-    margin-top: 8px;
+    margin-top: 9px;
   }
 }
 
