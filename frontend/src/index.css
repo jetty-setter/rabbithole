@@ -254,39 +254,27 @@ body {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  /* Three stacked layers, all in the plate's own near-black (rgb(3,1,5) ==
-     --hero-black), so the left side reads as the SAME photograph the rest
-     of the hero shows -- just shaded for legibility -- not a separate
-     black panel. No colour is introduced; the violet in the scene is the
-     artwork's own.
+  /* Two layers only, both in the plate's own near-black (rgb(3,1,5) ==
+     --hero-black) so no colour enters -- the violet is the scene's own.
 
-     1. Headline pocket -- an upper-left shadow so GO DEEPER. / WONDER MORE.
-        stay the darkest, highest-contrast region. Fades out above the
-        search field and well before mid-width.
-     2. Left readability veil -- softened hard from the old near-opaque wall
-        (0.94 -> 0.64 at the edge, gone by ~66% width) so wet-pavement
-        texture, alley depth and the scene's existing reflections stay
-        faintly visible behind the search field and, most of all, behind
-        the supporting lines lower down.
-     3. Bottom fade -- only the lower quarter: the image dissolves into the
-        same near-black the section below opens on, removing the hard
-        photo-to-page seam without a visible gradient band. */
+     1. A light left-to-right readability veil. Deliberately weak (0.34 at
+        the very edge, gone by ~52% width) so the real alley reads through
+        the whole left side -- brick, wet pavement, depth, the existing
+        violet reflections -- instead of a black panel. The headline gets
+        its local contrast from its own text-shadow, not from darkening
+        this whole region.
+     2. A bottom fade confined to the lower ~quarter, so the image
+        dissolves into the same near-black the next section opens on with
+        no hard seam. It does not reach the text. */
   background:
-    radial-gradient(88% 64% at 0% 0%,
-      rgba(3, 1, 5, 0.8) 0%,
-      rgba(3, 1, 5, 0.56) 30%,
-      rgba(3, 1, 5, 0.26) 52%,
-      rgba(3, 1, 5, 0.08) 68%,
-      transparent 80%),
     linear-gradient(90deg,
-      rgba(3, 1, 5, 0.64) 0%,
-      rgba(3, 1, 5, 0.4) 19%,
-      rgba(3, 1, 5, 0.19) 37%,
-      rgba(3, 1, 5, 0.06) 52%,
-      transparent 66%),
+      rgba(3, 1, 5, 0.34) 0%,
+      rgba(3, 1, 5, 0.18) 20%,
+      rgba(3, 1, 5, 0.06) 37%,
+      transparent 52%),
     linear-gradient(180deg,
-      transparent 75%,
-      rgba(3, 1, 5, 0.48) 90%,
+      transparent 76%,
+      rgba(3, 1, 5, 0.5) 91%,
       var(--hero-black) 100%);
 }
 
@@ -296,58 +284,83 @@ body {
   display: none;
 }
 
-/* ── Phone hero: text stacked above a real portrait plate ─────────
-   Not the wide 3840x1800 desktop plate scaled small behind the copy --
-   at these widths that read as "headline / copy / search / dead black /
-   tiny strip of art". Instead: HEADLINE -> SUBCOPY -> SEARCH -> a large,
-   intentionally portrait-cropped plate (RabbitHole_Hero_Mobile.webp,
-   1500x1800, whole rabbit-hole subject kept) that fills the width and
-   ends flush against .home-browse. Height is content-driven, not a hard
-   min-height, so it adapts from 375x667 to 430x932 without dead space. */
+/* ── Phone hero: ONE scene, not a text block above a plate ────────
+   The portrait plate (RabbitHole_Hero_Mobile.webp, 1500x1800 -- already
+   the only hero asset a phone downloads) becomes the hero's own full-bleed
+   background, bottom-anchored so the rabbit / hole stay put. The copy sits
+   over the darker upper alley with a vertical veil: strong behind the
+   headline, easing off down the stack so the search and the supporting
+   lines feel embedded in the pavement. Stronger than the desktop veil --
+   small text needs it -- but the alley is still clearly there. */
 @media (max-width: 900px) {
   .home-hero-grid {
     display: flex;
     flex-direction: column;
-    min-height: 0;
-    /* No side padding here -- the text block carries its own gutter and
-       the art plate goes edge-to-edge. */
+    /* Sized so the copy block (pinned to the top) just clears the rabbit --
+       with the image bottom-anchored, height controls how far the
+       rabbit/hole sit below the supporting lines. Not taller than needed,
+       or the alley's dark mid-section stretches into a dead band. This
+       baseline suits tablet-portrait widths; narrower phones (where `cover`
+       zooms in and the rabbit rides higher) get more height just below. */
+    min-height: 88svh;
     padding: 40px 0 0;
-    /* Phones must not download the desktop plate. */
-    background-image: none;
-  }
-  /* The left-side readability veil is only needed when text sits ON the
-     art; here it sits on solid --hero-black above it. */
-  .home-hero-grid::after {
-    display: none;
-  }
-  .home-hero {
-    width: 100%;
-    padding: 6px 16px 0;
-  }
-  .home-hero-art {
-    display: block;
-    width: 100%;
-    margin-top: 28px;
-    /* Large and deliberate: a 5:6 portrait plate, capped so it stays
-       generous on a tall phone without ballooning. */
-    aspect-ratio: 5 / 6;
-    max-height: min(62svh, 560px);
     background-image: url("/RabbitHole_Hero_Mobile.webp");
     background-repeat: no-repeat;
     background-position: center bottom;
     background-size: cover;
   }
+  .home-hero-grid::after {
+    display: block;
+    /* Vertical veil: strong behind the headline, easing down the stack so
+       the search and supporting lines sit in visible pavement while staying
+       readable, then fully released by ~67% so the rabbit / hole / glow are
+       untouched. Plus a short bottom fade so the pavement dissolves into
+       the next section. */
+    background:
+      linear-gradient(180deg,
+        rgba(3, 1, 5, 0.72) 0%,
+        rgba(3, 1, 5, 0.58) 18%,
+        rgba(3, 1, 5, 0.46) 33%,
+        rgba(3, 1, 5, 0.34) 45%,
+        rgba(3, 1, 5, 0.12) 58%,
+        transparent 67%),
+      linear-gradient(180deg,
+        transparent 95%,
+        var(--hero-black) 100%);
+  }
+  .home-hero {
+    width: 100%;
+    padding: 6px 16px 0;
+  }
+  /* Small dark backing on the phone-only supporting lines: they can graze
+     the rabbit's rim-lit ears, and a bright spot behind one glyph would
+     drop local contrast. Not a glow -- the opposite. Desktop keeps its
+     unshadowed copy (there it sits on the artwork's own black). */
+  .home-hero-point {
+    text-shadow: 0 1px 7px rgba(3, 1, 5, 0.9);
+  }
+  /* The grid IS the plate now -- this phone-only spacer is retired. */
+  .home-hero-art {
+    display: none;
+  }
 }
 
-/* Short phones (e.g. 375x667): trim the top air and the plate a touch so
-   the headline still owns the first screen. */
+/* Phones: `cover` crops the sides harder, so the rabbit sits larger and
+   higher in frame -- the hero needs to be taller to drop it below the
+   supporting lines. */
+@media (max-width: 620px) {
+  .home-hero-grid {
+    min-height: 106svh;
+  }
+}
+
+/* Short phones (e.g. 375x667): trim the top air, and give the hero extra
+   proportional height so the fixed-height copy block still clears the
+   bottom-anchored rabbit on a small screen. */
 @media (max-width: 900px) and (max-height: 700px) {
   .home-hero-grid {
     padding-top: 28px;
-  }
-  .home-hero-art {
-    max-height: 52svh;
-    margin-top: 20px;
+    min-height: 116svh;
   }
 }
 /* Small editorial eyebrow above the headline — quiet, not a second title,
@@ -373,6 +386,28 @@ body {
   /* The most noticeable spacing step in the hero: the search sits clearly
      apart from the headline while still reading as its next beat. */
   margin: 0 0 37px;
+  position: relative;
+}
+/* The one local contrast assist: a soft dark lens sitting directly behind
+   the H1 (and nothing else), so the headline stays high-contrast where its
+   right end crosses into the lit part of the alley -- without darkening the
+   region around it the way the old full-height veil did. The radial is
+   transparent at its own edge, so there is no visible box. */
+.home-h1::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: -9%;
+  right: -15%;
+  top: -0.28em;
+  bottom: -0.12em;
+  background: radial-gradient(
+    120% 135% at 26% 50%,
+    rgba(3, 1, 5, 0.55),
+    rgba(3, 1, 5, 0.32) 58%,
+    transparent 100%
+  );
+  pointer-events: none;
 }
 /* Both lines share the same size / weight / line-height / left edge — one
    headline block, not a headline plus a subtitle. Each stays on its own
@@ -4601,10 +4636,9 @@ body::after {
   overflow-wrap: anywhere;
 }
 
-/* ── Landscape phones: the hero art cap is already svh-based; just make
-   sure it doesn't eat the whole short viewport. ────────────────────── */
+/* ── Landscape phones: a short viewport shouldn't force a tall hero. ─── */
 @media (max-width: 900px) and (orientation: landscape) and (max-height: 560px) {
-  .home-hero-art {
-    max-height: 70svh;
+  .home-hero-grid {
+    min-height: 520px;
   }
 }
