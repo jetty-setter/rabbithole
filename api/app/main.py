@@ -68,14 +68,18 @@ def _norm_visibility(value: str | None) -> str:
     return value if value in _VISIBILITIES else "public"
 from .models import (
     AskRequest,
+    Capabilities,
     Comment,
     CommentCreate,
+    ContentTopic,
     Creator,
     Credentials,
     FeatureRequest,
     ReactionRequest,
     SuggestRequest,
     ThumbnailSelectRequest,
+    Topic,
+    TopicConnection,
     UpdateVideo,
     UploadRequest,
     UploadResponse,
@@ -457,8 +461,62 @@ def _transcript_status(item: dict) -> str | None:
     return None
 
 
+def _source_type(item: dict) -> str:
+    """"hosted" | "external". Every record ever created so far went through
+    the upload pipeline, so the only safe default for a record with no
+    explicit source_type is "hosted" -- NOT "derive from hls_key presence",
+    which would misclassify a hosted video that simply hasn't finished
+    transcoding yet (no hls_key != external). A future external-content
+    creation path (P1-4, not built yet) sets source_type="external" itself
+    at write time; nothing here ever needs to guess that."""
+    value = item.get("source_type")
+    return value if value in ("hosted", "external") else "hosted"
+
+
+def _capabilities(item: dict, transcript_status: str | None, source_type: str) -> Capabilities:
+    """Derived fresh from the item's own fields on every read -- never stored
+    independently, so a capability can never disagree with the state it
+    describes (the same discipline has_transcript/transcribing already use).
+    See models.py::Capabilities for what each flag means."""
+    hls = bool(item.get("hls_key"))
+    is_external = source_type == "external"
+    has_embed = is_external and bool(item.get("embed_url"))
+    has_link = is_external and bool(item.get("source_url"))
+    transcript_ready = transcript_status == "ready"
+    # Search only ever indexes transcribed content (api/app/search.py) -- these
+    # two flags track that exactly, so they can never promise a capability the
+    # rest of the app doesn't actually have.
+    taggable = bool(item.get("tags")) or bool(item.get("topics"))
+    return Capabilities(
+        play_internal=hls,
+        embed_external=has_embed,
+        open_external=has_link and not has_embed,
+        transcript=transcript_ready,
+        moment_search=transcript_ready,
+        ask_video=transcript_ready,
+        tunnels=taggable,
+        map=taggable,
+        tumble=_norm_visibility(item.get("visibility")) == "public" and (hls or has_embed),
+    )
+
+
+def _to_content_topics(item: dict) -> list[ContentTopic]:
+    out = []
+    for t in item.get("topics") or []:
+        if isinstance(t, dict) and t.get("topic_id"):
+            out.append(
+                ContentTopic(
+                    topic_id=str(t["topic_id"]),
+                    relevance=float(t.get("relevance") or 1.0),
+                    source=str(t.get("source") or "editorial"),
+                )
+            )
+    return out
+
+
 def _to_video(item: dict) -> Video:
     status = _transcript_status(item)
+    source_type = _source_type(item)
     return Video(
         video_id=item["video_id"],
         filename=item.get("filename") or "untitled",
@@ -492,6 +550,9 @@ def _to_video(item: dict) -> Video:
         transcript_url=_cdn_url(item.get("transcript_key")),
         captions_url=_cdn_url(item.get("vtt_key")),
         visibility=_norm_visibility(item.get("visibility")),
+        source_type=source_type,
+        capabilities=_capabilities(item, status, source_type),
+        topics=_to_content_topics(item),
     )
 
 
@@ -521,6 +582,73 @@ def get_video(video_id: str) -> Video:
     if not item:
         raise HTTPException(status_code=404, detail="video not found")
     return _to_video(item)
+
+
+def _to_topic(item: dict) -> Topic:
+    return Topic(
+        topic_id=item.get("topic_id") or item["slug"],
+        slug=item["slug"],
+        name=item.get("name") or item["slug"],
+        short_description=item.get("short_description"),
+        aliases=[str(a) for a in (item.get("aliases") or [])],
+        editorial_status=item.get("editorial_status") or "published",
+        created_at=item.get("created_at") or "",
+    )
+
+
+@app.get("/topics", response_model=list[Topic])
+def list_topics() -> list[Topic]:
+    """The curated concept layer -- tags remain the uncurated fallback
+    everywhere else (Tunnels/Map keep working over bare tags with zero
+    topics rows present; see the Connections endpoint below for the same
+    fallback discipline)."""
+    resp = aws.topics_table().scan()
+    items = [
+        i for i in resp.get("Items", [])
+        if (i.get("editorial_status") or "published") == "published"
+    ]
+    items.sort(key=lambda i: (i.get("name") or i.get("slug") or "").lower())
+    return [_to_topic(i) for i in items]
+
+
+@app.get("/topics/{slug}", response_model=Topic)
+def get_topic(slug: str) -> Topic:
+    item = aws.topics_table().get_item(Key={"slug": slug}).get("Item")
+    if not item:
+        raise HTTPException(status_code=404, detail="topic not found")
+    return _to_topic(item)
+
+
+@app.get("/topics/{slug}/connections", response_model=list[TopicConnection])
+def get_topic_connections(slug: str) -> list[TopicConnection]:
+    """This topic's curated connections, from either side of the edge (a
+    Connection is authored from_topic -> to_topic, but Map can centre on
+    either one). `topic` in the response is always the OTHER side, so the
+    caller never has to reason about storage direction.
+
+    A handful of dozens-to-low-hundreds of rows across all curated networks
+    -- a full scan+filter is the same "fine at this scale" call already made
+    for videos/embeddings elsewhere in this file. A GSI on to_topic would be
+    the move if this ever needs to serve a much larger connection graph.
+    Callers with no curated connections for this topic (the overwhelming
+    majority of tags today) get an empty list back, not an error -- that's
+    exactly the signal the frontend uses to fall back to the existing
+    tag-co-occurrence Map behaviour."""
+    resp = aws.topic_connections_table().scan(
+        FilterExpression=Attr("from_topic").eq(slug) | Attr("to_topic").eq(slug)
+    )
+    out = [
+        TopicConnection(
+            topic=it["to_topic"] if it.get("from_topic") == slug else it["from_topic"],
+            relationship_type=it.get("relationship_type") or "related",
+            explanation=it.get("explanation") or "",
+            strength=int(it.get("strength") or 1),
+            source=it.get("source") or "editorial",
+        )
+        for it in resp.get("Items", [])
+    ]
+    out.sort(key=lambda c: (-c.strength, c.topic))
+    return out
 
 
 @app.get("/creators/{username}", response_model=Creator)

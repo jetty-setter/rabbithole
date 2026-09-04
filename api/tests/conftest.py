@@ -21,6 +21,8 @@ os.environ["VIDEOS_TABLE"] = "test-videos"
 os.environ["USERS_TABLE"] = "test-users"
 os.environ["COMMENTS_TABLE"] = "test-comments"
 os.environ["EMBEDDINGS_TABLE"] = "test-embeddings"
+os.environ["TOPICS_TABLE"] = "test-topics"
+os.environ["TOPIC_CONNECTIONS_TABLE"] = "test-connections"
 os.environ["UPLOADS_BUCKET"] = "test-uploads"
 os.environ["STREAMING_BUCKET"] = "test-streaming"
 os.environ["CLOUDFRONT_DOMAIN"] = "cdn.example.com"
@@ -72,6 +74,24 @@ def aws_stack():
             ],
             BillingMode="PAY_PER_REQUEST",
         )
+        ddb.create_table(
+            TableName="test-topics",
+            KeySchema=[{"AttributeName": "slug", "KeyType": "HASH"}],
+            AttributeDefinitions=[{"AttributeName": "slug", "AttributeType": "S"}],
+            BillingMode="PAY_PER_REQUEST",
+        )
+        ddb.create_table(
+            TableName="test-connections",
+            KeySchema=[
+                {"AttributeName": "from_topic", "KeyType": "HASH"},
+                {"AttributeName": "to_topic", "KeyType": "RANGE"},
+            ],
+            AttributeDefinitions=[
+                {"AttributeName": "from_topic", "AttributeType": "S"},
+                {"AttributeName": "to_topic", "AttributeType": "S"},
+            ],
+            BillingMode="PAY_PER_REQUEST",
+        )
         s3 = boto3.client("s3", region_name="us-east-1")
         s3.create_bucket(Bucket="test-uploads")
         s3.create_bucket(Bucket="test-streaming")
@@ -90,6 +110,16 @@ def client(aws_stack):
 @pytest.fixture
 def videos_table(aws_stack):
     return boto3.resource("dynamodb", region_name="us-east-1").Table("test-videos")
+
+
+@pytest.fixture
+def topics_table(aws_stack):
+    return boto3.resource("dynamodb", region_name="us-east-1").Table("test-topics")
+
+
+@pytest.fixture
+def connections_table(aws_stack):
+    return boto3.resource("dynamodb", region_name="us-east-1").Table("test-connections")
 
 
 def token(username: str) -> str:

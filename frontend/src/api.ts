@@ -165,6 +165,36 @@ export interface Video {
   transcript_url?: string | null;
   captions_url?: string | null;
   visibility?: string;
+  // "hosted" (transcoded + stored by RabbitHole) | "external" (embedded/linked
+  // from its original host — not built yet, see docs/RABBITHOLE_IMPLEMENTATION_GAP.md
+  // P1-4). Absent on legacy records — treat the same as "hosted".
+  source_type?: "hosted" | "external";
+  // Derived, never independently trusted — computed server-side from the
+  // video's own fields every time, the same discipline has_transcript already
+  // uses. Absent on legacy API responses — every flag reads as false/unknown,
+  // never as a false "yes."
+  capabilities?: Capabilities;
+  // Curated topic associations (the semantic layer above `tags`). Empty on
+  // every video until an editor assigns some; `tags` remains the fallback.
+  topics?: ContentTopic[];
+}
+
+export interface Capabilities {
+  play_internal: boolean;
+  embed_external: boolean;
+  open_external: boolean;
+  transcript: boolean;
+  moment_search: boolean;
+  ask_video: boolean;
+  tunnels: boolean;
+  map: boolean;
+  tumble: boolean;
+}
+
+export interface ContentTopic {
+  topic_id: string;
+  relevance: number;
+  source: "editorial" | "ai" | "derived";
 }
 
 export interface Cue {
@@ -312,7 +342,11 @@ export async function getVideo(id: string): Promise<Video> {
   return res.json();
 }
 
-export interface Topic {
+// A tag and how many (ready, public) videos carry it — the lightweight
+// "expertise" summary on a creator's profile. Renamed from `Topic` to free
+// that name for the curated Topic/Concept entity below; the shape here is
+// unchanged.
+export interface TagCount {
   tag: string;
   count: number;
 }
@@ -323,8 +357,56 @@ export interface Creator {
   video_count: number;
   total_views: number;
   total_hops: number;
-  topics: Topic[];
+  topics: TagCount[];
   videos: Video[];
+}
+
+// ── Curated Topics / Connections (product-model reset) ──────────────────
+// The semantic layer above raw tags. Tags remain the uncurated fallback
+// everywhere (Tunnels/Map keep working with zero Topic rows present); a
+// Topic is what lets RabbitHole show a real name, a short description, and
+// a place in a Connection. See docs/RABBITHOLE_PRODUCT_MODEL.md.
+
+export interface Topic {
+  topic_id: string;
+  slug: string;
+  name: string;
+  short_description?: string | null;
+  aliases: string[];
+  editorial_status: string;
+  created_at: string;
+}
+
+/** One curated edge from the perspective of the topic you asked about —
+ * `topic` is always the OTHER side, regardless of storage direction, so the
+ * caller never has to reason about from_topic/to_topic order. */
+export interface TopicConnection {
+  topic: string;
+  relationship_type: string;
+  explanation: string;
+  strength: number;
+  source: string;
+}
+
+export async function listTopics(): Promise<Topic[]> {
+  const res = await fetch(`${API_URL}/topics`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function getTopic(slug: string): Promise<Topic | null> {
+  const res = await fetch(`${API_URL}/topics/${encodeURIComponent(slug)}`);
+  if (!res.ok) return null;
+  return res.json();
+}
+
+/** This topic's curated connections. An empty array (never an error) is the
+ * signal callers use to fall back to the existing tag-co-occurrence Map
+ * behaviour — most tags have no curated connections yet. */
+export async function getTopicConnections(slug: string): Promise<TopicConnection[]> {
+  const res = await fetch(`${API_URL}/topics/${encodeURIComponent(slug)}/connections`);
+  if (!res.ok) return [];
+  return res.json();
 }
 
 /** A creator's public profile — their videos, aggregate stats, and topics
