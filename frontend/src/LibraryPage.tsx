@@ -137,11 +137,6 @@ export function LibraryPage() {
                   ))}
                 </div>
               </div>
-              {/* Phone-only: a real, portrait-cropped hero plate that sits
-                  below the text rather than the wide desktop plate scaled
-                  small behind it. Hidden (and never fetched) on desktop,
-                  where .home-hero-grid's own background is the hero. */}
-              <div className="home-hero-art" aria-hidden="true" />
             </div>
           )}
           {featured && (
