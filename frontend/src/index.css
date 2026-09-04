@@ -22,6 +22,12 @@
 
   --display: "Archivo", system-ui, sans-serif;
   --sans: "Inter", system-ui, -apple-system, sans-serif;
+
+  /* .topbar's real rendered height (14px padding top/bottom + the 42px
+     logo + 1px border) -- no measured token existed, so this is it. Used
+     by the desktop hero to size itself off the actual viewport remainder
+     instead of a guessed min-height. */
+  --header-height: 71px;
 }
 
 * {
@@ -198,10 +204,12 @@ body {
   font-size: 15px;
 }
 
-/* Single production plate as the hero background: the asset already bakes
-   in the full hole (nothing cropped at any edge), natural edge blending,
-   and ambient violet/coral light, so there's no separate art element, no
-   duplicated blurred copy, and no local glow/mask layered on top of it. */
+/* Full-bleed cinematic background plate -- the page opens directly into the
+   alley rather than a photograph sitting inside a black page. `cover` +
+   edge-to-edge sizing means the environment fills the hero with no visible
+   image box; the colour-graded 3840x2160 plate is the authoritative source
+   asset, unregenerated (see RabbitHole_Hero_3840x2160.webp for the original
+   and the _Violet derivative's own grading notes). */
 .home-hero-grid {
   position: relative;
   width: 100vw;
@@ -214,26 +222,35 @@ body {
      above it. Pull the hero up to close that gap with its own
      background instead of touching .page's shared padding. */
   margin-top: -32px;
-  min-height: clamp(650px, 76vh, 820px);
-  padding:
-    clamp(78px, 9vh, 118px)
-    max(28px, calc((100vw - 1180px) / 2 + 28px))
-    72px;
+  /* Sized off the real viewport remainder below the sticky header (not a
+     guessed vh number), floored so it never collapses on a short window
+     and capped so it doesn't balloon on a very tall one. At 1920x1080
+     this lands at ~980px -- most of the screen below nav, immersive
+     without a dead zone. */
+  min-height: clamp(560px, calc(100svh - var(--header-height)), 980px);
+  padding-top: clamp(64px, 9vh, 108px);
+  padding-right: 28px;
+  padding-bottom: 72px;
+  /* The text column's inset from the true viewport edge -- deliberately
+     NOT the site's centred 1180px content-column math (that put the
+     headline ~20vw in, which is exactly the "picture stuck in a black
+     page" effect this pass removes). ~8vw at 1920px. */
+  padding-left: clamp(64px, 8vw, 180px);
   overflow: hidden;
   isolation: isolate;
-  /* Match the hero surface to the plate's own near-black perimeter
-     (measured ~rgb(2,1,5) averaged across its edges) instead of forcing
-     the artwork to match the page's --bg. That's what actually makes the
-     image boundary disappear. */
   background-color: var(--hero-black);
-  background-image: url("/RabbitHole_Hero_3840x1800.webp");
+  background-image: url("/RabbitHole_Hero_3840x2160_Violet.webp");
   background-repeat: no-repeat;
-  background-size: auto 100%;
-  /* Pulled in from the far-right edge (~7vw) so the artwork reads as part
-     of one composition with the copy, not a plate stuck to the screen
-     edge. Phones override background-image entirely (see the <=900px
-     block), so this only affects desktop/tablet. */
-  background-position: calc(100% - 7vw) center;
+  background-size: cover;
+  /* The manhole lid sits only ~10px from the source plate's true right
+     edge -- any centred crop (any viewport narrower-than-16:9, e.g.
+     1440x900, 1680x1050, 1024x768) slices straight through it. Anchoring
+     right guarantees the lid, rabbit, and portal are never cropped; the
+     overflow comes off the far-left brick wall instead, which is the part
+     of the frame that matters least. At the 16:9 sizes in the primary
+     test set (1920x1080, 1600x900, 1536x864, 1280x720, ~1366x768) `cover`
+     needs zero crop at all, so this is a no-op there. */
+  background-position: right center;
 }
 
 .home-hero {
@@ -257,31 +274,25 @@ body {
   /* Two layers only, both in the plate's own near-black (rgb(3,1,5) ==
      --hero-black) so no colour enters -- the violet is the scene's own.
 
-     1. A light left-to-right readability veil. Deliberately weak (0.34 at
-        the very edge, gone by ~52% width) so the real alley reads through
+     1. A light left-to-right readability veil. Deliberately weak (0.30 at
+        the very edge, gone by 55% width) so the real alley reads through
         the whole left side -- brick, wet pavement, depth, the existing
         violet reflections -- instead of a black panel. The headline gets
-        its local contrast from its own text-shadow, not from darkening
-        this whole region.
+        its local contrast from its own local lens (below), not from
+        darkening this whole region.
      2. A bottom fade confined to the lower ~quarter, so the image
         dissolves into the same near-black the next section opens on with
         no hard seam. It does not reach the text. */
   background:
     linear-gradient(90deg,
-      rgba(3, 1, 5, 0.34) 0%,
-      rgba(3, 1, 5, 0.18) 20%,
-      rgba(3, 1, 5, 0.06) 37%,
-      transparent 52%),
+      rgba(3, 1, 5, 0.30) 0%,
+      rgba(3, 1, 5, 0.16) 22%,
+      rgba(3, 1, 5, 0.05) 40%,
+      transparent 55%),
     linear-gradient(180deg,
       transparent 76%,
       rgba(3, 1, 5, 0.5) 91%,
       var(--hero-black) 100%);
-}
-
-/* Desktop: the hero IS .home-hero-grid's background plate; this phone-only
-   element is inert and never fetched. */
-.home-hero-art {
-  display: none;
 }
 
 /* ── Phone hero: ONE scene, not a text block above a plate ────────
@@ -338,10 +349,6 @@ body {
      unshadowed copy (there it sits on the artwork's own black). */
   .home-hero-point {
     text-shadow: 0 1px 7px rgba(3, 1, 5, 0.9);
-  }
-  /* The grid IS the plate now -- this phone-only spacer is retired. */
-  .home-hero-art {
-    display: none;
   }
 }
 
