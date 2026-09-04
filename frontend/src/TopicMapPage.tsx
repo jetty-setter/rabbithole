@@ -13,6 +13,7 @@ import {
   stepBack,
   tunnelPath,
 } from "./topicGraph";
+import { getTopicConnections, type TopicConnection } from "./api";
 import { SkeletonFeed } from "./Skeleton";
 
 const NARROW_QUERY = "(max-width: 640px)";
@@ -101,6 +102,40 @@ export function TopicMapPage() {
     [center, edges],
   );
 
+  // Curated connections for the centred topic — editorially-authored
+  // relationship + "why this connects" data (see docs/RABBITHOLE_PRODUCT_MODEL.md,
+  // section 5). Purely additive: this never changes which topics exist or
+  // which ones are connected (that's still 100% the tag-co-occurrence graph
+  // above) — it only enriches a spoke that's ALREADY there, when curated data
+  // happens to exist for it. Empty for the overwhelming majority of topics
+  // today, which is exactly the fallback: nothing below renders differently
+  // than before for an uncurated topic.
+  const [curated, setCurated] = useState<TopicConnection[]>([]);
+  useEffect(() => {
+    let live = true;
+    if (!center) {
+      setCurated([]);
+      return;
+    }
+    getTopicConnections(center).then((c) => {
+      if (live) setCurated(c);
+    });
+    return () => {
+      live = false;
+    };
+  }, [center]);
+
+  const curatedByTag = useMemo(
+    () => new Map(curated.map((c) => [c.topic, c])),
+    [curated],
+  );
+  // Only explain connections that are actually visible as a spoke -- never
+  // reference a topic the user can't currently click through to.
+  const curatedVisible = useMemo(
+    () => connections.map((c) => curatedByTag.get(c.tag)).filter((c): c is TopicConnection => !!c),
+    [connections, curatedByTag],
+  );
+
   if (loading && nodes.length === 0) return <SkeletonFeed />;
 
   const centerVideos = center ? countByTag.get(center) ?? 0 : 0;
@@ -173,24 +208,31 @@ export function TopicMapPage() {
             <p className="topic-nav-empty">No strong connections yet.</p>
           ) : narrow ? (
             <ul className="topic-spoke-list" key={center}>
-              {connections.map((c) => (
-                <li key={c.tag}>
-                  <button
-                    type="button"
-                    className="topic-spoke-row"
-                    onClick={() => setPath((p) => followTopic(p, c.tag))}
-                    aria-label={`${c.tag}, connected to ${center} through ${plural(
-                      c.shared,
-                      "shared video",
-                    )}. Follow it.`}
-                  >
-                    <span className="topic-spoke-tag">#{c.tag}</span>
-                    <span className="topic-spoke-meta">
-                      {plural(c.shared, "shared video")}
-                    </span>
-                  </button>
-                </li>
-              ))}
+              {connections.map((c) => {
+                const rel = curatedByTag.get(c.tag);
+                return (
+                  <li key={c.tag}>
+                    <button
+                      type="button"
+                      className="topic-spoke-row"
+                      onClick={() => setPath((p) => followTopic(p, c.tag))}
+                      aria-label={
+                        rel
+                          ? `${c.tag}, connected to ${center} (${rel.relationship_type}). Follow it.`
+                          : `${c.tag}, connected to ${center} through ${plural(
+                              c.shared,
+                              "shared video",
+                            )}. Follow it.`
+                      }
+                    >
+                      <span className="topic-spoke-tag">#{c.tag}</span>
+                      <span className="topic-spoke-meta">
+                        {rel ? rel.relationship_type : plural(c.shared, "shared video")}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <div className="topic-hub" key={center}>
@@ -228,11 +270,12 @@ export function TopicMapPage() {
                 // A small, subtle nod to how many videos the topic has —
                 // never enough to overpower the label.
                 const dot = 7 + Math.min(countByTag.get(c.tag) ?? 1, 8);
+                const rel = curatedByTag.get(c.tag);
                 return (
                   <button
                     key={c.tag}
                     type="button"
-                    className="topic-hub-spoke"
+                    className={rel ? "topic-hub-spoke has-connection" : "topic-hub-spoke"}
                     style={
                       {
                         left: `${50 + x}%`,
@@ -241,19 +284,37 @@ export function TopicMapPage() {
                       } as CSSProperties
                     }
                     onClick={() => setPath((p) => followTopic(p, c.tag))}
-                    aria-label={`${c.tag}, connected to ${center} through ${plural(
-                      c.shared,
-                      "shared video",
-                    )}. Follow it.`}
+                    aria-label={
+                      rel
+                        ? `${c.tag}, connected to ${center} (${rel.relationship_type}). Follow it.`
+                        : `${c.tag}, connected to ${center} through ${plural(
+                            c.shared,
+                            "shared video",
+                          )}. Follow it.`
+                    }
                   >
                     <span className="topic-hub-spoke-dot" aria-hidden="true" />
                     <span className="topic-hub-spoke-tag">#{c.tag}</span>
                     <span className="topic-hub-spoke-meta">
-                      {plural(c.shared, "shared video")}
+                      {rel ? rel.relationship_type : plural(c.shared, "shared video")}
                     </span>
                   </button>
                 );
               })}
+            </div>
+          )}
+
+          {curatedVisible.length > 0 && (
+            <div className="topic-why-panel">
+              {curatedVisible.map((c) => (
+                <p className="topic-why-item" key={c.topic}>
+                  <span className="topic-why-pair">
+                    #{center} <span aria-hidden="true">→</span> #{c.topic}
+                  </span>
+                  <span className="topic-why-relationship">{c.relationship_type}</span>
+                  <span className="topic-why-explanation">{c.explanation}</span>
+                </p>
+              ))}
             </div>
           )}
 
