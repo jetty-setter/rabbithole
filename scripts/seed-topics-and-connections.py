@@ -320,6 +320,49 @@ STRANGE_HISTORY_ASSOCIATIONS: dict[str, list[str]] = {
 }
 
 
+# ── Map Enrichment Batch 1 (Curated Map P1 follow-up) ───────────────────
+# Approved after the Curated Map Enrichment planning audit. These seven
+# connections are additive to the six networks above -- not a new network,
+# not a rewrite of anything already seeded. Each activates a path that is
+# either already walkable via real tag co-occurrence (1-3) or made walkable
+# by exactly one additive tag on one existing video (4-7, applied by
+# associate_map_enrichment_batch1() below). Copy is the shortened, editorial
+# version approved for the product -- not the longer planning-stage draft.
+MAP_ENRICHMENT_BATCH_1: list[tuple[str, str, str, str, str]] = [
+    # 1. No tag changes needed -- real edge already exists (17 Days).
+    ("Map Enrichment Batch 1", "cultural-artifacts", "forgotten-technology", "mechanism",
+     "The things we preserve often outlive the technology used to create them."),
+    # 2. No tag changes needed -- real edge already exists (The Great Train Robbery).
+    ("Map Enrichment Batch 1", "lost-media", "silentfilm", "instance",
+     "Much of the silent era disappeared before anyone realized how much needed saving."),
+    # 3. No tag changes needed -- real edge already exists (Indigenous Archeology at Acadia).
+    ("Map Enrichment Batch 1", "archaeology", "cultural-artifacts", "discipline",
+     "Objects survive. Their meaning doesn't always survive with them."),
+    # 4. Requires +found-footage-time-capsules tag on A Trip Down Market Street.
+    ("Map Enrichment Batch 1", "cultural-artifacts", "found-footage-time-capsules", "overlap",
+     "It wasn't filmed as history — the earthquake days later made it one."),
+    # 5. Requires +conspiracy-belief tag on Apollo 11 Moonwalk Montage.
+    ("Map Enrichment Batch 1", "apollo11", "conspiracy-belief", "instance",
+     "Few events are better documented—or more persistently doubted—than the Moon landing."),
+    # 6. Requires +propaganda tag on Duck and Cover.
+    ("Map Enrichment Batch 1", "civildefense", "propaganda", "case study",
+     "“Duck and Cover” didn't just teach safety. It shaped how Americans understood nuclear threat."),
+    # 7. Requires +persuasion tag on Science of Shopping.
+    ("Map Enrichment Batch 1", "humanbehavior", "persuasion", "application",
+     "The psychology that moves you through a store is designed to influence what you do next."),
+]
+
+# video_id -> topic slug to ADD (to both `tags` and `topics`) -- the four
+# approved additive tag changes from Batch 1. Additive only: every existing
+# tag/topic/field on these videos is preserved untouched.
+MAP_ENRICHMENT_BATCH_1_ASSOCIATIONS: dict[str, str] = {
+    "b3668a597db444f4ace56c4a05615fcc": "found-footage-time-capsules",  # A Trip Down Market Street
+    "b54aaf3d8ac74abc9a156066a2db920b": "conspiracy-belief",             # Apollo 11 Moonwalk Montage
+    "1122a0baf2e046f2bdb31704c628efb5": "propaganda",                    # Duck and Cover
+    "5df67ea522b949f792541a53d2506cd7": "persuasion",                    # Science of Shopping
+}
+
+
 def _table(name: str):
     return boto3.resource("dynamodb", region_name=AWS_REGION).Table(name)
 
@@ -413,6 +456,66 @@ def associate_strange_history(dry_run: bool) -> int:
     return n
 
 
+def seed_map_enrichment_batch1(dry_run: bool) -> int:
+    n = 0
+    for network_name, from_topic, to_topic, rel_type, explanation in MAP_ENRICHMENT_BATCH_1:
+        n += 1
+        if dry_run:
+            print(f"  [connection] {from_topic} -> {to_topic}  ({rel_type})")
+            continue
+        _table(TOPIC_CONNECTIONS_TABLE).put_item(
+            Item={
+                "from_topic": from_topic,
+                "to_topic": to_topic,
+                "relationship_type": rel_type,
+                "explanation": explanation,
+                "strength": 1,
+                "source": "editorial",
+                "network": network_name,
+                "created_at": NOW,
+            }
+        )
+    return n
+
+
+def associate_map_enrichment_batch1(dry_run: bool) -> int:
+    """Add exactly one additive topic slug to each of the four Batch 1
+    videos (mirrored into `tags`, matching the Strange History Phase 4
+    pattern -- Map's graph is still 100% tag-driven). Never removes or
+    replaces an existing tag/topic; skips anything not found, not ready,
+    or already tagged."""
+    videos = _table(VIDEOS_TABLE)
+    n = 0
+    for video_id, slug in MAP_ENRICHMENT_BATCH_1_ASSOCIATIONS.items():
+        item = videos.get_item(Key={"video_id": video_id}).get("Item")
+        if not item:
+            print(f"  SKIP {video_id}: not found")
+            continue
+        if item.get("status") != "ready":
+            print(f"  SKIP {video_id} ({item.get('title')}): status={item.get('status')!r}, not ready")
+            continue
+        existing_tags = list(item.get("tags") or [])
+        if slug in existing_tags:
+            print(f"  SKIP {item.get('title')!r}: already tagged {slug!r}")
+            continue
+        new_tags = existing_tags + [slug]
+        existing_topics = list(item.get("topics") or [])
+        new_topics = existing_topics + [{"topic_id": slug, "relevance": Decimal("1"), "source": "editorial"}]
+        n += 1
+        if dry_run:
+            print(f"  [associate] {item.get('title')!r} ({video_id})")
+            print(f"      tags:   {existing_tags} -> {new_tags}")
+            print(f"      topics: {existing_topics} -> {new_topics}")
+            continue
+        videos.update_item(
+            Key={"video_id": video_id},
+            UpdateExpression="SET tags = :t, topics = :p",
+            ExpressionAttributeValues={":t": new_tags, ":p": new_topics},
+        )
+        print(f"  updated {item.get('title')!r} ({video_id}): +{slug}")
+    return n
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--dry-run", action="store_true", help="Print the plan without writing anything")
@@ -422,7 +525,29 @@ def main() -> None:
         action="store_true",
         help="Also re-tag the 5 ready Strange History videos into their curated topics (see docstring)",
     )
+    ap.add_argument(
+        "--enrichment-batch1",
+        action="store_true",
+        help="Seed ONLY the 7 approved Map Enrichment Batch 1 connections + their 4 additive video "
+             "tag associations. Isolated from --network/the six-network reseed above.",
+    )
     args = ap.parse_args()
+
+    if args.enrichment_batch1:
+        print(f"Target tables: {TOPIC_CONNECTIONS_TABLE}, {VIDEOS_TABLE}")
+        print("Batch: Map Enrichment Batch 1 (7 connections, 4 video associations)")
+        print(f"{'DRY RUN — nothing will be written' if args.dry_run else 'LIVE — writing to DynamoDB'}\n")
+
+        print("== Connections ==")
+        n_conn = seed_map_enrichment_batch1(args.dry_run)
+        print(f"  {n_conn} connection(s)\n")
+
+        print("== Video tag associations ==")
+        n_assoc = associate_map_enrichment_batch1(args.dry_run)
+        print(f"  {n_assoc} video(s) associated\n")
+
+        print("Done." if not args.dry_run else "Dry run complete — re-run without --dry-run to write.")
+        return
 
     networks = NETWORKS if not args.network else [n for n in NETWORKS if n[0] == args.network]
     if args.network and not networks:
