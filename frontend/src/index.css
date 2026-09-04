@@ -445,12 +445,13 @@ body {
   margin: 0;
   font-size: 15px;
   line-height: 1.5;
-  /* A shade lighter than --muted (170,163,160 -> ~184,178,174) and at full
-     opacity -- still clearly secondary to the H1/search, but the plain
-     "what was said." / "to the moment." / "what connects." portions were
-     sitting a touch low-contrast against the now-visible pavement behind
-     them. The verb keeps its own violet-soft colour below. */
-  color: #b8b1ad;
+  /* A shade lighter than --muted (170,163,160 -> ~184,178,174 -> ~194,188,184)
+     and at full opacity -- still clearly secondary to the H1/search/violet
+     verb, but the plain "what was said." / "to the moment." / "what
+     connects." portions were sitting a touch low-contrast against the
+     now-visible pavement behind them. ~6% brighter again here for the same
+     reason. The verb keeps its own violet-soft colour below. */
+  color: #c2bcb8;
   text-shadow: 0 1px 4px rgba(3, 1, 5, 0.35);
 }
 .home-hero-point + .home-hero-point {
