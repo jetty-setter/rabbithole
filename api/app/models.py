@@ -75,6 +75,47 @@ class Comment(BaseModel):
     created_at: str
 
 
+class Capabilities(BaseModel):
+    """What a content item can actually do, derived fresh from its own fields
+    every time a Video is built (see main.py::_capabilities) -- never stored
+    independently, so a capability can never drift from the state it
+    describes. This is the same discipline has_transcript/transcribing
+    already used before this field existed; it just generalizes it.
+
+    play_internal   -- RabbitHole's own player can stream this (has hls_key)
+    embed_external  -- can be embedded from its original host
+    open_external   -- only makes sense as an outbound link (no player, no embed)
+    transcript      -- a transcript exists at all
+    moment_search   -- indexed for cross-video semantic transcript search
+    ask_video       -- "Ask This Video" can answer questions about it
+    tunnels         -- has at least one tag/topic, so it can sit in a Tunnel
+    map             -- has at least one tag/topic, so it can be a Map node
+    tumble          -- public and actually playable (internally or via embed)
+    """
+
+    play_internal: bool = False
+    embed_external: bool = False
+    open_external: bool = False
+    transcript: bool = False
+    moment_search: bool = False
+    ask_video: bool = False
+    tunnels: bool = False
+    map: bool = False
+    tumble: bool = False
+
+
+class ContentTopic(BaseModel):
+    """One curated (or AI-suggested, editor-reviewed) association between a
+    piece of content and a Topic. Lives as a `topics` list attribute directly
+    on the video item -- same shape as the existing `tags`/`thumbnail_candidates`
+    list attributes, not a separate join table (see
+    docs/RABBITHOLE_IMPLEMENTATION_GAP.md, P0-5)."""
+
+    topic_id: str
+    relevance: float = 1.0
+    source: str = "editorial"  # "editorial" | "ai" | "derived"
+
+
 class Video(BaseModel):
     video_id: str
     filename: str
@@ -114,9 +155,25 @@ class Video(BaseModel):
     transcript_url: str | None = None
     captions_url: str | None = None
     visibility: str = "public"
+    # "hosted" (transcoded + stored by RabbitHole) | "external" (embedded or
+    # linked from its original host). Legacy records with no source_type at
+    # all derive to "hosted" whenever hls_key is present, else "external" --
+    # see main.py::_to_video. Never requires a backfill.
+    source_type: str = "hosted"
+    # Derived capability set -- see Capabilities above. Always computed, never
+    # independently trusted.
+    capabilities: Capabilities = Capabilities()
+    # Curated topic associations. Empty on every existing record until an
+    # editor (or the one-off network seed script) adds some; `tags` remains
+    # the uncurated fallback layer and is never replaced by this.
+    topics: list[ContentTopic] = []
 
 
-class Topic(BaseModel):
+# A tag and how many (ready, public) videos carry it -- the lightweight
+# "expertise" summary shown on a creator's profile. Renamed from the
+# original `Topic` to free that name for the curated Topic/Concept entity
+# below; the JSON shape ({"tag", "count"}) is unchanged.
+class TagCount(BaseModel):
     tag: str
     count: int
 
@@ -127,5 +184,52 @@ class Creator(BaseModel):
     video_count: int
     total_views: int
     total_hops: int
-    topics: list[Topic]
+    topics: list[TagCount]
     videos: list[Video]
+
+
+class Topic(BaseModel):
+    """A curated concept -- the semantic layer above raw tags. Tags remain the
+    unstructured fallback (still what Tunnels/Map use for anything that
+    hasn't been curated yet); a Topic is what lets RabbitHole say something a
+    bare tag never could: a real name, a short description, and a place in a
+    Connection. See docs/RABBITHOLE_PRODUCT_MODEL.md, section 4."""
+
+    topic_id: str
+    slug: str
+    name: str
+    short_description: str | None = None
+    aliases: list[str] = []
+    # "published" is the only status this pass renders; "draft" exists so an
+    # editor can stage a topic before it's ready to appear anywhere public.
+    editorial_status: str = "published"
+    created_at: str
+
+
+class Connection(BaseModel):
+    """A first-class, persisted relationship between two Topics -- what lets
+    Map answer "why does following this make sense?" instead of just "these
+    two tags co-occurred N times." See docs/RABBITHOLE_PRODUCT_MODEL.md,
+    section 5."""
+
+    from_topic: str
+    to_topic: str
+    relationship_type: str
+    # The one field this whole feature exists for: 1-2 concise sentences
+    # answering "why does this connect?"
+    explanation: str
+    strength: int = 1
+    source: str = "editorial"  # "editorial" | "ai" | "derived"
+    created_at: str
+
+
+class TopicConnection(BaseModel):
+    """One edge from the perspective of the topic you asked about -- `topic`
+    is always the OTHER side, regardless of which of from_topic/to_topic that
+    was in storage, so the caller never has to care about edge direction."""
+
+    topic: str
+    relationship_type: str
+    explanation: str
+    strength: int = 1
+    source: str = "editorial"
