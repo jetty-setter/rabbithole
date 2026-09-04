@@ -30,6 +30,7 @@ import argparse
 import os
 import sys
 from datetime import datetime, timezone
+from decimal import Decimal
 
 import boto3
 
@@ -396,7 +397,7 @@ def associate_strange_history(dry_run: bool) -> int:
             continue
         existing_tags = list(item.get("tags") or [])
         new_tags = existing_tags + [s for s in slugs if s not in existing_tags]
-        new_topics = [{"topic_id": s, "relevance": 1.0, "source": "editorial"} for s in slugs]
+        new_topics = [{"topic_id": s, "relevance": Decimal("1"), "source": "editorial"} for s in slugs]
         n += 1
         if dry_run:
             print(f"  [associate] {item.get('title')!r} ({video_id})")
