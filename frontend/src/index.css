@@ -4117,6 +4117,17 @@ body::after {
   font-size: 11px;
   color: var(--muted);
 }
+/* A curated connection exists for this spoke -- one shade brighter than the
+   plain co-occurrence spokes, nothing louder. The relationship label itself
+   (replacing "N shared videos" in .topic-hub-spoke-meta above) is the real
+   signal; this is just a quiet visual hint before you've read it. */
+.topic-hub-spoke.has-connection {
+  border-color: rgba(154, 130, 242, 0.65);
+  background: rgba(154, 130, 242, 0.13);
+}
+.topic-hub-spoke.has-connection .topic-hub-spoke-meta {
+  color: var(--violet-light);
+}
 
 /* ── Vertical list (phones) ──────────────────────────────────── */
 .topic-spoke-list {
@@ -4157,6 +4168,47 @@ body::after {
 .topic-spoke-meta {
   flex: none;
   font-size: 12.5px;
+  color: var(--muted);
+}
+
+/* ── "Why this connects" -- curated Connection explanations for whichever
+   spokes above actually have one. Deliberately plain: a short list, not a
+   panel/card system, so it reads as a footnote to the graph rather than a
+   competing UI. Absent entirely for any topic with no curated data (the
+   overwhelming majority today) -- the graph above is completely unchanged
+   in that case. */
+.topic-why-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.topic-why-item {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.topic-why-pair {
+  display: block;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  color: var(--text);
+}
+.topic-why-relationship {
+  display: inline-block;
+  margin: 3px 0 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--violet-light);
+}
+.topic-why-explanation {
+  display: block;
   color: var(--muted);
 }
 
