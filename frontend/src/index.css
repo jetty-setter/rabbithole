@@ -4648,24 +4648,43 @@ body::after {
     /* Eyebrow -> headline gap, tightened further (16px -> 14px). */
     margin-bottom: 14px;
   }
-  /* Search -> supporting-copy gap: opened back up (16px -> 24px, +8px)
-     -- the block was reading cramped right under the search field. */
+  /* Search -> supporting-copy gap: unchanged from the previous pass. */
   .home-hero-points {
     margin-top: 24px;
+    /* Three-column capability strip instead of three stacked sentences
+       -- no markup change: each .home-hero-point is a <p> containing a
+       <span class="home-hero-point-verb"> followed by plain text (" what
+       was said." etc). Turning the verb span into its own block (below)
+       makes that trailing text flow as a second line inside the same
+       <p> automatically, so "label on top, description below" falls out
+       of the existing DOM for free. */
+    display: flex;
+    gap: 14px;
   }
-  /* Supporting lines: smaller type than desktop's, but each line now
-     gets real room (row gap below) to read as its own item rather than
-     three rows pressed together. Font size/weight/color/wording/
-     alignment unchanged -- SEARCH / JUMP / EXPLORE keep their
-     --violet-soft emphasis. */
+  /* Equal-width columns, left-aligned (the default). min-width:0 lets
+     text wrap inside a narrow flex column instead of forcing overflow
+     at 320px. Quieter/smaller than the label below -- font-size and
+     the existing muted colour (desktop base rule) both step down. */
   .home-hero-point {
-    font-size: 13.5px;
-    line-height: 1.3;
+    flex: 1 1 0;
+    min-width: 0;
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.35;
   }
   .home-hero-point + .home-hero-point {
-    /* Row-to-row gap opened back up (3px -> 9px) so each line reads as
-       a distinct item instead of a compressed block. */
-    margin-top: 9px;
+    /* No longer stacked rows -- columns sit side by side. */
+    margin-top: 0;
+  }
+  .home-hero-point-verb {
+    /* Its own line, with a little air before the description -- "label
+       on top" without touching the JSX. Sized just above the
+       description (13.5px, matching the old single-line copy's size --
+       not larger) so it stays the most prominent element in the
+       column without competing with the headline. */
+    display: block;
+    margin-bottom: 3px;
+    font-size: 13.5px;
   }
 }
 
