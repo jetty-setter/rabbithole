@@ -528,6 +528,13 @@ body {
   font: inherit;
   font-size: 14.5px;
   min-width: 0;
+  /* On phones the placeholder renders at 16px (below, to stop iOS Safari
+     zooming the page on focus) -- wide enough that the full sentence no
+     longer fits next to the icon/arrow at the narrowest supported widths
+     (320-360px). An ellipsis is a clean truncation instead of the text
+     just running under the search button. */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .home-search-input:focus {
   outline: none;
@@ -4652,6 +4659,19 @@ body::after {
   }
   .home-hero-point + .home-hero-point {
     margin-top: 5px;
+  }
+}
+
+/* Narrow phones (≤380px -- 320x568/360x800/375x667 land here): the 10.5vw
+   headline scale above is tuned for 390px+. Below that, "WONDER MORE."
+   plus its trailing dot no longer fits the line and wraps into an
+   unintended third line ("WONDER" / "MORE."). Declared after the base
+   phone rule above so it wins on the overlapping range; scaled down (and
+   scaling a little slower) just enough to keep the two-line block intact
+   at the narrowest supported width. */
+@media (max-width: 380px) {
+  .home-h1 {
+    font-size: clamp(29px, 9.6vw, 34px);
   }
 }
 
