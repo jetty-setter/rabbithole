@@ -339,22 +339,23 @@ body {
     background-repeat: no-repeat, no-repeat;
     /* Two layers: a bottom-fade painted over the photo so it dissolves
        into the page's own black rather than ending on a hard edge, then
-       the plate itself. The plate's own portrait ratio (1500x1800) is
-       close enough to this box's own ratio that a plain `cover` barely
-       crops it -- nearly the full frame (including the dark sky/skyline
-       band above the rabbit's ears, roughly the top third of the source
-       image) would show, leaving the rabbit small and low in the box.
-       Sized up (auto 150% -- taller than `cover`'s own fit, width scales
-       with it so the source is never stretched/distorted) and
-       repositioned to trade most of that empty city/sky for a tighter,
-       centred frame on the rabbit + glowing hole below it, while staying
-       centred enough that the manhole lid (near the source's right edge)
-       doesn't clip. */
+       the plate itself. Sized up (auto 158% -- taller than `cover`'s own
+       fit, width scales with it so the source is never stretched or
+       distorted) and repositioned (78% 66%) to trade most of the empty
+       city/sky above the rabbit's ears (the previous 20% vertical anchor
+       still showed the top third of the source image) for a tighter
+       frame where the rabbit sits a little above centre with the
+       glowing hole read fully beneath it; biased right of centre so the
+       manhole lid (near the source's right edge) survives the extra
+       zoom without clipping. The fade is pushed from 55% to 80% so it
+       only takes the pavement/reflection *below* the hole -- at the
+       previous 55% start the hole itself (which sits in roughly the
+       bottom quarter of this crop) was reading as mostly faded out. */
     background-image:
-      linear-gradient(180deg, transparent 55%, var(--bg) 100%),
+      linear-gradient(180deg, transparent 80%, var(--bg) 100%),
       url("/RabbitHole_Hero_Mobile.webp");
-    background-position: center bottom, center 20%;
-    background-size: 100% 100%, auto 150%;
+    background-position: center bottom, 78% 66%;
+    background-size: 100% 100%, auto 158%;
   }
   .home-hero-grid::after {
     display: none;
@@ -362,8 +363,11 @@ body {
   .home-hero {
     width: 100%;
     /* 24-28px horizontal content padding for the copy column that now
-       follows the image, instead of the overlay layout's tighter 16px. */
-    padding: 22px 24px 0;
+       follows the image, instead of the overlay layout's tighter 16px.
+       Top padding (image/fade -> eyebrow gap) tightened ~14% from 22px
+       as part of a small overall rhythm pass -- still real air, not
+       compressed. */
+    padding: 19px 24px 0;
   }
   /* Mobile-only search footprint: subordinate to the headline rather
      than the desktop field's full 62px -- but not so short it stops
@@ -4612,17 +4616,14 @@ body::after {
    without a specificity hack) ───────────────────────────────────────── */
 @media (max-width: 900px) {
   .home-h1 {
-    /* ~7% down from the previous clamp(33px, 10.5vw, 52px) -- "WONDER
-       MORE." was reading a little large, crowding the right edge on
-       390-430px phones. Still two intentional lines at every width in
-       the UAT set (this scales down, so the ≤380px override below keeps
-       even more wrap margin than before). */
+    /* Scale kept as-is this round (not the first lever to pull) -- the
+       wider 24px content column above does the work of giving "WONDER
+       MORE." breathing room instead. */
     font-size: clamp(31px, 9.75vw, 48px);
-    /* Headline -> search gap. The copy column no longer has to be
-       squeezed to fit over the artwork (the photo is its own block
-       above it now), so this can run the full 24-32px target rhythm
-       instead of the old overlay layout's tightened 20px. */
-    margin-bottom: 28px;
+    /* Headline -> search gap, tightened ~14% as part of a small overall
+       rhythm pass (28px -> 24px) -- still a clear, deliberate beat, not
+       compressed against the search field. */
+    margin-bottom: 24px;
   }
   /* Phone: a line may wrap gracefully on a very narrow viewport rather
      than overflow. */
@@ -4630,11 +4631,12 @@ body::after {
     white-space: normal;
   }
   .home-hero-eyebrow {
-    margin-bottom: 18px;
+    /* Eyebrow -> headline gap, tightened ~11% (18px -> 16px). */
+    margin-bottom: 16px;
   }
-  /* Search -> supporting-copy gap. */
+  /* Search -> supporting-copy gap, tightened ~15% (26px -> 22px). */
   .home-hero-points {
-    margin-top: 26px;
+    margin-top: 22px;
   }
   /* Supporting lines: noticeably more compact than desktop's -- smaller
      type, tighter leading, tighter row gap -- so three short sentences
