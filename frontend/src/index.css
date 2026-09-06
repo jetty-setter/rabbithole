@@ -339,22 +339,29 @@ body {
     display: block;
     flex: none;
     width: 100%;
-    /* Immersive but not a second screen -- inside the 55-65vh target
-       across the UAT set (320/375/390/430). */
-    height: 58vh;
+    /* Reduced from the previous pass's 58vh (~15% shorter) -- inside the
+       50-55vh target so more of the eyebrow/headline enter the first
+       screen while the artwork stays the primary visual hook. */
+    height: 50vh;
     background-repeat: no-repeat, no-repeat;
     /* Two layers: a bottom-fade gradient painted over the photo so the
        artwork dissolves into the grid's own hero-black rather than
-       ending on a hard edge, then the plate itself, positioned so the
-       rabbit and the glowing hole read clearly at every width in the
-       UAT set (`cover` on a box this much shorter than the source
-       plate's own portrait ratio crops top -- skyline/wall -- and a
-       little bottom pavement, never the rabbit or the hole). */
+       ending on a hard edge, then the plate itself. The plate's own
+       portrait ratio (1500x1800) is close enough to this box's own
+       width:height ratio that a plain `cover` barely crops it -- nearly
+       the full frame (including the dark sky/skyline band above the
+       rabbit's ears, roughly the top third of the source image) would
+       show, leaving the rabbit small and low in the box. Sized up
+       (auto 148% -- taller than `cover`'s own fit, width scales with it
+       to avoid distorting the source) and repositioned to trade most of
+       that empty sky for a tighter frame on the rabbit + glowing hole,
+       while staying centred enough that the manhole lid (near the
+       source's right edge) doesn't clip. */
     background-image:
-      linear-gradient(180deg, transparent 58%, var(--hero-black) 100%),
+      linear-gradient(180deg, transparent 55%, var(--hero-black) 100%),
       url("/RabbitHole_Hero_Mobile.webp");
-    background-position: center bottom, center 30%;
-    background-size: 100% 100%, cover;
+    background-position: center bottom, center 22%;
+    background-size: 100% 100%, auto 148%;
   }
   .home-hero-grid::after {
     display: none;
@@ -386,7 +393,7 @@ body {
     padding-top: 10px;
   }
   .home-hero-grid::before {
-    height: 50vh;
+    height: 42vh;
   }
 }
 /* Small editorial eyebrow above the headline — quiet, not a second title,
@@ -2202,7 +2209,12 @@ body {
 }
 
 @media (max-width: 560px) {
-  .topbar,
+  /* .topbar is deliberately excluded here -- its own mobile rule (above,
+     ~1829) already sets safe-area-aware left/right padding via
+     max(16px, env(safe-area-inset-left/right)); this block used to repeat
+     .topbar with plain 16px values, which -- landing later in the
+     cascade at equal specificity -- silently won and discarded the
+     safe-area inset on rotated/notched devices. */
   .page {
     padding-left: 16px;
     padding-right: 16px;
@@ -4606,7 +4618,12 @@ body::after {
    without a specificity hack) ───────────────────────────────────────── */
 @media (max-width: 900px) {
   .home-h1 {
-    font-size: clamp(33px, 10.5vw, 52px);
+    /* ~7% down from the previous clamp(33px, 10.5vw, 52px) -- "WONDER
+       MORE." was reading a little large, crowding the right edge on
+       390-430px phones. Still two intentional lines at every width in
+       the UAT set (this scales down, so the ≤380px override below keeps
+       even more wrap margin than before). */
+    font-size: clamp(31px, 9.75vw, 48px);
     /* Headline -> search gap. The copy column no longer has to be
        squeezed to fit over the artwork (the photo is its own block
        above it now), so this can run the full 24-32px target rhythm
@@ -4650,7 +4667,7 @@ body::after {
    at the narrowest supported width. */
 @media (max-width: 380px) {
   .home-h1 {
-    font-size: clamp(29px, 9.6vw, 34px);
+    font-size: clamp(27px, 8.9vw, 32px);
   }
 }
 
