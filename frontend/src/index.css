@@ -4648,27 +4648,24 @@ body::after {
     /* Eyebrow -> headline gap, tightened further (16px -> 14px). */
     margin-bottom: 14px;
   }
-  /* Search -> supporting-copy gap, tightened further (22px -> 16px) and
-     moved modestly closer to the search field. */
+  /* Search -> supporting-copy gap: opened back up (16px -> 24px, +8px)
+     -- the block was reading cramped right under the search field. */
   .home-hero-points {
-    margin-top: 16px;
+    margin-top: 24px;
   }
-  /* Supporting lines: noticeably more compact than desktop's -- smaller
-     type, tighter leading, tighter row gap -- so three short sentences
-     read as one quiet block instead of three separate rows competing
-     with the search field above them for room. Clarity over density: the
-     SEARCH / JUMP / EXPLORE words stay legible and still pop in
-     --violet-soft, just at a scale that matches how secondary this copy
-     is on a phone. */
+  /* Supporting lines: smaller type than desktop's, but each line now
+     gets real room (row gap below) to read as its own item rather than
+     three rows pressed together. Font size/weight/color/wording/
+     alignment unchanged -- SEARCH / JUMP / EXPLORE keep their
+     --violet-soft emphasis. */
   .home-hero-point {
     font-size: 13.5px;
-    /* Leading tightened slightly (1.35 -> 1.3) as part of this pass's
-       subtle row-spacing adjustment. */
     line-height: 1.3;
   }
   .home-hero-point + .home-hero-point {
-    /* Row-to-row gap tightened slightly further (4px -> 3px). */
-    margin-top: 3px;
+    /* Row-to-row gap opened back up (3px -> 9px) so each line reads as
+       a distinct item instead of a compressed block. */
+    margin-top: 9px;
   }
 }
 
