@@ -300,97 +300,76 @@ body {
       var(--hero-black) 100%);
 }
 
-/* ── Phone hero: ONE layered composition, not stacked sections ────
-   Previous approach: shrink the portrait plate (RabbitHole_Hero_Mobile.webp,
-   1500x1800 -- already the only hero asset a phone downloads) and pin it to
-   the BOTTOM of an intentionally tall container, so the rabbit only appears
-   once the whole copy column has scrolled past. That reads as three stacked
-   sections (headline / UI / artwork) with a visible seam where the text
-   ends and the photo begins.
+/* ── Phone hero: artwork first, copy second ─────────────────────────────
+   Previous approach laid the plate behind the whole hero and put the
+   eyebrow/headline/search/supporting-copy on top of it as one layered
+   composition -- copy and UI read before the photo did, so the artwork
+   felt like a background sitting under the interface rather than the
+   actual hero.
 
-   Now: the plate is anchored to the TOP of the hero and sized close to its
-   natural (near-`cover`) scale, so it starts right behind the eyebrow --
-   the same "photo IS the background, copy is layered on top" language the
-   desktop hero already uses. What keeps the eyebrow/headline/search legible
-   over it is the ::after veil below (strong up top, easing down), not empty
-   space. The rabbit's ears read as a soft hint beneath the supporting
-   lines; its face and the hole clear the veil and read fully a little
-   further down -- normally still inside the first viewport, with the
-   pavement/reflection continuing below the fold (never cropped to force a
-   fit). */
+   Reversed here: the photo becomes its own block, sized in vh, sitting
+   immediately under the header; the copy column follows underneath it in
+   plain document flow, not overlaid. Visual hook first (rabbit + glowing
+   hole, cinematic), proposition second, search action third.
+
+   Mechanism -- no markup change: .home-hero-grid is still the flex column
+   it already was; the artwork moves off the grid's own `background-image`
+   and onto its ::before pseudo-element instead. A plain (non-absolutely-
+   positioned) ::before on a flex container becomes a real flex item ahead
+   of the grid's actual child (.home-hero) in the box tree -- no new DOM
+   node, nothing added to the accessibility tree (the photo was always
+   decorative CSS, never an <img>). The old ::after veil existed to keep
+   text legible while it sat over a bright rabbit; with the copy now in
+   its own section below the photo there's nothing left for it to do, so
+   it's turned off on mobile -- ::before's own gradient layer handles the
+   photo's bottom fade instead. */
 @media (max-width: 900px) {
   .home-hero-grid {
     display: flex;
     flex-direction: column;
-    /* A floor, not a fixed height -- roughly one viewport. If the (now
-       compact) copy column ever needs more, the container simply grows;
-       it never forces extra empty height the way the old bottom-anchored
-       layout did. */
-    min-height: 100svh;
-    padding: 26px 0 0;
-    background-image: url("/RabbitHole_Hero_Mobile.webp");
-    background-repeat: no-repeat;
-    /* Pushed ~56px down from the hero's top edge (≈6.5% of a typical phone
-       viewport) -- just enough clear air between "EXPLORE what connects."
-       and the rabbit's ear tips (~40-52px on 390x844 / 393x852) without
-       shrinking the rabbit, moving any copy, or pushing the hole/lid/glow
-       core past the fold. (A further +16px on top of the prior 40px --
-       the ears were still reading a hair too close to the supporting
-       copy.) The uncovered strip this opens at the very top sits entirely
-       under the darkest band of the veil and reads as one with it -- not a
-       dead gap. Centred horizontally keeps the hole on the visual midline
-       across every phone width in the UAT set. Short viewports get a
-       larger push (see the max-height block below), where the copy column
-       eats proportionally more of the screen. */
-    background-position: center 56px;
-    /* Near its natural scale (cover, for this portrait image in a taller
-       portrait container, is height-constrained -- 100% would be
-       identical to `cover`). A hair under so there's a soft near-black
-       margin at the very bottom rather than a hard image edge right at
-       the hero's own bottom. */
-    background-size: auto 96%;
+    min-height: 0;
+    height: auto;
+    /* Small, deliberate header -> artwork gap; the old top offset that
+       used to position the plate now lives in ::before's own size below. */
+    padding: 14px 0 0;
+    background-image: none;
+  }
+  .home-hero-grid::before {
+    content: "";
+    display: block;
+    flex: none;
+    width: 100%;
+    /* Immersive but not a second screen -- inside the 55-65vh target
+       across the UAT set (320/375/390/430). */
+    height: 58vh;
+    background-repeat: no-repeat, no-repeat;
+    /* Two layers: a bottom-fade gradient painted over the photo so the
+       artwork dissolves into the grid's own hero-black rather than
+       ending on a hard edge, then the plate itself, positioned so the
+       rabbit and the glowing hole read clearly at every width in the
+       UAT set (`cover` on a box this much shorter than the source
+       plate's own portrait ratio crops top -- skyline/wall -- and a
+       little bottom pavement, never the rabbit or the hole). */
+    background-image:
+      linear-gradient(180deg, transparent 58%, var(--hero-black) 100%),
+      url("/RabbitHole_Hero_Mobile.webp");
+    background-position: center bottom, center 30%;
+    background-size: 100% 100%, cover;
   }
   .home-hero-grid::after {
-    display: block;
-    /* Vertical veil doing the legibility work the old layout got from
-       spacing: strong through the eyebrow/headline, still solid through
-       the search, easing across the supporting lines (where the rabbit's
-       ears first peek through, softly), releasing by the point its face
-       clears -- then the usual short bottom fade into the next section. */
-    background:
-      linear-gradient(180deg,
-        rgba(3, 1, 5, 0.88) 0%,
-        rgba(3, 1, 5, 0.76) 14%,
-        rgba(3, 1, 5, 0.6) 26%,
-        rgba(3, 1, 5, 0.44) 36%,
-        rgba(3, 1, 5, 0.22) 46%,
-        rgba(3, 1, 5, 0.06) 55%,
-        transparent 62%),
-      linear-gradient(180deg,
-        transparent 95%,
-        var(--hero-black) 100%);
+    display: none;
   }
   .home-hero {
     width: 100%;
-    padding: 4px 16px 0;
-  }
-  /* Small dark backing on the phone-only supporting lines: they now sit
-     deliberately closer to the artwork (the rabbit's ears can read just
-     behind them), and a bright spot behind one glyph would drop local
-     contrast. Not a glow -- the opposite. Desktop's own (much lighter)
-     shadow lives on the base .home-hero-point rule; the extra selector
-     here just outweighs it on specificity so mobile keeps its stronger
-     backing regardless of the two rules' source order. */
-  .home-hero-grid .home-hero-point {
-    text-shadow: 0 1px 7px rgba(3, 1, 5, 0.9);
+    padding: 20px 16px 0;
   }
   /* Mobile-only search footprint: full width within the standard 16px
      gutters (already true via .home-hero's own padding above), and
      subordinate to the headline rather than the desktop field's full
      62px -- but not so short it stops feeling like the primary action.
-     Extra selector weight (matching .home-hero-grid .home-hero-point
-     below) so this wins on specificity, not source order, over the
-     unconditional base .home-search-form rule later in the file. */
+     Extra selector weight (matching the base .home-hero-point rule) so
+     this wins on specificity, not source order, over the unconditional
+     base .home-search-form rule later in the file. */
   .home-hero-grid .home-search-form {
     max-width: none;
     min-height: 66px;
@@ -398,18 +377,16 @@ body {
   }
 }
 
-/* Short phones (e.g. 375x667): trim the top air a little further so the
-   headline still owns the first screen. Height itself no longer needs a
-   proportional boost here -- the rabbit is allowed to sit partly below the
-   fold on a short device now, rather than the layout fighting to avoid it.
-   The copy column also eats a bigger share of a short screen, so the plate
-   needs a larger downward push (~82px vs 56px) to keep the same clear air
-   above the ears; the hole and lit core still clear the fold, the pavement
-   reflection simply trails off a little sooner. */
+/* Short phones (e.g. 375x667): the copy column eats a proportionally
+   bigger share of a short screen, so give it a little more of the
+   viewport back by trimming the artwork block instead of shrinking any
+   type or spacing. */
 @media (max-width: 900px) and (max-height: 700px) {
   .home-hero-grid {
-    padding-top: 20px;
-    background-position: center 82px;
+    padding-top: 10px;
+  }
+  .home-hero-grid::before {
+    height: 50vh;
   }
 }
 /* Small editorial eyebrow above the headline — quiet, not a second title,
@@ -4630,9 +4607,11 @@ body::after {
 @media (max-width: 900px) {
   .home-h1 {
     font-size: clamp(33px, 10.5vw, 52px);
-    /* Tightened again -- spacing did the work here, not the type scale
-       (unchanged). Headline -> search gap. */
-    margin-bottom: 20px;
+    /* Headline -> search gap. The copy column no longer has to be
+       squeezed to fit over the artwork (the photo is its own block
+       above it now), so this can run the full 24-32px target rhythm
+       instead of the old overlay layout's tightened 20px. */
+    margin-bottom: 28px;
   }
   /* Phone: a line may wrap gracefully on a very narrow viewport rather
      than overflow. */
@@ -4640,11 +4619,11 @@ body::after {
     white-space: normal;
   }
   .home-hero-eyebrow {
-    margin-bottom: 14px;
+    margin-bottom: 18px;
   }
   /* Search -> supporting-copy gap. */
   .home-hero-points {
-    margin-top: 18px;
+    margin-top: 26px;
   }
   /* Supporting lines: noticeably more compact than desktop's -- smaller
      type, tighter leading, tighter row gap -- so three short sentences
