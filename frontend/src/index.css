@@ -330,11 +330,17 @@ body {
     padding: 26px 0 0;
     background-image: url("/RabbitHole_Hero_Mobile.webp");
     background-repeat: no-repeat;
-    /* Top-anchored: the plate starts at the hero's own top edge (the veil
-       keeps that region dark), not pinned to the bottom waiting for the
-       copy to end. Centred horizontally keeps the hole on the visual
-       midline across every phone width in the UAT set. */
-    background-position: center top;
+    /* Pushed ~40px down from the hero's top edge (≈5% of a typical phone
+       viewport) -- just enough clear air between "EXPLORE what connects."
+       and the rabbit's ear tips (~24-36px on 390x844 / 393x852) without
+       shrinking the rabbit, moving any copy, or pushing the hole/lid/glow
+       core past the fold. The uncovered strip this opens at the very top
+       sits entirely under the darkest band of the veil and reads as one
+       with it -- not a dead gap. Centred horizontally keeps the hole on
+       the visual midline across every phone width in the UAT set. Short
+       viewports get a larger push (see the max-height block below), where
+       the copy column eats proportionally more of the screen. */
+    background-position: center 40px;
     /* Near its natural scale (cover, for this portrait image in a taller
        portrait container, is height-constrained -- 100% would be
        identical to `cover`). A hair under so there's a soft near-black
@@ -393,10 +399,15 @@ body {
 /* Short phones (e.g. 375x667): trim the top air a little further so the
    headline still owns the first screen. Height itself no longer needs a
    proportional boost here -- the rabbit is allowed to sit partly below the
-   fold on a short device now, rather than the layout fighting to avoid it. */
+   fold on a short device now, rather than the layout fighting to avoid it.
+   The copy column also eats a bigger share of a short screen, so the plate
+   needs a larger downward push (~66px vs 40px) to keep the same clear air
+   above the ears; the hole and lit core still clear the fold, the pavement
+   reflection simply trails off a little sooner. */
 @media (max-width: 900px) and (max-height: 700px) {
   .home-hero-grid {
     padding-top: 20px;
+    background-position: center 66px;
   }
 }
 /* Small editorial eyebrow above the headline — quiet, not a second title,
