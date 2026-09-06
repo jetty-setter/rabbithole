@@ -328,6 +328,12 @@ body {
     /* Small, deliberate header -> image gap. */
     padding: 12px 0 0;
     background-image: none;
+    /* Matches the ::before fade's own terminal colour exactly (below).
+       The shared desktop rule fills this box with --hero-black
+       (#030105); --bg is #050505 -- two points apart, invisible on
+       their own, but meeting at a hard-edged boundary right where the
+       fade below finishes made that seam visible. */
+    background-color: var(--bg);
   }
   .home-hero-grid::before {
     content: "";
@@ -347,12 +353,16 @@ body {
        frame where the rabbit sits a little above centre with the
        glowing hole read fully beneath it; biased right of centre so the
        manhole lid (near the source's right edge) survives the extra
-       zoom without clipping. The fade is pushed from 55% to 80% so it
-       only takes the pavement/reflection *below* the hole -- at the
-       previous 55% start the hole itself (which sits in roughly the
-       bottom quarter of this crop) was reading as mostly faded out. */
+       zoom without clipping. The fade itself is a gentle three-stop
+       dissolve (not a flat two-stop ramp) confined to roughly the final
+       40-70px of the image at UAT heights, ending exactly on --bg so
+       there's no perceptible rectangular boundary; it still starts well
+       clear of the hole (bottom quarter of this crop). */
     background-image:
-      linear-gradient(180deg, transparent 80%, var(--bg) 100%),
+      linear-gradient(180deg,
+        transparent 84%,
+        rgba(5, 5, 5, 0.5) 93%,
+        var(--bg) 100%),
       url("/RabbitHole_Hero_Mobile.webp");
     background-position: center bottom, 78% 66%;
     background-size: 100% 100%, auto 158%;
@@ -371,15 +381,18 @@ body {
   }
   /* Mobile-only search footprint: subordinate to the headline rather
      than the desktop field's full 62px -- but not so short it stops
-     feeling like the primary action. 76px (was 66px) per this pass's
-     explicit target -- width/border/background/icon/placeholder/arrow
-     and the 44px tap target are all untouched, only the field's own
-     height. Extra selector weight (matching the base .home-hero-point
-     rule) so this wins on specificity, not source order, over the
-     unconditional base .home-search-form rule later in the file. */
+     feeling like the primary action. 67px (was 76px, -9px per this
+     pass's explicit target) -- width/border-radius/background/icon/
+     placeholder/arrow and the 44px tap target are all untouched, only
+     the field's own height; the form's own flex + align-items:center
+     (base rule) re-centres the icon/input/arrow at the new height
+     automatically. Extra selector weight (matching the base
+     .home-hero-point rule) so this wins on specificity, not source
+     order, over the unconditional base .home-search-form rule later in
+     the file. */
   .home-hero-grid .home-search-form {
     max-width: none;
-    min-height: 76px;
+    min-height: 67px;
     padding: 8px 12px 8px 20px;
   }
 }
@@ -4649,11 +4662,13 @@ body::after {
      is on a phone. */
   .home-hero-point {
     font-size: 13.5px;
-    line-height: 1.35;
+    /* Leading tightened slightly (1.35 -> 1.3) as part of this pass's
+       subtle row-spacing adjustment. */
+    line-height: 1.3;
   }
   .home-hero-point + .home-hero-point {
-    /* Row-to-row gap tightened slightly (5px -> 4px). */
-    margin-top: 4px;
+    /* Row-to-row gap tightened slightly further (4px -> 3px). */
+    margin-top: 3px;
   }
 }
 
