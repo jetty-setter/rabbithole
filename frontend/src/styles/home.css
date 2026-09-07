@@ -146,8 +146,13 @@
     display: block;
     flex: none;
     width: 100%;
-    /* Its own visual section, not a second screen. */
-    height: 48vh;
+    /* A lead-in, not a poster -- was 48vh (this box drove most of the
+       "several oversized blocks" feel). Zoom/position below are
+       untouched: at auto 158% the rendered plate's width still clears
+       every supported phone width with margin to spare at this shorter
+       height, so the same crop keeps covering edge-to-edge with no
+       stretching. */
+    height: 38vh;
     background-repeat: no-repeat, no-repeat;
     /* Bottom-fade painted over the photo, then the plate itself, zoomed
        (auto 158%) and positioned (78% 66%) so the rabbit sits a little
@@ -169,7 +174,7 @@
   .home-hero {
     width: 100%;
     /* Image/fade -> eyebrow gap. */
-    padding: 12px 24px 0;
+    padding: 8px 24px 0;
   }
 }
 
@@ -180,7 +185,7 @@
     padding-top: 8px;
   }
   .home-hero-grid::before {
-    height: 40vh;
+    height: 32vh;
   }
 }
 
@@ -277,28 +282,33 @@
 @media (max-width: 760px) {
   .home-h1 {
     /* Own content section below the hero image now, not sharing a
-       viewport with it -- full desktop-adjacent scale read oversized. */
-    font-size: clamp(28px, 8.85vw, 44px);
+       viewport with it -- full desktop-adjacent scale read oversized.
+       Trimmed a little further (was 28-44px/1.03) so the headline reads
+       strong without dominating the now-shorter stack. */
+    font-size: clamp(26px, 8vw, 38px);
+    line-height: 1.0;
     /* Headline -> search gap. */
-    margin-bottom: 14px;
+    margin-bottom: 10px;
   }
   .home-h1-line {
     /* A line may wrap gracefully on a very narrow viewport instead of overflowing. */
     white-space: normal;
   }
   .home-hero-eyebrow {
-    /* Eyebrow -> headline gap. */
-    margin-bottom: 10px;
+    /* Eyebrow -> headline gap -- pulled in so the eyebrow reads as part
+       of the same block as the headline, not a separate floating line. */
+    margin-bottom: 6px;
   }
   .home-hero-points {
     /* Search -> capability-strip gap. */
-    margin-top: 14px;
+    margin-top: 10px;
     display: flex;
-    gap: 14px;
-    /* Columns are capped (below), not stretched to fill the row --
-       space-between spreads them evenly instead of letting one ragged
-       column dictate the others' alignment. */
-    justify-content: space-between;
+    gap: 18px;
+    /* Left-aligned, not space-between -- at these widths space-between
+       scattered the three fixed-width columns across the row with large
+       dead gaps between them, reading as disconnected islands rather
+       than one strip. */
+    justify-content: flex-start;
   }
   /* Equal-width columns, left-aligned. 78px reliably wraps each of the
      three descriptions to two lines at supported widths; flex-shrink
@@ -324,13 +334,13 @@
     font-size: 13.5px;
   }
 }
-/* Narrow phones: the 8.85vw scale above is tuned for 390px+. Below that
+/* Narrow phones: the 8vw scale above is tuned for 390px+. Below that
    "WONDER MORE." plus its dot no longer fits and wraps to an unintended
    third line, so scale down (and a little slower) to keep the two-line
    block intact. */
 @media (max-width: 380px) {
   .home-h1 {
-    font-size: clamp(25px, 8.1vw, 29px);
+    font-size: clamp(23px, 7.4vw, 26px);
   }
 }
 
@@ -403,14 +413,16 @@
   color: var(--violet);
 }
 @media (max-width: 760px) {
-  /* Subordinate to the headline rather than the desktop field's full
-     62px, but still reads as the primary action. Compound selector so
+  /* Subordinate to the headline, and shorter than the desktop field's
+     62px (was 67px -- taller than desktop, which read heavy next to the
+     now-tighter headline). 58px is still enough room for the 44px tap
+     target below plus a little breathing room. Compound selector so
      this wins on specificity (not source order) over the base rule
      above regardless of import order. */
   .home-hero-grid .home-search-form {
     max-width: none;
-    min-height: 67px;
-    padding: 8px 12px 8px 20px;
+    min-height: 58px;
+    padding: 6px 12px 6px 18px;
   }
 }
 @media (max-width: 760px) {
@@ -530,9 +542,10 @@
        the section's own padding-top does the breathing room so the
        hero-black -> --bg-2 gradient stays continuous. */
     margin: 0 calc(-1 * var(--gutter-mobile));
-    /* Capability strip -> "Start Somewhere" gap (24 + the 2px
-       section-head margin-top below = 26px). */
-    padding: 24px var(--gutter-mobile) 44px;
+    /* Capability strip -> "Start Somewhere" gap (16 + the 2px
+       section-head margin-top below = 18px, down from 26px) -- part of
+       tightening the whole hero stack so this section reveals sooner. */
+    padding: 16px var(--gutter-mobile) 44px;
   }
   .home-browse .section-head:first-child {
     margin-top: 2px;
