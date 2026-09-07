@@ -4660,13 +4660,23 @@ body::after {
        of the existing DOM for free. */
     display: flex;
     gap: 14px;
+    /* Columns are capped (below), not stretched to fill the row -- at
+       390px+ a full-width equal-fraction column left room for "what was
+       said." / "what connects." to sit on one line while only the
+       longer "to the exact moment." wrapped, an inconsistent rhythm.
+       space-between spreads the three capped columns evenly across the
+       same footprint instead. */
+    justify-content: space-between;
   }
-  /* Equal-width columns, left-aligned (the default). min-width:0 lets
-     text wrap inside a narrow flex column instead of forcing overflow
-     at 320px. Quieter/smaller than the label below -- font-size and
-     the existing muted colour (desktop base rule) both step down. */
+  /* Equal-width columns (all share the same basis/max-width), left-
+     aligned (the default). 78px reliably wraps all three descriptions
+     to two lines ("what was" / "said.", "to the exact" / "moment.",
+     "what" / "connects.") at every UAT width; flex-shrink still lets
+     them narrow further at 320px rather than overflow. Quieter/smaller
+     than the label below -- font-size and the existing muted colour
+     (desktop base rule) both step down. */
   .home-hero-point {
-    flex: 1 1 0;
+    flex: 0 1 78px;
     min-width: 0;
     margin: 0;
     font-size: 12.5px;
