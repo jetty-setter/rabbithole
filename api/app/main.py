@@ -50,7 +50,7 @@ from fastapi import Depends, FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 
-from . import aws, config
+from . import aws, config, providers
 from .auth import (
     create_token,
     hash_password,
@@ -74,6 +74,7 @@ from .models import (
     ContentTopic,
     Creator,
     Credentials,
+    ExternalCreate,
     FeatureRequest,
     ReactionRequest,
     SuggestRequest,
@@ -431,6 +432,145 @@ def _cdn_url(key: str | None) -> str | None:
     return f"https://{config.CLOUDFRONT_DOMAIN}/{key}"
 
 
+# ── External-content transcript ingestion ────────────────────────────────
+# An imported/provider transcript is written to the SAME S3 keys and sets
+# the SAME record fields a hosted AWS-Transcribe job would (see
+# lambdas/transcribe/handler.py), so search indexing, chunking, embeddings,
+# "Ask this video", and the Watch transcript UI all reuse the hosted path
+# with zero branching. The only thing that differs is transcript_source
+# (provenance) and transcript_timed (whether cue start times are real).
+
+_SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
+
+
+def _vtt_ts(seconds: float) -> str:
+    ms = int(round(max(0.0, seconds) * 1000))
+    h, ms = divmod(ms, 3_600_000)
+    m, ms = divmod(ms, 60_000)
+    s, ms = divmod(ms, 1000)
+    return f"{h:02d}:{m:02d}:{s:02d}.{ms:03d}"
+
+
+def _cues_to_vtt(cues: list[dict]) -> str:
+    lines = ["WEBVTT", ""]
+    for c in cues:
+        lines.append(f"{_vtt_ts(c['start'])} --> {_vtt_ts(c.get('end') or c['start'])}")
+        lines.append(c["text"])
+        lines.append("")
+    return "\n".join(lines)
+
+
+def _build_external_cues(body: ExternalCreate) -> tuple[list[dict], bool]:
+    """(cues, timed). `timed` is False when we only had plain text and had
+    to synthesize zero-start cues -- callers use it to withhold exact-moment
+    seeking even though the transcript is fully searchable."""
+    if body.transcript_segments:
+        cues = [
+            {
+                "start": round(float(s.start), 2),
+                "end": round(float(s.end if s.end is not None else s.start), 2),
+                "text": s.text.strip(),
+            }
+            for s in body.transcript_segments
+            if s.text.strip()
+        ]
+        return cues, True
+    text = (body.transcript_text or "").strip()
+    if not text:
+        return [], False
+    parts = [p.strip() for p in _SENTENCE_SPLIT.split(text) if p.strip()]
+    return [{"start": 0.0, "end": 0.0, "text": p[:2000]} for p in parts], False
+
+
+def _ingest_external_transcript(video_id: str, body: ExternalCreate) -> dict:
+    """Write cues.json + captions.vtt for an external item and return the
+    record fields to persist. Returns {} when there's nothing to ingest."""
+    if body.transcript_source not in ("imported", "provider"):
+        return {}
+    cues, timed = _build_external_cues(body)
+    if not cues:
+        return {}
+    aws.s3.put_object(
+        Bucket=config.STREAMING_BUCKET,
+        Key=f"{video_id}/cues.json",
+        Body=json.dumps(cues).encode("utf-8"),
+        ContentType="application/json",
+    )
+    aws.s3.put_object(
+        Bucket=config.STREAMING_BUCKET,
+        Key=f"{video_id}/captions.vtt",
+        Body=_cues_to_vtt(cues).encode("utf-8"),
+        ContentType="text/vtt",
+    )
+    return {
+        "transcript_status": "ready",
+        "has_transcript": True,
+        "transcribing": False,
+        "transcript_key": f"{video_id}/cues.json",
+        "vtt_key": f"{video_id}/captions.vtt",
+        "transcript_source": body.transcript_source,
+        "transcript_timed": timed,
+    }
+
+
+@app.post("/external", response_model=Video, status_code=201)
+def create_external(body: ExternalCreate, user: str = Depends(require_auth)) -> Video:
+    """Register a piece of External content. Admin only. The media is never
+    uploaded -- RabbitHole stores metadata, a provider-safe embed URL (when
+    embeddable), and optionally an imported transcript that flows through the
+    normal search/embedding pipeline."""
+    if not is_admin(user):
+        raise HTTPException(status_code=403, detail="not allowed")
+    if body.transcript_source not in ("none", "imported", "provider"):
+        raise HTTPException(status_code=400, detail="invalid transcript_source")
+    if body.provider is not None and body.provider not in providers.PROVIDERS:
+        raise HTTPException(status_code=400, detail="unknown provider")
+
+    try:
+        resolved = providers.resolve_external(body.source_url, body.provider)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    video_id = uuid.uuid4().hex
+    now = datetime.now(timezone.utc).isoformat()
+    source_name = (body.creator or "").strip()[:120] or "External"
+    thumb = (body.thumbnail_url or "").strip() or resolved["thumbnail_url"]
+
+    item: dict = {
+        "video_id": video_id,
+        "filename": f"{resolved['provider']}-{resolved.get('provider_id') or video_id[:8]}",
+        "status": "ready",
+        "created_at": now,
+        "source_type": "external",
+        "provider": resolved["provider"],
+        "source_url": resolved["source_url"],
+        "owner": source_name,          # existing card/watch code reads `owner`
+        "source_name": source_name,
+        "created_by": user,            # audit only; not surfaced
+        "title": body.title.strip()[:200],
+        "visibility": _norm_visibility(body.visibility),
+        "views": 0,
+        "hops": 0,
+        "thumps": 0,
+    }
+    if resolved.get("provider_id"):
+        item["provider_id"] = resolved["provider_id"]
+    if resolved.get("embed_url"):
+        item["embed_url"] = resolved["embed_url"]
+    if thumb:
+        item["thumbnail_url"] = thumb
+    if body.description and body.description.strip():
+        item["description"] = body.description.strip()[:5000]
+    clean = clean_tags(body.tags)
+    if clean:
+        item["tags"] = clean
+
+    item.update(_ingest_external_transcript(video_id, body))
+
+    aws.videos_table().put_item(Item=item)
+    return _to_video(item)
+
+
 def _thumb_url(item: dict) -> str | None:
     """The thumbnail CDN URL, cache-busted by thumbnail_updated_at.
 
@@ -473,30 +613,55 @@ def _source_type(item: dict) -> str:
     return value if value in ("hosted", "external") else "hosted"
 
 
+def _transcript_source(item: dict, transcript_status: str | None) -> str:
+    """Where this record's transcript came from, independent of hosting.
+    Explicit value wins; otherwise a legacy hosted record with a transcript
+    is "transcribe" (that was the only path that existed), else "none"."""
+    value = item.get("transcript_source")
+    if value in ("transcribe", "provider", "imported", "none"):
+        return value
+    return "transcribe" if transcript_status == "ready" else "none"
+
+
 def _capabilities(item: dict, transcript_status: str | None, source_type: str) -> Capabilities:
     """Derived fresh from the item's own fields on every read -- never stored
     independently, so a capability can never disagree with the state it
     describes (the same discipline has_transcript/transcribing already use).
-    See models.py::Capabilities for what each flag means."""
+
+    Every flag comes from concrete data (hls_key / embed_url / source_url /
+    a ready transcript), never from source_type alone. See
+    models.py::Capabilities for what each flag means."""
     hls = bool(item.get("hls_key"))
     is_external = source_type == "external"
     has_embed = is_external and bool(item.get("embed_url"))
     has_link = is_external and bool(item.get("source_url"))
+    playable = hls or has_embed
+    watchable = playable or has_link
+    # Search only ever indexes transcribed content (api/app/search.py). A
+    # ready transcript is a ready transcript whether AWS Transcribe, a
+    # provider API, or an admin import produced it -- these flags track the
+    # transcript, not how the video is hosted.
     transcript_ready = transcript_status == "ready"
-    # Search only ever indexes transcribed content (api/app/search.py) -- these
-    # two flags track that exactly, so they can never promise a capability the
-    # rest of the app doesn't actually have.
+    # Real cue timing? Hosted AWS-Transcribe output always has it (legacy
+    # records have no flag -> True). An imported text-only transcript does not.
+    transcript_timed = bool(item.get("transcript_timed", True))
     taggable = bool(item.get("tags")) or bool(item.get("topics"))
+    public = _norm_visibility(item.get("visibility")) == "public"
     return Capabilities(
         play_internal=hls,
         embed_external=has_embed,
         open_external=has_link and not has_embed,
+        watch=watchable,
         transcript=transcript_ready,
         moment_search=transcript_ready,
         ask_video=transcript_ready,
+        # Exact-moment jumps need a transcript with real timing AND a player
+        # we can drive. An outbound-link-only item can never seek; neither
+        # can a text-only imported transcript (every cue is at 0:00).
+        seek=transcript_ready and transcript_timed and playable,
         tunnels=taggable,
         map=taggable,
-        tumble=_norm_visibility(item.get("visibility")) == "public" and (hls or has_embed),
+        tumble=public and watchable,
     )
 
 
@@ -514,16 +679,25 @@ def _to_content_topics(item: dict) -> list[ContentTopic]:
     return out
 
 
+def _external_thumb_url(item: dict) -> str | None:
+    """External records store the poster as a full URL (provider default or
+    an admin-supplied one), not an S3 key -- so the hosted `_thumb_url`
+    (which builds a CDN URL from thumb_key) doesn't apply."""
+    url = item.get("thumbnail_url")
+    return str(url) if url else None
+
+
 def _to_video(item: dict) -> Video:
     status = _transcript_status(item)
     source_type = _source_type(item)
+    is_external = source_type == "external"
     return Video(
         video_id=item["video_id"],
         filename=item.get("filename") or "untitled",
         status=item.get("status") or "unknown",
         created_at=item.get("created_at") or "",
         playback_url=_cdn_url(item.get("hls_key")),
-        thumbnail_url=_thumb_url(item),
+        thumbnail_url=_external_thumb_url(item) if is_external else _thumb_url(item),
         duration_seconds=item.get("duration_seconds"),
         cost_usd=item.get("cost_usd"),
         owner=item.get("owner"),
@@ -551,6 +725,12 @@ def _to_video(item: dict) -> Video:
         captions_url=_cdn_url(item.get("vtt_key")),
         visibility=_norm_visibility(item.get("visibility")),
         source_type=source_type,
+        provider=item.get("provider") if is_external else None,
+        source_url=item.get("source_url") if is_external else None,
+        provider_id=item.get("provider_id") if is_external else None,
+        embed_url=item.get("embed_url") if is_external else None,
+        source_name=item.get("source_name") if is_external else None,
+        transcript_source=_transcript_source(item, status),
         capabilities=_capabilities(item, status, source_type),
         topics=_to_content_topics(item),
     )
@@ -952,11 +1132,15 @@ def select_video_thumbnail(
 
 def _featurable(item: dict) -> bool:
     """Can this record legitimately sit in the homepage Featured slot?
-    A curator can only feature a usable, public, ready video."""
-    return (
-        item.get("status") == "ready"
-        and bool(item.get("hls_key"))
-        and _norm_visibility(item.get("visibility")) == "public"
+    A curator can only feature a usable, public, ready item -- hosted
+    (transcoded) OR external (embeddable / linkable). Mirrors the `watch`
+    capability rather than assuming an hls_key."""
+    if item.get("status") != "ready":
+        return False
+    if _norm_visibility(item.get("visibility")) != "public":
+        return False
+    return bool(
+        item.get("hls_key") or item.get("embed_url") or item.get("source_url")
     )
 
 

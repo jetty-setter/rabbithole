@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useApp } from "./App";
+import { canWatch } from "./api";
 import { EditorialCard } from "./EditorialCard";
 import { SkeletonFeed } from "./Skeleton";
 
@@ -11,7 +12,7 @@ export function FreshPage() {
   const list = useMemo(
     () =>
       videos
-        .filter((v) => v.status === "ready" && !!v.playback_url)
+        .filter(canWatch)
         .sort((a, b) => (b.created_at || "").localeCompare(a.created_at || "")),
     [videos],
   );

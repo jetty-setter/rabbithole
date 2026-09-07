@@ -103,6 +103,7 @@ export function Header({
   username,
   isAdmin,
   onUpload,
+  onAddExternal,
   onLogin,
   onSignup,
   onLogout,
@@ -115,6 +116,8 @@ export function Header({
   username: string | null;
   isAdmin: boolean;
   onUpload: () => void;
+  /** Admin-only: register a piece of External content. Undefined for non-admins. */
+  onAddExternal?: () => void;
   onLogin: () => void;
   onSignup: () => void;
   onLogout: () => void;
@@ -221,17 +224,32 @@ export function Header({
                     Tunnels/Map/Trail/Tumble, Upload (authed), and sign-in. */}
                 <div className="menu-mobile-primary">
                   {authed ? (
-                    <button
-                      type="button"
-                      className="menu-item"
-                      onClick={() => {
-                        setMenuOpen(false);
-                        onUpload();
-                      }}
-                    >
-                      <IconUpload />
-                      Upload
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        className="menu-item"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          onUpload();
+                        }}
+                      >
+                        <IconUpload />
+                        Upload
+                      </button>
+                      {onAddExternal && (
+                        <button
+                          type="button"
+                          className="menu-item"
+                          onClick={() => {
+                            setMenuOpen(false);
+                            onAddExternal();
+                          }}
+                        >
+                          <IconVideo />
+                          Add external video
+                        </button>
+                      )}
+                    </>
                   ) : (
                     <>
                       <button

@@ -8,6 +8,7 @@ import {
   type ThumbnailCandidates,
   type Video,
 } from "./api";
+import { AddExternalModal } from "./AddExternalModal";
 import { SkeletonAdmin } from "./Skeleton";
 
 function fmtClock(s: number): string {
@@ -20,6 +21,7 @@ export function AdminPage() {
   const { videos, live, authed, isAdmin, requireLogin, loading, refresh } = useApp();
   const [pendingFeature, setPendingFeature] = useState<string | null>(null);
   const [featureError, setFeatureError] = useState<string | null>(null);
+  const [externalOpen, setExternalOpen] = useState(false);
 
   // Thumbnail frame picker — one video's candidates expanded inline at a time.
   const [thumbFor, setThumbFor] = useState<string | null>(null);
@@ -110,7 +112,13 @@ export function AdminPage() {
           <span className={live ? "dot live" : "dot"} />
           {live ? "Real-time connected" : "Polling"}
         </span>
+        <button type="button" className="btn-ghost" onClick={() => setExternalOpen(true)}>
+          + Add external video
+        </button>
       </div>
+      {externalOpen && (
+        <AddExternalModal onClose={() => setExternalOpen(false)} onAdded={refresh} />
+      )}
 
       <div className="hood-stats">
         <div className="hstat">
@@ -159,7 +167,14 @@ export function AdminPage() {
             {videos.map((v) => (
               <Fragment key={v.video_id}>
                 <tr>
-                  <td>{v.filename}</td>
+                  <td>
+                    {v.filename}
+                    {v.source_type === "external" && (
+                      <span className="admin-src-tag" title="External content — not hosted by RabbitHole">
+                        {v.provider === "youtube" ? "YouTube" : "external"}
+                      </span>
+                    )}
+                  </td>
                   <td>
                     <span className={`tag s-${v.status}`}>{STATUS_LABEL[v.status] ?? v.status}</span>
                   </td>
@@ -184,7 +199,7 @@ export function AdminPage() {
                     )}
                   </td>
                   <td>
-                    {v.status === "ready" ? (
+                    {v.status === "ready" && v.source_type !== "external" ? (
                       <button
                         type="button"
                         className="thumb-pick-btn"

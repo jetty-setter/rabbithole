@@ -166,13 +166,22 @@ export interface Video {
   captions_url?: string | null;
   visibility?: string;
   // "hosted" (transcoded + stored by RabbitHole) | "external" (embedded/linked
-  // from its original host — not built yet, see docs/RABBITHOLE_IMPLEMENTATION_GAP.md
-  // P1-4). Absent on legacy records — treat the same as "hosted".
+  // from its original host). Absent on legacy records — treat as "hosted".
   source_type?: "hosted" | "external";
+  // External-content provenance — all null/absent for hosted content.
+  provider?: "youtube" | "generic" | null;
+  source_url?: string | null;
+  provider_id?: string | null;
+  embed_url?: string | null;
+  source_name?: string | null;
+  // Where the transcript came from, independent of hosting:
+  // "transcribe" | "provider" | "imported" | "none".
+  transcript_source?: "transcribe" | "provider" | "imported" | "none";
   // Derived, never independently trusted — computed server-side from the
   // video's own fields every time, the same discipline has_transcript already
   // uses. Absent on legacy API responses — every flag reads as false/unknown,
-  // never as a false "yes."
+  // never as a false "yes." Prefer the can*() helpers below over reading this
+  // directly, so a legacy response with no `capabilities` still works.
   capabilities?: Capabilities;
   // Curated topic associations (the semantic layer above `tags`). Empty on
   // every video until an editor assigns some; `tags` remains the fallback.
@@ -183,12 +192,73 @@ export interface Capabilities {
   play_internal: boolean;
   embed_external: boolean;
   open_external: boolean;
+  watch: boolean;
   transcript: boolean;
   moment_search: boolean;
   ask_video: boolean;
+  seek: boolean;
   tunnels: boolean;
   map: boolean;
   tumble: boolean;
+}
+
+// ── Derived capability helpers ─────────────────────────────────────────
+// One place the UI and feed logic ask "what can this content do?", instead
+// of `v.status === "ready" && !!v.playback_url` (or `if external`) scattered
+// around. Each falls back to the legacy rule when a response predates the
+// `capabilities` field, so nothing regresses for old hosted records.
+
+const legacyReady = (v: Video): boolean => v.status === "ready" && !!v.playback_url;
+
+/** Can a viewer watch this on RabbitHole at all — internal player, inline
+ *  embed, or an outbound "watch at source" link. */
+export function canWatch(v: Video): boolean {
+  return v.capabilities?.watch ?? legacyReady(v);
+}
+
+/** RabbitHole's own HLS player can stream this. */
+export function canPlayInternal(v: Video): boolean {
+  return v.capabilities?.play_internal ?? legacyReady(v);
+}
+
+/** Renders inline via a provider embed (YouTube). */
+export function canEmbed(v: Video): boolean {
+  return v.capabilities?.embed_external ?? false;
+}
+
+/** No inline player — the primary action is an outbound link. */
+export function canOpenSource(v: Video): boolean {
+  return (v.capabilities?.open_external ?? false) || (!canPlayInternal(v) && !canEmbed(v) && !!v.source_url);
+}
+
+/** A ready transcript exists (however it got here). */
+export function hasTranscript(v: Video): boolean {
+  return v.capabilities?.transcript ?? !!v.has_transcript;
+}
+
+/** Transcript is indexed for semantic search / powers related moments. */
+export function canTranscriptSearch(v: Video): boolean {
+  return v.capabilities?.moment_search ?? !!v.has_transcript;
+}
+
+/** "Ask this video" can answer from the transcript. */
+export function canAsk(v: Video): boolean {
+  return v.capabilities?.ask_video ?? !!v.has_transcript;
+}
+
+/** Exact-moment jumps are reliable (timed transcript + a seekable player). */
+export function canSeekExactMoment(v: Video): boolean {
+  return v.capabilities?.seek ?? legacyReady(v);
+}
+
+/** Eligible for Tumble — public and watchable somehow. */
+export function canTumble(v: Video): boolean {
+  return v.capabilities?.tumble ?? (legacyReady(v) && (v.visibility ?? "public") === "public");
+}
+
+/** Shows up in feeds / cards / discovery. */
+export function isDiscoverable(v: Video): boolean {
+  return canWatch(v);
 }
 
 export interface ContentTopic {
@@ -270,6 +340,41 @@ export async function createUpload(
     }),
   });
   if (!res.ok) throw new Error(`createUpload failed (${res.status})`);
+  return res.json();
+}
+
+export interface TranscriptSegment {
+  start: number;
+  end?: number | null;
+  text: string;
+}
+
+export interface ExternalCreate {
+  source_url: string;
+  title: string;
+  description?: string;
+  creator?: string;
+  thumbnail_url?: string;
+  tags?: string[];
+  visibility?: string;
+  provider?: "youtube" | "generic";
+  transcript_source?: "none" | "imported" | "provider";
+  transcript_text?: string;
+  transcript_segments?: TranscriptSegment[];
+}
+
+/** Admin: register a piece of External content (video not hosted by
+ *  RabbitHole). Returns the created content record. */
+export async function createExternal(body: ExternalCreate): Promise<Video> {
+  const res = await fetch(`${API_URL}/external`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => null);
+    throw new Error(detail?.detail || `add external failed (${res.status})`);
+  }
   return res.json();
 }
 
@@ -486,14 +591,10 @@ export async function selectThumbnail(
   return res.json();
 }
 
-/** Is this video usable in the homepage Featured slot on its own merits:
- *  a ready, playable, publicly visible video. */
+/** Is this content usable in the homepage Featured slot on its own merits:
+ *  a ready, watchable (hosted OR external), publicly visible item. */
 export function isFeaturable(v: Video): boolean {
-  return (
-    v.status === "ready" &&
-    !!v.playback_url &&
-    (v.visibility ?? "public") === "public"
-  );
+  return canWatch(v) && (v.visibility ?? "public") === "public";
 }
 
 /** The homepage Featured video. An explicitly curated (`featured === true`)

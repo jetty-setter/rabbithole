@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useApp } from "./App";
+import { canWatch } from "./api";
 import { VideoCard } from "./VideoCard";
 import { SkeletonFeed } from "./Skeleton";
 
@@ -7,7 +8,7 @@ export function FavoritesPage() {
   const { videos, favorites, authed, requireLogin, loading } = useApp();
 
   const list = useMemo(
-    () => videos.filter((v) => favorites.has(v.video_id) && v.status === "ready" && !!v.playback_url),
+    () => videos.filter((v) => favorites.has(v.video_id) && canWatch(v)),
     [videos, favorites],
   );
 
