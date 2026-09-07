@@ -22,6 +22,27 @@ export interface Connection {
   shared: number;
 }
 
+/** A curated topic-connection record, from the caller's point of view: the
+ *  same shape `GET /topics/{slug}/connections` returns (`topic` is the other
+ *  side). Kept structural so topicGraph.ts stays free of API imports. */
+export interface CuratedConnection {
+  topic: string;
+  relationship_type: string;
+  explanation: string;
+  strength: number;
+  source: string;
+}
+
+/** One spoke in the navigator: a topic connected to the centre either
+ *  organically (they co-occur on `shared` real videos), editorially
+ *  (`curated` is set), or both. `shared` is 0 for a curated-only spoke —
+ *  which must never be rendered as "0 shared videos". */
+export interface Spoke {
+  tag: string;
+  shared: number;
+  curated: CuratedConnection | null;
+}
+
 // The focused navigator shows the current topic plus this many of its
 // strongest connections (spec target: 5–8).
 export const MAX_CONNECTIONS = 8;
@@ -127,7 +148,52 @@ export function connectionsFor(
   return out.slice(0, Math.max(0, limit));
 }
 
-/** How many distinct topics a topic is connected to (uncapped). */
+/**
+ * Merge a centre topic's organic connections (tag co-occurrence) with its
+ * curated connections (editorial topic-connection records) into one spoke
+ * list.
+ *
+ *  - An organic edge and a curated edge to the same topic collapse to a
+ *    single spoke that carries the curated metadata (curated copy wins).
+ *  - A curated-only topic becomes a real, navigable spoke with `shared: 0`.
+ *  - Curated edges sort ahead of organic ones so a deliberate editorial
+ *    link is never dropped by `limit`; within each group the existing
+ *    organic ranking (shared count, then neighbour prominence, then name)
+ *    is preserved.
+ *
+ * Pass `organic` uncapped (e.g. `connectionsFor(tag, edges, scoreByTag,
+ * Infinity)`) — this function applies the cap after merging.
+ */
+export function mergeConnections(
+  organic: Connection[],
+  curated: CuratedConnection[],
+  scoreByTag: Map<string, number>,
+  center: string,
+  limit = MAX_CONNECTIONS,
+): Spoke[] {
+  const byTag = new Map<string, Spoke>();
+  for (const c of organic) {
+    if (c.tag === center) continue;
+    byTag.set(c.tag, { tag: c.tag, shared: c.shared, curated: null });
+  }
+  for (const cc of curated) {
+    if (cc.topic === center) continue;
+    const existing = byTag.get(cc.topic);
+    if (existing) existing.curated = cc;
+    else byTag.set(cc.topic, { tag: cc.topic, shared: 0, curated: cc });
+  }
+  return [...byTag.values()]
+    .sort(
+      (a, b) =>
+        (a.curated ? 0 : 1) - (b.curated ? 0 : 1) ||
+        b.shared - a.shared ||
+        (scoreByTag.get(b.tag) ?? 0) - (scoreByTag.get(a.tag) ?? 0) ||
+        a.tag.localeCompare(b.tag),
+    )
+    .slice(0, Math.max(0, limit));
+}
+
+/** How many distinct topics a topic connects to organically (uncapped). */
 export function connectionCount(tag: string, edges: TopicEdge[]): number {
   let n = 0;
   for (const e of edges) if (e.source === tag || e.target === tag) n += 1;
