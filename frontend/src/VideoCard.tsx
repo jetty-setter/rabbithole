@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { displayTitle, formatDuration, relativeTime, type Video } from "./api";
+import { canWatch, displayTitle, formatDuration, relativeTime, type Video } from "./api";
 import { useApp } from "./App";
 import { UpIcon, DownIcon } from "./Icons";
 import { Avatar } from "./Avatar";
@@ -13,7 +13,7 @@ const PROC_LABEL: Record<string, string> = {
 
 export function VideoCard({ v }: { v: Video }) {
   const { authed, favorites, toggleFavorite } = useApp();
-  const ready = v.status === "ready" && !!v.playback_url;
+  const ready = canWatch(v);
 
   if (!ready) {
     const failed = v.status === "failed";

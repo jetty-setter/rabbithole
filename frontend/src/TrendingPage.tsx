@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useApp } from "./App";
+import { canWatch } from "./api";
 import { EditorialCard } from "./EditorialCard";
 import { SkeletonFeed } from "./Skeleton";
 
@@ -9,7 +10,7 @@ export function TrendingPage() {
   const list = useMemo(
     () =>
       videos
-        .filter((v) => v.status === "ready" && !!v.playback_url)
+        .filter(canWatch)
         .sort((a, b) => (b.views ?? 0) - (a.views ?? 0)),
     [videos],
   );

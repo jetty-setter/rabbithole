@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useApp } from "./App";
-import { pickFeatured } from "./api";
+import { canWatch, pickFeatured } from "./api";
 import { EditorialCard } from "./EditorialCard";
 import { FeaturedCard } from "./FeaturedCard";
 import { SkeletonFeed } from "./Skeleton";
@@ -33,7 +33,7 @@ export function LibraryPage() {
   );
 
   const ready = useMemo(
-    () => videos.filter((v) => v.status === "ready" && !!v.playback_url),
+    () => videos.filter(canWatch),
     [videos],
   );
 

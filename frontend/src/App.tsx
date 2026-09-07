@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Routes, Route, Outlet, useNavigate, useLocation, useOutletContext } from "react-router-dom";
 import {
+  canTumble,
   getMe,
   setToken,
   listFavorites,
@@ -16,6 +17,7 @@ import { useVideoList } from "./hooks/useVideoList";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { UploadModal } from "./UploadModal";
+import { AddExternalModal } from "./AddExternalModal";
 import { LoginModal } from "./LoginModal";
 import { LibraryPage } from "./LibraryPage";
 import { TrendingPage } from "./TrendingPage";
@@ -75,6 +77,7 @@ function Layout() {
   const { videos, setVideos, loading, refresh } = useVideoList();
   const { hopped, setHopped, thumped, setThumped, react: reactCore } = useReactions();
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [externalOpen, setExternalOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
   const [loginMode, setLoginMode] = useState<"login" | "signup">("login");
   const [live, setLive] = useState(false);
@@ -173,9 +176,12 @@ function Layout() {
   }
 
   // Intentional not random-random: never repeats until you've seen everything,
-  // and biases toward videos sharing a tag with the current one.
+  // and biases toward videos sharing a tag with the current one. "Watchable"
+  // spans hosted playback, external embeds, and outbound-link items alike
+  // (canTumble), so external content isn't quietly excluded by a playback_url
+  // check.
   function tumble() {
-    const ready = videos.filter((v) => v.status === "ready" && !!v.playback_url);
+    const ready = videos.filter(canTumble);
     if (!ready.length) return;
 
     const match = location.pathname.match(/^\/watch\/(.+)$/);
@@ -236,6 +242,7 @@ function Layout() {
         username={user?.username ?? null}
         isAdmin={isAdmin}
         onUpload={() => setUploadOpen(true)}
+        onAddExternal={isAdmin ? () => setExternalOpen(true) : undefined}
         onLogin={() => {
           setLoginMode("login");
           setLoginOpen(true);
@@ -257,6 +264,9 @@ function Layout() {
       </div>
       <Footer />
       {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} onUploaded={refresh} />}
+      {externalOpen && (
+        <AddExternalModal onClose={() => setExternalOpen(false)} onAdded={refresh} />
+      )}
       {loginOpen && (
         <LoginModal
           initialMode={loginMode}

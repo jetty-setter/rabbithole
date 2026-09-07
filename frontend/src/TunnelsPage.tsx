@@ -4,7 +4,7 @@ import { useApp } from "./App";
 import { VideoCard } from "./VideoCard";
 import { SkeletonFeed } from "./Skeleton";
 import { useDocumentMeta } from "./hooks/useDocumentMeta";
-import type { Video } from "./api";
+import { canWatch, type Video } from "./api";
 
 // Rough average brightness (0-255) of a thumbnail, sampled at a tiny size
 // via an offscreen canvas -- generic, no per-video/per-tag special-casing.
@@ -92,8 +92,10 @@ export function TunnelsPage() {
   const { tag } = useParams();
   const { videos, loading } = useApp();
 
+  // "ready" here means "real, watchable content" — hosted or external — so a
+  // topic/tunnel counts and lists the idea's content regardless of hosting.
   const ready = useMemo(
-    () => videos.filter((v) => v.status === "ready" && !!v.playback_url),
+    () => videos.filter(canWatch),
     [videos],
   );
 

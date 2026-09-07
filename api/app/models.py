@@ -22,6 +22,33 @@ class UpdateVideo(BaseModel):
     visibility: str | None = None  # "public" | "unlisted"
 
 
+class TranscriptSegment(BaseModel):
+    start: float = Field(ge=0)
+    end: float | None = Field(default=None, ge=0)
+    text: str = Field(min_length=1, max_length=2000)
+
+
+class ExternalCreate(BaseModel):
+    """Admin: register a piece of External content (not hosted by RabbitHole).
+
+    The video itself is never uploaded. If `transcript_source` is "imported"
+    or "provider" and segments/text are supplied, RabbitHole ingests that
+    transcript through the *same* storage/chunking/embedding path hosted
+    videos use -- see main.py::_ingest_external_transcript."""
+
+    source_url: str = Field(min_length=4, max_length=2048)
+    title: str = Field(min_length=1, max_length=200)
+    description: str | None = Field(default=None, max_length=5000)
+    creator: str | None = Field(default=None, max_length=120)  # source_name
+    thumbnail_url: str | None = Field(default=None, max_length=2048)
+    tags: list[str] | None = None
+    visibility: str | None = None  # "public" | "unlisted"
+    provider: str | None = None  # override auto-detection; usually omitted
+    transcript_source: str = "none"  # "none" | "imported" | "provider"
+    transcript_text: str | None = Field(default=None, max_length=200_000)
+    transcript_segments: list[TranscriptSegment] | None = None
+
+
 class UploadResponse(BaseModel):
     video_id: str
     upload_url: str
@@ -82,23 +109,35 @@ class Capabilities(BaseModel):
     describes. This is the same discipline has_transcript/transcribing
     already used before this field existed; it just generalizes it.
 
-    play_internal   -- RabbitHole's own player can stream this (has hls_key)
-    embed_external  -- can be embedded from its original host
-    open_external   -- only makes sense as an outbound link (no player, no embed)
-    transcript      -- a transcript exists at all
-    moment_search   -- indexed for cross-video semantic transcript search
+    Capabilities are derived from *actual available data* (is there an
+    hls_key? an embed_url? a ready transcript?), never from source_type
+    alone -- an external video with an imported transcript is as
+    search-and-ask capable as any hosted one.
+
+    play_internal   -- RabbitHole's own HLS player can stream this (has hls_key)
+    embed_external  -- can be embedded inline from its original host
+    open_external   -- best offered as an outbound link (no player, no embed)
+    watch           -- a viewer can watch it *somehow* (internal, embed, or link)
+    transcript      -- a ready transcript exists (regardless of how it got here)
+    moment_search   -- transcript is indexable for cross-video semantic search
     ask_video       -- "Ask This Video" can answer questions about it
+    seek            -- exact-moment jumps are reliable: needs BOTH a ready
+                       transcript AND a seekable player (HLS or an embed we
+                       drive via its player API) -- never true for an
+                       outbound-link-only item even if it has a transcript
     tunnels         -- has at least one tag/topic, so it can sit in a Tunnel
     map             -- has at least one tag/topic, so it can be a Map node
-    tumble          -- public and actually playable (internally or via embed)
+    tumble          -- public and watchable (internally, via embed, or link)
     """
 
     play_internal: bool = False
     embed_external: bool = False
     open_external: bool = False
+    watch: bool = False
     transcript: bool = False
     moment_search: bool = False
     ask_video: bool = False
+    seek: bool = False
     tunnels: bool = False
     map: bool = False
     tumble: bool = False
@@ -157,9 +196,27 @@ class Video(BaseModel):
     visibility: str = "public"
     # "hosted" (transcoded + stored by RabbitHole) | "external" (embedded or
     # linked from its original host). Legacy records with no source_type at
-    # all derive to "hosted" whenever hls_key is present, else "external" --
-    # see main.py::_to_video. Never requires a backfill.
+    # all read as "hosted" -- see main.py::_source_type. Never a backfill.
     source_type: str = "hosted"
+    # External-content provenance. All None/absent for hosted content.
+    #   provider     -- "youtube" | "generic" (see providers.py)
+    #   source_url   -- canonical page for the content on its original host
+    #   provider_id  -- e.g. the YouTube video id
+    #   embed_url    -- provider-official inline-embed URL, when embeddable
+    #   source_name  -- the creator/source label shown in the UI (also stored
+    #                   as `owner` so existing card/watch code needs no change)
+    provider: str | None = None
+    source_url: str | None = None
+    provider_id: str | None = None
+    embed_url: str | None = None
+    source_name: str | None = None
+    # Where this record's transcript came from, independent of video hosting:
+    #   "transcribe" -- RabbitHole's own AWS Transcribe pipeline (hosted media)
+    #   "provider"   -- provider-authorized captions (import path; see docs)
+    #   "imported"   -- an admin/trusted process supplied the text + timing
+    #   "none"       -- no transcript
+    # Legacy hosted records derive "transcribe" when has_transcript, else "none".
+    transcript_source: str = "none"
     # Derived capability set -- see Capabilities above. Always computed, never
     # independently trusted.
     capabilities: Capabilities = Capabilities()

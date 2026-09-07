@@ -13,7 +13,7 @@ import {
   stepBack,
   tunnelPath,
 } from "./topicGraph";
-import { getTopicConnections, type TopicConnection } from "./api";
+import { canWatch, getTopicConnections, type TopicConnection } from "./api";
 import { SkeletonFeed } from "./Skeleton";
 
 const NARROW_QUERY = "(max-width: 640px)";
@@ -43,7 +43,8 @@ export function TopicMapPage() {
   const { videos, loading } = useApp();
 
   const { nodes, edges } = useMemo(() => {
-    const ready = videos.filter((v) => v.status === "ready" && !!v.playback_url);
+    // Hosted and external alike — the topic graph is about ideas, not hosting.
+    const ready = videos.filter(canWatch);
     return buildTopicGraph(ready);
   }, [videos]);
 

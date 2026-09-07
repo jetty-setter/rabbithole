@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useApp } from "./App";
+import { canWatch } from "./api";
 import { EditorialCard } from "./EditorialCard";
 
 /** Local watch history — the trail of videos you've been down, newest first. */
@@ -11,7 +12,7 @@ export function TrailPage() {
     const byId = new Map(videos.map((v) => [v.video_id, v]));
     return trail
       .map((id) => byId.get(id))
-      .filter((v): v is NonNullable<typeof v> => !!v && v.status === "ready" && !!v.playback_url);
+      .filter((v): v is NonNullable<typeof v> => !!v && canWatch(v));
   }, [videos, trail]);
 
   return (

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useApp } from "./App";
+import { canWatch } from "./api";
 import { VideoCard } from "./VideoCard";
 import { SkeletonFeed } from "./Skeleton";
 
@@ -30,7 +31,7 @@ export function DenPage() {
   if (loading && mine.length === 0) return <SkeletonFeed />;
 
   const recent = mine
-    .filter((v) => v.status === "ready" && !!v.playback_url)
+    .filter(canWatch)
     .sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""))
     .slice(0, 4);
 

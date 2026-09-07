@@ -3,17 +3,25 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { useApp } from "./App";
 import {
   askVideo,
+  canAsk,
+  canEmbed,
+  canPlayInternal,
+  canSeekExactMoment,
+  canWatch,
   deleteVideo,
   displayTitle,
   formatDuration,
+  hasTranscript,
   relativeTime,
   searchMoments,
   transcriptSectionState,
   updateVideo,
   type AskAnswer,
   type SearchMoment,
+  type Video,
 } from "./api";
 import { Player } from "./Player";
+import { EmbedPlayer } from "./EmbedPlayer";
 import { SkeletonWatch } from "./Skeleton";
 import { Comments } from "./Comments";
 import { Avatar } from "./Avatar";
@@ -27,6 +35,17 @@ function fmtTime(s: number): string {
   const m = Math.floor(s / 60);
   const sec = Math.floor(s % 60);
   return `${m}:${sec.toString().padStart(2, "0")}`;
+}
+
+/** Human label for an external source, from the provider or the URL host. */
+function sourceLabel(v: Video): string {
+  if (v.provider === "youtube") return "YouTube";
+  if (v.source_name) return v.source_name;
+  try {
+    return new URL(v.source_url ?? "").hostname.replace(/^www\./, "");
+  } catch {
+    return "source";
+  }
 }
 
 export function WatchPage() {
@@ -49,6 +68,8 @@ export function WatchPage() {
   } = useApp();
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  // For an embedded provider player, this holds its imperative seek fn.
+  const embedSeekRef = useRef<((seconds: number) => void) | null>(null);
   const { video, setVideo, notFound } = useVideoData(id, recordTrail);
   useDocumentMeta(video ? displayTitle(video) : undefined, video?.description ?? undefined);
   const { cues, cuesRef, cueQuery, setCueQuery, activeCue, shownCues } = useTranscript(
@@ -80,7 +101,7 @@ export function WatchPage() {
   const related = useMemo(
     () =>
       videos
-        .filter((v) => v.status === "ready" && !!v.playback_url && v.video_id !== id)
+        .filter((v) => canWatch(v) && v.video_id !== id)
         .slice(0, 12),
     [videos, id],
   );
@@ -94,7 +115,7 @@ export function WatchPage() {
   const [deeperMoments, setDeeperMoments] = useState<SearchMoment[] | null>(null);
   useEffect(() => {
     setDeeperMoments(null);
-    if (!video || !video.has_transcript) return;
+    if (!video || !hasTranscript(video)) return;
     // Wait for the transcript to finish loading so the seed reflects real
     // cue text; this effect re-fires once `cues` populates.
     if (cues.length === 0) return;
@@ -103,12 +124,7 @@ export function WatchPage() {
     searchMoments(seed).then((results) => {
       if (!live) return;
       setDeeperMoments(
-        results.filter(
-          (r) =>
-            r.video.video_id !== video.video_id &&
-            r.video.status === "ready" &&
-            !!r.video.playback_url,
-        ),
+        results.filter((r) => r.video.video_id !== video.video_id && canWatch(r.video)),
       );
     });
     return () => {
@@ -230,9 +246,13 @@ export function WatchPage() {
 
   function seekTo(t: number) {
     const v = videoRef.current;
-    if (!v) return;
-    v.currentTime = Math.max(0, t);
-    v.play().catch(() => {});
+    if (v) {
+      v.currentTime = Math.max(0, t);
+      v.play().catch(() => {});
+      return;
+    }
+    // Embedded provider player (e.g. YouTube) — drive it via its player API.
+    embedSeekRef.current?.(t);
   }
 
   function onReact(kind: "hop" | "thump") {
@@ -314,13 +334,22 @@ export function WatchPage() {
   const isHopped = hopped.has(vid);
   const isThumped = thumped.has(vid);
   const transcriptState = transcriptSectionState(video);
+  const isExternal = video.source_type === "external";
+  // One capability-driven decision about the transcript UI, rather than a
+  // check per control. Hosted content keeps its existing state-aware section
+  // (transcribing / no_speech / unavailable); external content shows the
+  // transcript UI only when a transcript actually exists.
+  const showTranscriptUI = hasTranscript(video) || !isExternal;
+  // A stale "transcript" rail selection from a prior video falls back to
+  // "related" when the current one has no transcript rail.
+  const effectiveRail = showTranscriptUI ? railMode : "related";
 
   return (
     <main className="page watch">
       <div className="watch-grid">
         <div className="watch-main">
           <div className="player-stage">
-            {video.playback_url && (
+            {canPlayInternal(video) && video.playback_url ? (
               <div className="player-wrap">
                 <Player
                   src={video.playback_url}
@@ -329,8 +358,43 @@ export function WatchPage() {
                   poster={video.thumbnail_url}
                 />
               </div>
-            )}
+            ) : canEmbed(video) && video.embed_url ? (
+              <EmbedPlayer
+                videoId={video.provider === "youtube" ? video.provider_id : null}
+                embedUrl={video.embed_url}
+                title={displayTitle(video)}
+                startAt={startAt}
+                registerSeek={(fn) => {
+                  embedSeekRef.current = fn;
+                }}
+              />
+            ) : video.source_url ? (
+              <div className="watch-source-panel">
+                {video.thumbnail_url ? (
+                  <img src={video.thumbnail_url} alt="" className="watch-source-thumb" />
+                ) : (
+                  <img src="/RHRabbit.png?v=5" alt="" className="watch-source-thumb thumb-ph" />
+                )}
+                <a
+                  className="btn-primary watch-source-cta"
+                  href={video.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Watch at {sourceLabel(video)} <span aria-hidden="true">↗</span>
+                </a>
+              </div>
+            ) : null}
           </div>
+
+          {isExternal && video.source_url && (canPlayInternal(video) || canEmbed(video)) && (
+            <p className="watch-source-line">
+              Source:{" "}
+              <a href={video.source_url} target="_blank" rel="noopener noreferrer">
+                {sourceLabel(video)} <span aria-hidden="true">↗</span>
+              </a>
+            </p>
+          )}
 
           <div className="watch-meta">
             {editing ? (
@@ -459,7 +523,7 @@ export function WatchPage() {
             )}
           </div>
 
-          {video.has_transcript && (
+          {canAsk(video) && (
             <section className="feature-panel ask-video">
               <h2 className="feature-head">Ask this video</h2>
               <form className="ask-form" onSubmit={submitAsk}>
@@ -504,6 +568,7 @@ export function WatchPage() {
             </section>
           )}
 
+          {showTranscriptUI && (
           <section className="transcript">
             <div className="transcript-head">
               <h3 className="related-head">Transcript</h3>
@@ -545,6 +610,7 @@ export function WatchPage() {
               </div>
             )}
           </section>
+          )}
 
           <Comments videoId={vid} />
         </div>
@@ -562,17 +628,19 @@ export function WatchPage() {
             >
               Related
             </button>
-            <button
-              type="button"
-              role="tab"
-              id="rail-tab-transcript"
-              aria-controls="rail-panel-transcript"
-              aria-selected={railMode === "transcript"}
-              className={railMode === "transcript" ? "rail-tab active" : "rail-tab"}
-              onClick={() => setRailMode("transcript")}
-            >
-              Transcript
-            </button>
+            {showTranscriptUI && (
+              <button
+                type="button"
+                role="tab"
+                id="rail-tab-transcript"
+                aria-controls="rail-panel-transcript"
+                aria-selected={railMode === "transcript"}
+                className={railMode === "transcript" ? "rail-tab active" : "rail-tab"}
+                onClick={() => setRailMode("transcript")}
+              >
+                Transcript
+              </button>
+            )}
           </div>
 
           <div
@@ -580,13 +648,19 @@ export function WatchPage() {
             role="tabpanel"
             aria-labelledby="rail-tab-related"
             className="rail-panel-related"
-            hidden={railMode !== "related"}
+            hidden={effectiveRail !== "related"}
           >
             <p className="related-sub">Connected moments from across RabbitHole.</p>
             {deeperMoments && deeperMoments.length > 0
-              ? deeperMoments.map((r) => (
+              ? deeperMoments.map((r) => {
+                  const seekable = canSeekExactMoment(r.video);
+                  return (
                   <Link
-                    to={`/watch/${r.video.video_id}?t=${Math.floor(r.start)}`}
+                    to={
+                      seekable
+                        ? `/watch/${r.video.video_id}?t=${Math.floor(r.start)}`
+                        : `/watch/${r.video.video_id}`
+                    }
                     className="related-item deeper-moment"
                     key={r.video.video_id}
                   >
@@ -596,14 +670,17 @@ export function WatchPage() {
                       ) : (
                         <img src="/RHRabbit.png?v=5" alt="" className="thumb-ph" />
                       )}
-                      <span className="dur-badge">{fmtTime(r.start)}</span>
+                      <span className="dur-badge">
+                        {seekable ? fmtTime(r.start) : "mentioned"}
+                      </span>
                     </div>
                     <div className="related-info">
                       <span className="related-title">{displayTitle(r.video)}</span>
                       <span className="deeper-snippet">“…{r.snippet}…”</span>
                     </div>
                   </Link>
-                ))
+                  );
+                })
               : related.map((r) => (
                   <Link to={`/watch/${r.video_id}`} className="related-item" key={r.video_id}>
                     <div className="related-thumb">
@@ -628,7 +705,7 @@ export function WatchPage() {
             role="tabpanel"
             aria-labelledby="rail-tab-transcript"
             className="rail-panel-transcript"
-            hidden={railMode !== "transcript"}
+            hidden={effectiveRail !== "transcript"}
           >
             {transcriptState === "ready" && cues.length > 0 && (
               <input
