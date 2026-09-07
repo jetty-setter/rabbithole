@@ -207,11 +207,11 @@
 }
 
 /* Collapse the primary nav into the menu at the same width the hero goes
-   to its phone layout. Above ~720px the full row (logo + 5 centred links +
-   Search/Upload/account) no longer fits and nav-right was being clipped
-   off the right edge by html{overflow-x:hidden} -- Search, Upload and the
-   account menu became unreachable on a 768/820 tablet. */
-@media (max-width: 900px) {
+   to its phone layout (true mobile, ≤760px). Above that -- including the
+   761-1080px compact desktop/tablet tier below -- the full row (logo + 5
+   centred links + Search/Upload/account) fits once tightened, so it's
+   kept rather than collapsed. */
+@media (max-width: 760px) {
   .nav-center {
     display: none;
   }
@@ -265,9 +265,50 @@
     height: 30px;
   }
 }
-@media (min-width: 561px) and (max-width: 900px) {
+@media (min-width: 561px) and (max-width: 760px) {
   .logo-mark {
     height: 34px;
+  }
+}
+
+/* ── Compact desktop / tablet landscape (761-1080px) ─────────────────────
+   Between true mobile and full desktop: the browser window is narrowed
+   (a laptop split-screen, a tablet in landscape) but still clearly a
+   desktop-class viewport, not a phone. The primary nav (Discover/Tunnels/
+   Map/Trail/Tumble) stays a real row, never collapsing into the menu --
+   that's the one thing this tier exists to fix. But the logo + full nav +
+   Search/Upload/Sign in/Sign up/account row needs ~1000px unbroken to
+   avoid wrapping or clipping, so the secondary actions (Search's label,
+   Upload, Sign in, Sign up) fall back to the account menu across this
+   whole tier -- the exact same menu-mobile-primary mechanism true mobile
+   already uses, just with the primary nav left on screen instead of
+   also collapsing. No new interaction introduced. */
+@media (min-width: 761px) and (max-width: 1080px) {
+  .topbar {
+    gap: 16px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .logo-mark {
+    height: 34px;
+  }
+  .nav-center {
+    gap: 18px;
+  }
+  .nav-right {
+    gap: 10px;
+  }
+  .nav-search-trigger-label {
+    display: none;
+  }
+  .menu-mobile-primary {
+    display: block;
+  }
+  .topbar .nav-upload-link,
+  .topbar .nav-right > .btn-ghost,
+  .topbar .nav-right > .btn-primary,
+  .topbar .nav-sep {
+    display: none;
   }
 }
 
