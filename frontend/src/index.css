@@ -681,7 +681,11 @@ body {
        padding-top do the breathing room, so the hero-black -> --bg-2
        gradient stays continuous. */
     margin: 0 -16px;
-    padding: 44px 16px 44px;
+    /* Top padding trimmed 44px -> 40px as part of rebalancing the
+       capability-strip -> "Start Somewhere" gap (see
+       .section-head:first-child's margin-top below -- the two stack to
+       form that single gap). */
+    padding: 40px 16px 44px;
   }
 }
 
@@ -4648,9 +4652,11 @@ body::after {
     /* Eyebrow -> headline gap, tightened further (16px -> 14px). */
     margin-bottom: 14px;
   }
-  /* Search -> supporting-copy gap: unchanged from the previous pass. */
+  /* Search -> capability-strip gap: 24px -> 26px, centred in the
+     24-28px target so the strip reads as supporting information for
+     the search action above it. */
   .home-hero-points {
-    margin-top: 24px;
+    margin-top: 26px;
     /* Three-column capability strip instead of three stacked sentences
        -- no markup change: each .home-hero-point is a <p> containing a
        <span class="home-hero-point-verb"> followed by plain text (" what
@@ -4714,7 +4720,15 @@ body::after {
 /* ── Homepage rhythm below the hero ─────────────────────────────────── */
 @media (max-width: 560px) {
   .home-browse .section-head:first-child {
-    margin-top: 4px;
+    /* Combines with .home-browse's own 40px top padding above to form
+       the capability-strip -> "Start Somewhere" gap: was 44+4=48px (the
+       top of its 40-48px target with no margin for error), now
+       40+2=42px, comfortably inside it. margin-bottom (20px, from the
+       unconditional .section-head base rule) opened to 26px, within
+       the 24-28px target for "Start Somewhere" -> the topic chips --
+       previously the tightest of the three gaps in this rhythm at 20px. */
+    margin-top: 2px;
+    margin-bottom: 26px;
   }
   .home-browse .section-head-explore {
     margin-top: 40px;
