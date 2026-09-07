@@ -1,0 +1,318 @@
+.hood-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 18px;
+  margin: 18px 0 16px;
+}
+
+.hstat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hstat-num {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: -0.01em;
+}
+
+.hstat-num.accent {
+  color: var(--violet);
+}
+
+.hstat-dot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  height: 33px;
+}
+
+.hstat-l {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.hood-note {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 720px;
+}
+
+@media (max-width: 760px) {
+  .hood-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+
+/* ── Admin ───────────────────────────────────────────────── */
+
+.admin-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.admin-head h1 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 32px;
+  letter-spacing: -0.005em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.admin-sub {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin: 36px 0 14px;
+}
+
+.table-wrap {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.admin-table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 12px 16px;
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-table td {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none;
+}
+
+.table-empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 28px;
+}
+
+.tag {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 7px;
+  background: var(--panel-2);
+  color: var(--muted);
+}
+
+.tag.s-ready {
+  color: var(--violet);
+  background: rgba(154, 130, 242, 0.12);
+}
+
+.tag.s-processing,
+.tag.s-uploaded,
+.tag.s-pending_upload {
+  color: var(--warning);
+  background: rgba(251, 191, 36, 0.12);
+}
+
+.tag.s-failed {
+  color: var(--danger);
+  background: rgba(255, 84, 104, 0.12);
+}
+
+/* Homepage-Featured toggle in the Operations table — a restrained text
+   control in the existing admin language, not a new component. Selected
+   state uses the same violet the rest of admin uses for "active". */
+.feature-toggle {
+  background: transparent;
+  border: 1px solid var(--border-2);
+  color: var(--muted);
+  border-radius: 7px;
+  padding: 5px 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+}
+
+.feature-toggle:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--text);
+}
+
+.feature-toggle.on {
+  color: var(--violet);
+  border-color: var(--violet);
+  background: rgba(154, 130, 242, 0.12);
+}
+
+.feature-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Admin thumbnail frame picker ─────────────────────────────────── */
+.thumb-pick-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: transparent;
+  border: 1px solid var(--border-2);
+  color: var(--muted);
+  border-radius: 7px;
+  padding: 5px 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+.thumb-pick-btn:hover {
+  color: var(--text);
+  border-color: var(--text);
+}
+.thumb-manual-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--violet);
+  border: 1px solid var(--violet);
+  border-radius: 5px;
+  padding: 1px 4px;
+}
+.thumb-pick-row > td {
+  background: var(--bg-2);
+}
+.thumb-pick {
+  padding: 14px 4px 18px;
+}
+.thumb-pick-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.thumb-pick-note {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 6px 0;
+}
+.thumb-reset-btn {
+  background: transparent;
+  border: 1px solid var(--border-2);
+  color: var(--text);
+  border-radius: 7px;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.thumb-reset-btn:hover:not(:disabled) {
+  border-color: var(--violet);
+  color: var(--violet);
+}
+.thumb-reset-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.thumb-cand-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+.thumb-cand {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 6px;
+  background: var(--panel);
+  border: 1px solid var(--border-2);
+  border-radius: 10px;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: border-color 120ms ease;
+}
+.thumb-cand img,
+.thumb-cand-noimg {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 6px;
+  background: var(--bg);
+}
+.thumb-cand:hover:not(:disabled) {
+  border-color: var(--text);
+}
+.thumb-cand:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
+}
+.thumb-cand.is-current {
+  border-color: var(--violet);
+  box-shadow: inset 0 0 0 1px var(--violet);
+}
+.thumb-cand:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+.thumb-cand-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.thumb-cand-time {
+  font-variant-numeric: tabular-nums;
+}
+.thumb-cand-flag {
+  font-weight: 700;
+  color: var(--violet);
+}
+.thumb-cand-flag.muted {
+  font-weight: 600;
+  color: var(--muted);
+}
+

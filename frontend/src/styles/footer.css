@@ -1,0 +1,101 @@
+/* ── Global site footer: restrained end-credit treatment ─────
+   Rendered once in App.tsx's Layout, after every routed page -- not
+   homepage-only. Deliberately minimal: wordmark + tagline, a compact
+   nav, a quiet copyright line. No columns, no newsletter, no socials. */
+.site-footer {
+  width: 100%;
+  border-top: 1px solid rgba(251, 245, 232, 0.08);
+  background: #050505;
+  color: var(--text);
+  /* Routed pages already provide their own bottom spacing (.page's
+     padding-bottom, or .home-browse on the homepage) -- an additional
+     margin here was stacking into a large empty band. */
+  margin-top: 0;
+}
+
+.site-footer-inner {
+  max-width: 1220px;
+  margin: 0 auto;
+  padding: 52px 28px 30px;
+}
+
+.site-footer-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 48px;
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-logo {
+  height: 34px;
+  width: auto;
+  display: block;
+}
+
+.footer-tagline {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  justify-content: flex-end;
+}
+
+.footer-nav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color 150ms ease;
+}
+
+.footer-nav a:hover {
+  color: var(--text);
+}
+
+.site-footer-bottom {
+  margin-top: 42px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(251, 245, 232, 0.05);
+  color: rgba(251, 245, 232, 0.42);
+  font-size: 12px;
+}
+
+@media (max-width: 700px) {
+  .site-footer-main {
+    flex-direction: column;
+  }
+  .footer-nav {
+    justify-content: flex-start;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Mobile UAT polish — phone-specific composition, touch targets, and
+   Safari behaviour. Desktop rules above are untouched; everything here is
+   inside a phone/tablet media query. Kept as one block so it reads (and
+   reviews) as a single intentional pass.
+   ════════════════════════════════════════════════════════════════════ */
+
+
+@media (max-width: 560px) {
+  .site-footer-inner {
+    padding: 40px var(--gutter-mobile) max(24px, env(safe-area-inset-bottom));
+  }
+  .site-footer-bottom {
+    margin-top: 32px;
+  }
+}
