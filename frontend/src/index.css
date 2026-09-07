@@ -680,10 +680,11 @@ body {
        padding-top do the breathing room, so the hero-black -> --bg-2
        gradient stays continuous. */
     margin: 0 -16px;
-    /* Capability strip -> "Start Somewhere" gap: final value, confirmed
-       live via the DIAGNOSTIC-4488 build (combines with
-       .section-head:first-child's unchanged 2px margin-top: 16+2=18px). */
-    padding: 16px 16px 44px;
+    /* Capability strip -> "Start Somewhere" gap: 18px (16+2, confirmed
+       live via DIAGNOSTIC-4488) read slightly too tight against the
+       capability descriptions, so +8px here (combines with
+       .section-head:first-child's unchanged 2px margin-top: 24+2=26px). */
+    padding: 24px 16px 44px;
   }
 }
 
@@ -4652,10 +4653,11 @@ body::after {
        DIAGNOSTIC-4488 build. */
     margin-bottom: 10px;
   }
-  /* Search -> capability-strip gap: final value, confirmed live via the
-     DIAGNOSTIC-4488 build. */
+  /* Search -> capability-strip gap: 8px (confirmed live via
+     DIAGNOSTIC-4488) read slightly too tight against the search field's
+     bottom border, so +6px here. */
   .home-hero-points {
-    margin-top: 8px;
+    margin-top: 14px;
     /* Three-column capability strip instead of three stacked sentences
        -- no markup change: each .home-hero-point is a <p> containing a
        <span class="home-hero-point-verb"> followed by plain text (" what
@@ -4719,11 +4721,10 @@ body::after {
 /* ── Homepage rhythm below the hero ─────────────────────────────────── */
 @media (max-width: 560px) {
   .home-browse .section-head:first-child {
-    /* Combines with .home-browse's own 30px top padding above to form
-       the capability-strip -> "Start Somewhere" gap: 30+2=32px, per
-       this round's explicit rendered-gap target. margin-bottom (26px,
-       "Start Somewhere" -> the topic chips) is unrelated to this pass
-       and left as-is. */
+    /* Combines with .home-browse's own 24px top padding above to form
+       the capability-strip -> "Start Somewhere" gap: 24+2=26px. margin-
+       bottom (26px, "Start Somewhere" -> the topic chips) is unrelated
+       to this pass and left as-is. */
     margin-top: 2px;
     margin-bottom: 26px;
   }
