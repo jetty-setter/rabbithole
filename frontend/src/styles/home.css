@@ -23,7 +23,11 @@
   padding-top: clamp(64px, 9vh, 108px);
   padding-right: 28px;
   padding-bottom: 72px;
-  padding-left: clamp(64px, 8vw, 180px);
+  /* +20px over the whole range (was clamp(64px, 8vw, 180px)) -- the copy
+     column was sitting close enough to the left edge that the eyebrow
+     read as bleeding into the background rather than placed inside the
+     frame. Same clamp shape, just shifted inward. */
+  padding-left: clamp(84px, calc(8vw + 20px), 200px);
   overflow: hidden;
   isolation: isolate;
   background-color: var(--hero-black);
@@ -79,7 +83,10 @@
   .home-hero-grid {
     min-height: clamp(460px, 70vh, 620px);
     padding-top: clamp(48px, 6vh, 72px);
-    padding-left: clamp(40px, 6vw, 88px);
+    /* +10px over the whole range (was clamp(40px, 6vw, 88px)) -- half of
+       desktop's +20px shift, matching this tier's already-scaled-down
+       proportions. */
+    padding-left: clamp(50px, calc(6vw + 10px), 98px);
     padding-bottom: 48px;
   }
   .home-hero {
