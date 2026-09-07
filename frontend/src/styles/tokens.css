@@ -1,0 +1,46 @@
+:root {
+  --bg: #050505;
+  --hero-black: #030105;
+  --bg-2: #0d0d0e;
+  --panel: #131316;
+  --panel-2: #1a1a1e;
+  --border: #2b2830;
+  --border-2: #33333f;
+  --text: #fbf5e8;
+  --muted: #aaa3a0;
+  /* Tonal violet is the entire accent system now: --violet for primary
+     interaction and brand, --violet-soft as a restrained intermediate step,
+     --violet-light for occasional higher-emphasis marks on black. The
+     hierarchy stays black > ivory > violet > lavender; the content
+     (thumbnails, featured imagery) supplies the rest of the colour. */
+  --violet: #9a82f2;
+  --violet-soft: #b29cf8;
+  --violet-light: #c4b5fd;
+  /* Semantic states only — never decorative. */
+  --danger: #ff5468;
+  --warning: #fbbf24;
+
+  --display: "Archivo", system-ui, sans-serif;
+  --sans: "Inter", system-ui, -apple-system, sans-serif;
+
+  /* .topbar's real rendered height (14px padding top/bottom + the 42px
+     logo + 1px border) -- used to size the desktop hero off the actual
+     viewport remainder instead of a guessed min-height. */
+  --header-height: 71px;
+
+  /* Compact spacing scale. Not every value in the codebase maps to one of
+     these -- introduced for the handful of places that reuse the exact
+     same gap/gutter in more than one file, not as a replacement for
+     purpose-tuned values (hero rhythm, card padding, etc. stay literal). */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* The mobile content gutter -- .page's left/right padding at ≤560px,
+     matched by .home-browse's full-bleed margin and the footer's own
+     mobile padding so all three stay in lockstep at a glance. */
+  --gutter-mobile: 16px;
+}

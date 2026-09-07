@@ -1,0 +1,177 @@
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-form .search {
+  max-width: none;
+  width: 100%;
+}
+
+.auth-switch {
+  margin: 16px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--violet);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.link-btn:hover {
+  color: var(--text);
+}
+
+/* ── Modals ──────────────────────────────────────────────── */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(5, 5, 8, 0.78);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fade 140ms ease;
+}
+
+.modal {
+  width: 100%;
+  max-width: 460px;
+  background: var(--panel);
+  border: 1px solid var(--border-2);
+  border-radius: 18px;
+  padding: 22px;
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.modal-head h2 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.dropzone {
+  border: 2px dashed var(--border-2);
+  border-radius: 14px;
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.dropzone:hover,
+.dropzone.drag {
+  border-color: var(--violet);
+  background: rgba(154, 130, 242, 0.05);
+}
+
+.dropzone b {
+  color: var(--violet);
+}
+
+.dz-icon {
+  font-size: 30px;
+}
+
+.dz-file {
+  color: var(--text);
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.bar {
+  width: 100%;
+  height: 8px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 16px;
+}
+
+.fill {
+  height: 100%;
+  background: var(--violet);
+  transition: width 120ms ease;
+}
+
+.err {
+  color: var(--danger);
+  font-size: 13px;
+  margin: 12px 0 0;
+}
+
+/* Player shell -- owns the dimensions/aspect-ratio/chrome; the <video> and
+   the custom control bar are both absolutely positioned inside it. Same
+   box the native <video controls> element used to be, so nothing about
+   the player's size on the page changes. */
+
+/* ── Upload extra fields ─────────────────────────────────── */
+
+.upload-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.search.wide {
+  max-width: none;
+  width: 100%;
+}
+
+.ta {
+  resize: vertical;
+  min-height: 64px;
+  font-family: inherit;
+  line-height: 1.5;
+  padding-top: 9px;
+}
+
+
+/* ── Modals: fit the viewport, scroll internally, clear the keyboard ── */
+@media (max-width: 560px) {
+  .modal-backdrop {
+    padding: 12px;
+    align-items: flex-start;
+    /* dvh tracks the visible viewport as Safari's bars show/hide. */
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  .modal {
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 18px 16px max(18px, env(safe-area-inset-bottom));
+    border-radius: 16px;
+  }
+  .modal-head .icon-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 15px;
+  }
+}

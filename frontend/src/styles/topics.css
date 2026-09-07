@@ -1,0 +1,772 @@
+/* ── Tunnels (browse by topic) ─────────────────────────────── */
+.tunnel-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Matches the homepage "Start somewhere" discovery-chip language --
+   squared-off corners, quiet border, no pill/violet-capsule treatment. */
+.tunnel-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 14px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: border-color 130ms ease, transform 130ms ease;
+}
+.tunnel-chip:hover {
+  border-color: var(--violet);
+  transform: translateY(-1px);
+}
+.tunnel-tag {
+  color: var(--text);
+}
+.tunnel-count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  background: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* Tighter, quieter refinement for the Tunnels index page specifically.
+   .tunnel-cloud is also used bare on CreatorPage, so this scopes to
+   .tunnels-index-cloud (Tunnels page only) rather than .tunnel-cloud
+   itself, leaving CreatorPage's chips untouched. */
+.tunnels-index-cloud .tunnel-chip {
+  gap: 7px;
+  padding: 7px 12px;
+  transition: border-color 130ms ease, background 130ms ease, transform 130ms ease;
+}
+.tunnels-index-cloud .tunnel-chip:hover {
+  background: rgba(154, 130, 242, 0.06);
+}
+.tunnels-index-cloud .tunnel-chip:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
+}
+
+/* ── Tunnels: "Browse tunnels" -- scalable directory ──────────
+   Keeps the default page height flat regardless of catalog size: a
+   capped default chip set, an opt-in A-Z directory instead of dumping
+   everything at once, and a quiet find field that searches the full
+   list without changing the page's default footprint. */
+.tunnel-browse-tools {
+  margin-bottom: 16px;
+}
+
+.tunnel-search-input {
+  width: 400px;
+  max-width: 100%;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+}
+.tunnel-search-input::placeholder {
+  color: var(--muted);
+}
+.tunnel-search-input:focus {
+  outline: none;
+  border-color: var(--violet);
+}
+
+.tunnel-empty-note {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 4px 0;
+}
+
+.tunnel-view-toggle {
+  display: inline-block;
+  margin-top: 18px;
+  font-size: 13.5px;
+}
+
+.tunnel-directory-group {
+  margin-bottom: 22px;
+}
+.tunnel-directory-group:last-child {
+  margin-bottom: 0;
+}
+
+/* Small editorial marker, not a heading-scale letter -- matches
+   .featured-eyebrow's register. */
+.tunnel-directory-letter {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--violet);
+  margin: 0 0 10px;
+}
+
+/* ── Tunnels: "Start somewhere" featured section ─────────────
+   One larger primary tunnel + two smaller secondaries stacked beside it,
+   same cinematic card language as .featured-thumb (radius, border, hover
+   lift) but full-bleed with a bottom scrim so the tag/count/CTA can sit
+   directly on the image. */
+.tunnel-featured {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.tunnel-feat-secondaries {
+  flex: 1 1 0%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.tunnel-feat-card {
+  position: relative;
+  display: block;
+  flex: 1 1 0%;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 180ms ease, box-shadow 220ms ease, transform 180ms ease;
+}
+.tunnel-feat-card:hover,
+.tunnel-feat-card:focus-visible {
+  border-color: var(--border-2);
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+}
+.tunnel-feat-card:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
+}
+.tunnel-feat-card img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 380ms ease;
+}
+.tunnel-feat-card:hover img,
+.tunnel-feat-card:focus-visible img {
+  transform: scale(1.03);
+}
+
+.tunnel-feat-primary {
+  flex: 1.6 1 0%;
+  aspect-ratio: 16 / 10;
+}
+
+.tunnel-feat-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.08) 55%, transparent 78%);
+}
+
+.tunnel-feat-info {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tunnel-feat-tag {
+  font-family: var(--display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.005em;
+  font-size: clamp(19px, 2.2vw, 26px);
+}
+.tunnel-feat-primary .tunnel-feat-tag {
+  font-size: clamp(26px, 3.4vw, 40px);
+}
+
+.tunnel-feat-count {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.tunnel-feat-cta {
+  color: var(--violet);
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 3px;
+}
+
+@media (max-width: 900px) {
+  .tunnel-feat-primary .tunnel-feat-tag {
+    font-size: clamp(22px, 4vw, 30px);
+  }
+}
+
+@media (max-width: 700px) {
+  /* Full vertical stack: primary, then each secondary, all full-width. */
+  .tunnel-featured {
+    flex-direction: column;
+  }
+  .tunnel-feat-primary {
+    aspect-ratio: 16 / 9;
+  }
+  .tunnel-feat-secondaries .tunnel-feat-card {
+    aspect-ratio: 16 / 9;
+  }
+  .tunnel-search-input {
+    width: 100%;
+  }
+}
+
+/* ── Creator profile ────────────────────────────────────────── */
+.creator-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.avatar.lg {
+  width: 64px;
+  height: 64px;
+}
+
+.creator-id h1 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(26px, 4vw, 38px);
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+.creator-id p {
+  margin: 4px 0 0;
+  font-size: 13.5px;
+}
+
+.creator-stats {
+  display: flex;
+  gap: 28px;
+  margin-bottom: 26px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--border);
+}
+
+.creator-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.creator-stat-n {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+
+.creator-stat-label {
+  font-size: 12.5px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.creator-topics {
+  margin-bottom: 30px;
+}
+
+.creator-videos-head {
+  margin-bottom: 16px;
+}
+
+/* ── Topic map: guided topic navigator ────────────────────────
+   Not a network diagram. You pick a topic, see its strongest connections
+   arranged around it, and follow one to re-centre — a hub-and-spoke
+   "rabbit hole", one step at a time. Palette only: near-black, ivory,
+   violet, lavender. No category colour, no legend. */
+
+/* Opening view: a handful of distinct starting topics. */
+.topic-starts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  max-width: 760px;
+}
+.topic-start {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  padding: 16px 18px;
+  border: 1px solid var(--border-2);
+  border-radius: 12px;
+  background: rgba(154, 130, 242, 0.04);
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
+}
+.topic-start:hover {
+  border-color: var(--violet);
+  background: rgba(154, 130, 242, 0.1);
+  transform: translateY(-2px);
+}
+.topic-start:focus-visible {
+  outline: 2px solid var(--violet-light);
+  outline-offset: 2px;
+}
+.topic-start-tag {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.topic-start-meta {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+/* ── The navigator ───────────────────────────────────────────── */
+.topic-nav {
+  max-width: 760px;
+}
+
+/* Breadcrumb of followed topics. */
+.topic-path {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 18px;
+  scrollbar-width: none;
+}
+.topic-path::-webkit-scrollbar {
+  display: none;
+}
+.topic-path-sep {
+  color: var(--muted);
+  flex: none;
+  font-size: 12px;
+}
+.topic-path-step {
+  flex: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 120ms ease;
+}
+.topic-path-step:hover {
+  color: var(--text);
+}
+.topic-path-step.is-current {
+  color: var(--violet-light);
+  cursor: default;
+}
+
+.topic-nav-head {
+  margin-bottom: 8px;
+}
+.topic-nav-head h2 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(24px, 4vw, 32px);
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+.topic-nav-head p {
+  margin: 4px 0 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.topic-nav-empty {
+  margin: 28px 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ── Radial hub (wider screens) ──────────────────────────────── */
+.topic-hub {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  margin: 8px auto 4px;
+  aspect-ratio: 1 / 1;
+  animation: fade 220ms ease both;
+}
+.topic-hub-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.topic-hub-lines line {
+  stroke: var(--violet);
+  opacity: 0.28;
+}
+
+.topic-hub-center,
+.topic-hub-spoke {
+  position: absolute;
+  transform: translate(-50%, -50%);
+}
+
+/* Current topic — the clear centre, strongest emphasis (no glow). */
+.topic-hub-center {
+  left: 50%;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 44%;
+  padding: 12px 18px;
+  border: 2px solid var(--violet-light);
+  border-radius: 999px;
+  background: rgba(154, 130, 242, 0.22);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(15px, 2.4vw, 19px);
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-align: center;
+}
+
+/* Connected topics — restrained violet, always labelled. */
+.topic-hub-spoke {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  width: max-content;
+  max-width: 150px;
+  padding: 9px 14px;
+  border: 1px solid rgba(154, 130, 242, 0.45);
+  border-radius: 12px;
+  background: rgba(154, 130, 242, 0.08);
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease, transform 120ms ease;
+}
+.topic-hub-spoke:hover {
+  border-color: var(--violet);
+  background: rgba(154, 130, 242, 0.16);
+  transform: translate(-50%, -50%) scale(1.03);
+}
+.topic-hub-spoke:focus-visible {
+  outline: 2px solid var(--violet-light);
+  outline-offset: 2px;
+}
+.topic-hub-spoke-dot {
+  width: var(--dot, 9px);
+  height: var(--dot, 9px);
+  border-radius: 50%;
+  background: var(--violet);
+  margin-bottom: 1px;
+}
+.topic-hub-spoke-tag {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.topic-hub-spoke-meta {
+  font-size: 11px;
+  color: var(--muted);
+}
+/* A curated connection exists for this spoke -- one shade brighter than the
+   plain co-occurrence spokes, nothing louder. The relationship label itself
+   (replacing "N shared videos" in .topic-hub-spoke-meta above) is the real
+   signal; this is just a quiet visual hint before you've read it. */
+.topic-hub-spoke.has-connection {
+  border-color: rgba(154, 130, 242, 0.65);
+  background: rgba(154, 130, 242, 0.13);
+}
+.topic-hub-spoke.has-connection .topic-hub-spoke-meta {
+  color: var(--violet-light);
+}
+
+/* ── Vertical list (phones) ──────────────────────────────────── */
+.topic-spoke-list {
+  list-style: none;
+  margin: 12px 0 4px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: fade 220ms ease both;
+}
+.topic-spoke-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid rgba(154, 130, 242, 0.4);
+  border-radius: 12px;
+  background: rgba(154, 130, 242, 0.06);
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+.topic-spoke-row:hover {
+  border-color: var(--violet);
+  background: rgba(154, 130, 242, 0.14);
+}
+.topic-spoke-row:focus-visible {
+  outline: 2px solid var(--violet-light);
+  outline-offset: 2px;
+}
+.topic-spoke-tag {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+}
+.topic-spoke-meta {
+  flex: none;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+/* ── "Why this connects" -- curated Connection explanations for whichever
+   spokes above actually have one. Deliberately plain: a short list, not a
+   panel/card system, so it reads as a footnote to the graph rather than a
+   competing UI. Absent entirely for any topic with no curated data (the
+   overwhelming majority today) -- the graph above is completely unchanged
+   in that case. */
+.topic-why-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.topic-why-item {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.topic-why-pair {
+  display: block;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  color: var(--text);
+}
+.topic-why-relationship {
+  display: inline-block;
+  margin: 3px 0 2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--violet-light);
+}
+.topic-why-explanation {
+  display: block;
+  color: var(--muted);
+}
+
+/* ── Footer: the tunnel CTA + back / start over ──────────────── */
+.topic-nav-foot {
+  margin-top: 18px;
+}
+.topic-nav-cta.btn-primary {
+  display: inline-block;
+  text-decoration: none;
+  padding: 11px 20px;
+}
+.topic-nav-controls {
+  display: flex;
+  gap: 20px;
+  margin-top: 14px;
+}
+
+@media (max-width: 640px) {
+  .topic-nav-head h2 {
+    font-size: 24px;
+  }
+  .topic-nav-cta.btn-primary {
+    display: block;
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topic-hub,
+  .topic-spoke-list {
+    animation: none;
+  }
+}
+
+/* ── Trail header (title + clear button) ───────────────────── */
+.trail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* ── Den (your hub) ────────────────────────────────────────── */
+.den-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+  margin-bottom: 36px;
+}
+
+.den-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--panel);
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 130ms ease, transform 130ms ease;
+}
+.den-stat:not(.den-stat-static):hover {
+  border-color: var(--violet);
+  transform: translateY(-2px);
+}
+.den-num {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--violet);
+}
+.den-label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+
+/* ── Semantic search ───────────────────────────────────────── */
+.search-head {
+  max-width: 860px;
+}
+.search-query-title {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(26px, 4.2vw, 40px);
+  letter-spacing: -0.02em;
+  text-transform: none;
+  margin: 0;
+}
+.search-trail-line {
+  margin: 10px 0 0;
+  font-size: 14px;
+  color: var(--violet);
+  font-weight: 600;
+}
+
+.search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 860px;
+}
+
+.search-hit {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 16px;
+  text-decoration: none;
+  color: inherit;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--panel);
+  transition: border-color 130ms ease, transform 130ms ease;
+}
+.search-hit:hover {
+  border-color: var(--violet);
+  transform: translateY(-2px);
+}
+
+.search-thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.search-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.search-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 2px 0;
+}
+.search-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.search-snippet {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.search-by {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: auto;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+@media (max-width: 560px) {
+  .search-hit {
+    grid-template-columns: 1fr;
+  }
+}
+

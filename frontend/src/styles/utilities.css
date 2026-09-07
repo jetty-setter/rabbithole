@@ -1,0 +1,119 @@
+/* ── Forms: 16px minimum so iOS Safari never zooms the page on focus ── */
+@media (max-width: 760px) {
+  .search,
+  .home-search-input,
+  .ask-input,
+  .transcript-search,
+  .tunnel-search-input,
+  .comment-input,
+  .tag-input,
+  .ta {
+    font-size: 16px;
+  }
+  /* The find-in-transcript field can go full width once it's the only
+     thing on its row. */
+  .transcript-search {
+    max-width: 60%;
+  }
+}
+
+
+@media (max-width: 760px) {
+  .menu-item {
+    min-height: 44px;
+    padding-top: 11px;
+    padding-bottom: 11px;
+  }
+  .account-menu {
+    min-width: 210px;
+    /* Long on a short phone (mobile-primary nav + account links) -- cap it
+       to the viewport and let it scroll rather than run off-screen. */
+    max-height: calc(100svh - 64px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  /* Watch: Yay / Nay / Save / Copy link / kebab wrap as a comfortable
+     group rather than a tight desktop cluster. */
+  .watch-actions {
+    gap: 10px;
+    width: 100%;
+  }
+  .watch-actions .btn-ghost,
+  .watch-actions .kebab {
+    min-height: 44px;
+    padding: 10px 16px;
+  }
+  .vote-btn {
+    padding: 11px 16px;
+  }
+  .owner-menu .act-menu .menu-item {
+    min-height: 44px;
+  }
+  /* Transcript cues: a reliable seek target without needing precision. */
+  .cue {
+    padding: 11px 12px 11px 10px;
+  }
+  .follow-playback {
+    padding: 8px 4px 10px;
+  }
+  .ask-citation {
+    padding: 8px 14px;
+  }
+  /* Tunnel / start chips */
+  .tunnel-chip,
+  .start-row .start-chip,
+  .start-map-link {
+    padding: 12px 16px;
+  }
+  /* The Tunnels-index directory cloud sets its own tighter padding at a
+     higher specificity -- match it here so the chips stay tappable. */
+  .tunnels-index-cloud .tunnel-chip {
+    padding: 10px 14px;
+  }
+  /* Secondary search fields -> comfortable height (font already 16px). */
+  .tunnel-search-input,
+  .transcript-search {
+    padding: 10px 12px;
+  }
+  /* Footer nav links get real vertical padding as tap targets. */
+  .footer-nav {
+    gap: 2px 20px;
+  }
+  .footer-nav a {
+    padding: 13px 0;
+  }
+  /* Rail / section tabs */
+  .rail-tab {
+    padding: 8px 0 8px;
+  }
+  /* Home / footer wordmark: keep the 30px image, extend the link's hit
+     area to 44px vertically. */
+  .topbar .logo,
+  .footer-brand .logo {
+    padding: 7px 0;
+  }
+}
+
+.watch-title,
+.vtitle,
+.related-title,
+.search-title,
+.featured-title,
+.comment-author,
+.watch-channel {
+  overflow-wrap: anywhere;
+}
+.tag,
+.ask-citation,
+.tunnel-feat-tag {
+  overflow-wrap: anywhere;
+}
+
+/* Two-up grid on phones rather than a single tall column. Must stay after
+   cards.css's .grid rule in import order to win at this width. */
+@media (max-width: 520px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    gap: 14px;
+  }
+}

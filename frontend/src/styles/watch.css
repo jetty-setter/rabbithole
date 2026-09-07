@@ -1,0 +1,1324 @@
+.player {
+  position: relative;
+  width: 100%;
+  border-radius: 14px;
+  background: #000;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+.player-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #000;
+  cursor: pointer;
+}
+
+/* ── Custom control bar (replaces native <video controls>, so Safari's
+   floating volume pill never appears) ─────────────────────────────── */
+.player-controls {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 8px 12px 10px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.5) 65%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.player.controls-hidden .player-controls {
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+}
+
+/* Paused (and never-yet-played) state keeps controls fully visible --
+   .controls-hidden is only ever applied while playing. */
+
+.player-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.player-spacer {
+  flex: 1;
+}
+
+.player-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 5px 8px;
+  color: var(--text);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.player-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.player-btn:focus-visible {
+  outline: none;
+  border-color: var(--violet);
+}
+
+.player-btn.on {
+  color: var(--violet);
+}
+
+.player-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.player-play svg {
+  width: 18px;
+  height: 18px;
+}
+
+.player-time {
+  font-size: 11.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  margin: 0 6px;
+}
+
+.player-volume {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Progress + volume: a taller invisible hit area than the visible track,
+   so the scrubber stays thin without being fiddly to grab on touch. */
+.player-progress {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 16px;
+  background: transparent;
+  outline: none;
+  margin: 0 0 6px;
+  cursor: pointer;
+}
+.player-progress::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--violet) var(--player-progress-pct, 0%),
+    rgba(255, 255, 255, 0.28) var(--player-progress-pct, 0%)
+  );
+}
+.player-progress::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text);
+  margin-top: -4px;
+  cursor: pointer;
+}
+.player-progress::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+}
+.player-progress::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--violet);
+}
+.player-progress::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: none;
+  border-radius: 50%;
+  background: var(--text);
+  cursor: pointer;
+}
+.player-progress:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
+}
+
+.player-vol-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 70px;
+  height: 14px;
+  background: transparent;
+  cursor: pointer;
+}
+.player-vol-slider::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+}
+.player-vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text);
+  margin-top: -3.5px;
+  cursor: pointer;
+}
+.player-vol-slider::-moz-range-track {
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+}
+.player-vol-slider::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border: none;
+  border-radius: 50%;
+  background: var(--text);
+  cursor: pointer;
+}
+
+@media (max-width: 560px) {
+  /* Keep the mute toggle (it's in the priority set and video.muted IS
+     scriptable on iOS) -- only the drag slider goes, and on a coarse
+     pointer it isn't rendered anyway. */
+  .player-vol-slider {
+    display: none;
+  }
+  .player-controls {
+    padding: 6px 8px 8px;
+  }
+  .player-btn {
+    padding: 5px 6px;
+  }
+  .player-time {
+    margin: 0 2px;
+  }
+}
+
+
+/* ── Watch page ──────────────────────────────────────────── */
+
+.watch {
+  max-width: none;
+}
+
+.watch-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 28px;
+  align-items: start;
+}
+
+.watch-main {
+  min-width: 0;
+}
+
+/* Related videos sit to the LEFT of the player (away from the right rail),
+   pinned with their own scroll so the player stays put while you browse. */
+/* Sticky, but part of the normal page scroll -- no internal max-height/
+   overflow, so there's only ever one visible scrollbar (the page's). */
+.watch-related {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: sticky;
+  top: 84px;
+  padding-right: 0;
+}
+
+/* Rail tabs -- RELATED / TRANSCRIPT. Restrained text tabs, not pills or a
+   segmented control: an underline on the active item is the only chrome. */
+.rail-tabs {
+  display: flex;
+  gap: 22px;
+  margin-bottom: 14px;
+}
+
+.rail-tab {
+  background: none;
+  border: none;
+  padding: 0 0 6px;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.rail-tab:hover {
+  color: var(--text);
+}
+
+.rail-tab.active {
+  color: var(--text);
+  border-bottom-color: var(--violet);
+}
+
+.rail-tab:focus-visible {
+  outline: 1px solid var(--violet);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+.related-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 14px;
+}
+
+/* Section header with a fading hairline rule: "DEEPER ———————" */
+.related-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 18px;
+  margin: 4px 0 16px;
+}
+
+.related-head::after {
+  content: "";
+  flex: 1;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--border-2), transparent);
+}
+
+.related-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 10px;
+  padding: 6px;
+  transition: background 130ms ease, transform 130ms ease;
+}
+
+.related-item:hover {
+  background: var(--panel);
+  transform: translateX(2px);
+}
+
+.related-thumb {
+  position: relative;
+  width: 148px;
+  flex: none;
+  aspect-ratio: 16 / 9;
+  border-radius: 9px;
+  overflow: hidden;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 130ms ease;
+}
+
+.related-item:hover .related-thumb {
+  border-color: var(--border-2);
+}
+
+.related-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.related-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 3px;
+}
+
+.related-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.related-meta {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.deeper-snippet {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dur-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.78);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  line-height: 1.4;
+}
+
+/* Rail transcript panel -- reuses .transcript-search/.cue/.cue-time/
+   .cue-text/.transcript-note as-is; only the scroll container and the
+   auto-follow affordance are new. This is the ONE place the rail scrolls
+   internally (unlike RELATED, which rides the page scroll). */
+.rail-panel-transcript .transcript-search {
+  width: 100%;
+  max-width: none;
+  margin-bottom: 12px;
+}
+
+.watch-related-transcript {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.follow-playback {
+  display: inline-flex;
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0 0 8px;
+  margin: 0;
+  color: var(--violet);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.follow-playback:hover {
+  color: var(--text);
+}
+
+.follow-playback:focus-visible {
+  outline: 1px solid var(--violet);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+@media (max-width: 980px) {
+  .watch-grid {
+    grid-template-columns: 1fr;
+  }
+  /* Stacked: player first, related below it — full height, no inner scroll. */
+  .watch-related {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+  /* No room for a side rail once stacked -- Related stays in the normal
+     flow and the full-width Transcript section below Ask This Video
+     remains the one transcript experience, so nothing is duplicated. */
+  .rail-tabs {
+    display: none;
+  }
+  .rail-panel-transcript {
+    display: none !important;
+  }
+  .rail-panel-related {
+    display: block !important;
+  }
+}
+
+/* ── Comments ───────────────────────────────────────── */
+.comments {
+  margin-top: 28px;
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+
+.comments-head {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 16px;
+}
+
+.comment-form {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.comment-input-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.comment-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-2);
+  color: inherit;
+  font-size: 14px;
+  padding: 6px 2px;
+  outline: none;
+  transition: border-color 120ms ease;
+}
+
+.comment-input:focus {
+  border-bottom-color: var(--violet);
+}
+
+.comment-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.comment-signin {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--panel);
+  border: 1px solid var(--border-2);
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 14px;
+  padding: 12px 14px;
+  margin-bottom: 22px;
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+
+.comment-signin:hover {
+  border-color: var(--violet);
+  color: var(--text);
+}
+
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.comment-empty {
+  margin: 4px 0;
+}
+
+/* With zero comments, .page's generic 90px bottom padding plus the empty
+   list above it reads as a noticeably large gap before the footer.
+   Scoped to the watch page's own empty state via :has() -- doesn't touch
+   .page for any other page, or the watch page once real comments exist. */
+.watch.page:has(.comment-empty) {
+  padding-bottom: 60px;
+}
+
+.comment {
+  display: flex;
+  gap: 12px;
+}
+
+.comment-body {
+  min-width: 0;
+}
+
+.comment-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.comment-author {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.comment-time {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.comment-text {
+  margin: 3px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.comment-del {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 4px 0 0;
+  cursor: pointer;
+}
+
+.comment-del:hover {
+  color: var(--danger);
+}
+
+.watch-meta {
+  margin-top: 16px;
+}
+
+.watch-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 14px;
+  line-height: 1.3;
+}
+
+.watch-sub {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.watch-by {
+  flex: 1;
+  min-width: 0;
+}
+
+.watch-channel {
+  display: inline-block;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+  text-decoration: none;
+}
+.watch-channel:hover {
+  text-decoration: underline;
+}
+
+.watch-stats {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.watch-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.watch-desc {
+  margin: 16px 0 0;
+  color: var(--text);
+  white-space: pre-wrap;
+  line-height: 1.6;
+  font-size: 14px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.row-gap {
+  display: flex;
+  gap: 10px;
+}
+
+.danger-text {
+  color: var(--danger);
+}
+
+.danger-text:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* ── Favorite heart on cards ─────────────────────────────── */
+
+.fav-btn {
+  position: absolute;
+  z-index: 1;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 99px;
+  border: none;
+  background: rgba(10, 10, 13, 0.6);
+  backdrop-filter: blur(4px);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.85;
+  transition: opacity 140ms ease, color 140ms ease, transform 120ms ease;
+}
+
+.vcard:hover .fav-btn {
+  opacity: 1;
+}
+
+.fav-btn:hover {
+  transform: scale(1.12);
+}
+
+.btn-ghost.saved {
+  color: var(--violet);
+  border-color: var(--violet);
+}
+
+.fav-btn.on {
+  opacity: 1;
+  color: var(--violet);
+}
+
+.empty-mark {
+  height: 44px;
+  width: auto;
+  display: block;
+  margin: 0 auto 16px;
+  opacity: 0.85;
+}
+
+/* ── Auth modal extras ───────────────────────────────────── */
+
+.notice {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 10px 0 0;
+  line-height: 1.5;
+}
+
+.forgot {
+  display: block;
+  margin: 14px auto 0;
+  text-align: center;
+  font-size: 13px;
+}
+
+/* ══ RabbitHole identity ═══════════════════════════════════ */
+
+/* Yay / Nay vote — text-only, mutually exclusive; the mascot burst still
+   carries the personality (unchanged), the buttons just read as plain
+   reactions rather than up/down chevrons. */
+.vote {
+  display: inline-flex;
+  align-items: stretch;
+  background: var(--panel);
+  border: 1px solid var(--border-2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.vote-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 8px 16px;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.vote-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.vote-btn:focus-visible {
+  outline: 1px solid var(--violet);
+  outline-offset: -2px;
+}
+
+.vote-label {
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.vote-count {
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.vote-sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border-2);
+}
+
+.vote-btn.yay.on,
+.vote-btn.yay.on .vote-count {
+  color: var(--violet);
+}
+
+.vote-btn.yay.on {
+  background: rgba(154, 130, 242, 0.12);
+}
+
+/* Nay is a reaction, not an error or a destructive action — so its selected
+   state is a neutral bright-ivory treatment (full --text plus a faint ivory
+   wash and the shared vote-pop), deliberately distinct from Yay's violet.
+   State is also carried by aria-pressed, position, and the label text. */
+.vote-btn.nay.on,
+.vote-btn.nay.on .vote-count {
+  color: var(--text);
+}
+
+.vote-btn.nay.on {
+  background: rgba(251, 245, 232, 0.12);
+}
+
+/* Tag editor in the upload modal */
+.tag-editor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 2px;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border-2);
+  border-radius: 999px;
+  padding: 4px 6px 4px 11px;
+}
+
+.tag-x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.tag-x:hover {
+  background: var(--border-2);
+  color: var(--text);
+}
+
+.tag-input {
+  flex: 1;
+  min-width: 90px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  padding: 4px 2px;
+}
+
+/* AI suggestion note in the upload modal */
+.ai-suggest-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--violet);
+  margin-bottom: 2px;
+}
+
+.ai-suggest-note.loading {
+  color: var(--muted);
+}
+
+.proc-spinner.sm {
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
+}
+
+/* AI-generated tags on the watch page */
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.tag {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--panel);
+  border: 1px solid var(--border-2);
+  border-radius: 999px;
+  padding: 4px 11px;
+}
+
+.tag.ai-tag {
+  color: var(--violet);
+  border-color: rgba(154, 130, 242, 0.4);
+  background: rgba(154, 130, 242, 0.08);
+}
+
+/* Owner overflow menu (Edit / Delete) on the watch page */
+.owner-menu {
+  position: relative;
+  display: inline-flex;
+}
+
+.kebab {
+  font-size: 18px;
+  line-height: 1;
+  padding: 8px 14px;
+}
+
+.act-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 132px;
+  padding: 6px;
+  background: var(--panel-2);
+  border: 1px solid var(--border-2);
+  border-radius: 12px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55);
+}
+
+/* Tiny hop glyph inline in card meta */
+.meta-ico {
+  width: 13px;
+  height: 13px;
+  vertical-align: -2px;
+  margin: 0 1px;
+}
+
+.player-stage {
+  position: relative;
+}
+
+/* Reaction feedback lives entirely on the button now -- a brief pop when a
+   reaction is selected, plus an ordinary press state. No mascot/graphic. */
+.vote-btn:active {
+  transform: scale(0.96);
+}
+
+.vote-btn.on {
+  animation: vote-pop 220ms ease;
+}
+
+@keyframes vote-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vote-btn.on {
+    animation-duration: 0.01ms;
+  }
+}
+
+.related-head,
+.comments-head {
+  font-family: var(--display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 18px;
+}
+
+
+/* ── Transcript / searchable captions ──────────────────────── */
+/* Desktop: the right rail's TRANSCRIPT tab is the one transcript
+   experience (see the watch-grid breakpoint below) -- this full-width
+   section would just repeat it and push Comments further down. It
+   reappears once the layout stacks and the rail is gone. */
+.transcript {
+  display: none;
+  margin-top: 24px;
+}
+
+/* Stacked layout: the side rail is gone, so this becomes the one
+   transcript experience again -- same breakpoint as .watch-grid. */
+@media (max-width: 980px) {
+  .transcript {
+    display: block;
+  }
+}
+
+.transcript-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* Deliberately quieter than .ask-input -- this is a literal find-in-
+   transcript field, secondary to the transcript itself, not a primary
+   question-asking action like Ask This Video. */
+.transcript-search {
+  flex: none;
+  width: 230px;
+  max-width: 55%;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: 12.5px;
+}
+.transcript-search::placeholder {
+  color: var(--muted);
+}
+.transcript-search:focus {
+  outline: none;
+  border-color: var(--violet);
+}
+
+.transcript-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.transcript-cues {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+/* Shorter visible window at narrower widths so the transcript stays a
+   compact, searchable tool rather than dominating the screen -- the cue
+   list still scrolls internally at every size. */
+@media (max-width: 980px) {
+  .transcript-cues {
+    max-height: 300px;
+  }
+}
+@media (max-width: 560px) {
+  .transcript-cues {
+    max-height: 260px;
+  }
+}
+
+.cue {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  width: 100%;
+  text-align: left;
+  padding: 7px 10px 7px 8px;
+  border: none;
+  border-left: 2px solid transparent;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.cue:hover {
+  background: rgba(251, 245, 232, 0.03);
+}
+/* Active cue: the row the video is on right now needs to read at a glance,
+   not just a lighter shade of text -- brighter lavender text, a restrained
+   violet wash behind the whole row, and the left indicator together. */
+.cue.active {
+  border-left-color: var(--violet);
+  background: rgba(154, 130, 242, 0.1);
+}
+.cue.active .cue-text {
+  color: var(--violet-light);
+  font-weight: 600;
+}
+.cue.active .cue-time {
+  color: var(--violet-soft);
+}
+
+.cue-time {
+  flex: none;
+  width: 42px;
+  color: var(--violet);
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.cue-text {
+  color: var(--muted);
+}
+
+/* Ask this video + Go deeper/Dive sit directly on the page -- no card
+   chrome. They're the product; a tinted box read as "one more widget"
+   instead of a headline feature. */
+.feature-panel {
+  padding: 0;
+}
+
+.feature-head {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(21px, 2.6vw, 28px);
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  margin: 0 0 14px;
+}
+
+/* ── Ask this video (RAG Q&A) ──────────────────────────────── */
+.ask-video {
+  margin-top: 24px;
+}
+
+.ask-form {
+  display: flex;
+  gap: 10px;
+}
+
+.ask-input {
+  flex: 1;
+  padding: 9px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+.ask-input::placeholder {
+  color: var(--muted);
+}
+.ask-input:focus {
+  outline: none;
+  border-color: var(--violet);
+}
+
+.ask-btn {
+  flex: none;
+}
+
+.ask-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+/* Quiet, permanent context under the form -- not a loading state (that's
+   .ask-note above), just a plain-language trust note. */
+.ask-hint {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.ask-error {
+  margin-top: 10px;
+  color: var(--danger);
+  font-size: 14px;
+}
+
+.ask-answer {
+  margin-top: 14px;
+  padding: 2px 0 2px 16px;
+  border-left: 2px solid var(--violet);
+}
+
+.ask-answer-text {
+  margin: 0;
+  color: var(--text);
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+.ask-citations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ask-citation {
+  padding: 4px 10px;
+  border: 1px solid var(--border-2);
+  border-radius: 999px;
+  background: none;
+  color: var(--violet);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+.ask-citation:hover {
+  background: rgba(154, 130, 242, 0.1);
+}
+
+/* ── Visibility (public / unlisted) ────────────────────────── */
+.vis-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vis-toggle {
+  display: inline-flex;
+  align-self: flex-start;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--border-2);
+  border-radius: 999px;
+  background: var(--panel);
+}
+
+.vis-opt {
+  border: none;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+.vis-opt.active {
+  background: var(--violet);
+  color: #0a0a0d;
+}
+
+.vis-hint {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.unlisted-badge {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 14px;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--border-2);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+/* ── Custom player: keep every essential control tappable on a phone ── */
+@media (max-width: 560px) {
+  /* Taller invisible hit area on the scrubber (visible track stays thin). */
+  .player-progress {
+    height: 26px;
+    margin-bottom: 4px;
+  }
+  .player-btn {
+    padding: 8px 7px;
+    min-height: 40px;
+  }
+  .player-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+  .player-play svg {
+    width: 20px;
+    height: 20px;
+  }
+  .player-time {
+    font-size: 11px;
+    margin: 0 3px;
+  }
+  /* Watch meta: taller secondary targets. */
+  .watch-channel {
+    display: inline-block;
+    padding: 4px 0;
+    margin: -4px 0;
+  }
+  .comment-input {
+    padding: 10px 2px;
+  }
+  .btn-primary {
+    min-height: 42px;
+  }
+}
+/* Smallest phones: drop the ±15 skip buttons (secondary — the scrubber
+   covers seeking) so Play / time / mute / CC / fullscreen never crush. */
+@media (max-width: 380px) {
+  .player-controls-row .player-btn[aria-label$="seconds"] {
+    display: none;
+  }
+}

@@ -1,0 +1,401 @@
+/* ── Editorial cards: homepage grid only ─────────────────── */
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 18px;
+}
+.ecard {
+  position: relative;
+  aspect-ratio: 3 / 4.3;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 18px;
+  text-decoration: none;
+  color: inherit;
+  background: var(--panel);
+  transition: transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.ecard:hover {
+  transform: translateY(-5px);
+}
+.ecard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(5, 5, 5, 0) 34%, rgba(5, 5, 5, 0.88) 100%);
+  z-index: 1;
+}
+.ecard-thumb {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.ecard-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.ecard-thumb .thumb-ph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 40px;
+  background: var(--panel-2);
+}
+.ecard-cat {
+  position: relative;
+  z-index: 2;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--violet);
+  margin-bottom: 8px;
+}
+.ecard-title {
+  position: relative;
+  z-index: 2;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.22;
+  letter-spacing: -0.006em;
+  color: var(--text);
+  margin: 0 0 14px;
+}
+.ecard-meta {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ecard-play {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid rgba(243, 243, 241, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.ecard-play svg {
+  width: 9px;
+  height: 9px;
+  margin-left: 1px;
+  color: var(--text);
+}
+.ecard-dur {
+  font-size: 11.5px;
+  color: rgba(243, 243, 241, 0.72);
+  letter-spacing: 0.03em;
+}
+
+/* ── Video card ──────────────────────────────────────────── */
+
+.card {
+  text-align: left;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: default;
+  color: inherit;
+  font: inherit;
+}
+
+.card.play {
+  cursor: pointer;
+}
+
+.thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  /* Branded wash so empty/missing thumbnails still look designed (the <img>
+     covers it whenever a real thumbnail exists). */
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(154, 130, 242, 0.07), transparent 52%),
+    radial-gradient(120% 120% at 100% 100%, rgba(154, 130, 242, 0.07), transparent 52%),
+    var(--bg-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1.5px solid var(--border);
+  transition: transform 180ms ease, box-shadow 200ms ease, border-color 180ms ease;
+}
+
+.card.play:hover .thumb {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 32px rgba(154, 130, 242, 0.28);
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 340ms ease;
+}
+
+/* Subtle peek/zoom on hover. */
+.vcard:hover .thumb img {
+  transform: scale(1.05);
+}
+
+.thumb-ph {
+  width: 40%;
+  max-width: 64px;
+  height: auto;
+  opacity: 0.28;
+}
+
+/* Top-left status badges (captions, unlisted). */
+.card-badges {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  display: flex;
+  gap: 6px;
+}
+
+.mini-badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  line-height: 1.4;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(10, 10, 13, 0.78);
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(4px);
+}
+
+.mini-badge.cc {
+  color: var(--violet);
+  border-color: rgba(154, 130, 242, 0.5);
+}
+
+.play-badge {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 54px;
+  height: 54px;
+  border-radius: 99px;
+  background: rgba(10, 10, 13, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 160ms ease, transform 160ms ease;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+
+/* ── Rich video cards (YouTube-style) ────────────────────── */
+
+.grid {
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px 16px;
+}
+
+.vcard {
+  cursor: default;
+}
+
+.vcard.play {
+  cursor: pointer;
+}
+
+.vcard .thumb {
+  transition: box-shadow 160ms ease;
+}
+
+.vcard.play:hover .thumb {
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+}
+
+.vcard-row {
+  display: flex;
+  gap: 12px;
+  padding-top: 12px;
+  align-items: flex-start;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  display: block;
+}
+
+.vcard-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  gap: 2px;
+}
+
+.vtitle {
+  font-weight: 800;
+  font-size: 16px;
+  line-height: 1.18;
+  letter-spacing: -0.01em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.vchannel,
+.vmeta {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.vchannel-link {
+  display: inline-block;
+  width: fit-content;
+  text-decoration: none;
+  position: relative;
+  z-index: 1;
+}
+.vchannel-link:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+/* ── Cards as links ──────────────────────────────────────── */
+
+.vcard {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  position: relative;
+}
+
+/* The card itself is a div, not an <a> -- it has a real nested creator link
+   and favorite button, and nested anchors are invalid HTML with unreliable
+   click/keyboard behavior. This invisible link covers the whole card so
+   "click anywhere" still works; the two real interactive children sit above
+   it via z-index so they stay independently clickable. */
+.vcard-stretch-link {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.vcard:hover .thumb {
+  transform: translateY(-3px);
+  border-color: var(--border-2);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+.vcard:hover .play-badge {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ── Processing card (live upload feedback) ──────────────── */
+
+/* ── Processing card (live upload feedback) ──────────────── */
+
+.vcard.processing {
+  cursor: default;
+}
+
+.thumb.proc {
+  flex-direction: column;
+  gap: 12px;
+}
+
+.proc-spinner {
+  width: 36px;
+  height: 36px;
+  border-radius: 99px;
+  border: 3px solid var(--border-2);
+  border-top-color: var(--violet);
+  animation: spin 0.8s linear infinite;
+}
+
+.proc-x {
+  font-size: 30px;
+  color: var(--danger);
+}
+
+.proc-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.vcard.processing.failed .proc-label {
+  color: var(--danger);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* ── Loading skeletons ─────────────────────────────────────── */
+@keyframes sk-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.sk {
+  background: linear-gradient(90deg, var(--panel) 25%, var(--panel-2) 37%, var(--panel) 63%);
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
+.sk-card { display: flex; flex-direction: column; gap: 12px; }
+.sk-thumb { width: 100%; aspect-ratio: 16 / 9; border-radius: 14px; }
+.sk-row { display: flex; gap: 10px; }
+.sk-avatar { width: 34px; height: 34px; border-radius: 8px; flex: none; }
+.sk-lines { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+.sk-line { height: 11px; }
+.sk-line.short { height: 9px; }
+.sk-line.tall { height: 22px; }
+
+.sk-featured {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 28px;
+  align-items: center;
+  margin-bottom: 38px;
+}
+.sk-featured-thumb { width: 100%; aspect-ratio: 16 / 9; border-radius: 18px; }
+.sk-featured-info { display: flex; flex-direction: column; gap: 12px; }
+
+.sk-player { width: 100%; aspect-ratio: 16 / 9; border-radius: 14px; }
+.sk-watch-meta { margin-top: 18px; }
+.sk-related { display: flex; gap: 10px; margin-bottom: 14px; }
+.sk-related-thumb { width: 148px; flex: none; aspect-ratio: 16 / 9; border-radius: 9px; }
+
+@media (max-width: 760px) {
+  .sk-featured { grid-template-columns: 1fr; gap: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sk { animation: none; }
+}
+

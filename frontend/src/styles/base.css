@@ -1,0 +1,352 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  /* .home-hero-grid (and any other full-bleed section) uses width:100vw
+     with negative margins to break out of .page's padding. 100vw includes
+     the vertical scrollbar's own width, so on any page tall enough to
+     scroll, that element runs ~5-15px past the actual visible viewport
+     and forces a horizontal scrollbar. This is the standard guard against
+     that class of bug -- nothing on the site relies on page-level
+     horizontal scroll (wide tables/code blocks use their own scoped
+     overflow-x:auto containers, unaffected by this). */
+  overflow-x: hidden;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  /* One faint atmospheric wash — restrained */
+  background-image:
+    radial-gradient(55vw 45vh at 100% -8%, rgba(154, 130, 242, 0.04), transparent 62%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+/* Fixed background attachment triggers full-page scroll repaints on mobile
+   Safari (and disables momentum scrolling on old iOS). The wash is subtle
+   enough that scrolling it with the page is imperceptible. */
+@media (hover: none), (max-width: 900px) {
+  body {
+    background-attachment: scroll;
+  }
+}
+
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.btn-primary {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--violet);
+  background: transparent;
+  border: 1.5px solid var(--violet);
+  border-radius: 10px;
+  padding: 8px 17px;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--violet);
+  color: #0a0a0d;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary.full {
+  width: 100%;
+  padding: 13px;
+  margin-top: 18px;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border-2);
+  color: var(--muted);
+  border-radius: 10px;
+  padding: 8px 16px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-ghost:hover {
+  color: var(--text);
+  border-color: var(--text);
+}
+
+.icon-btn {
+  background: transparent;
+  border: 1px solid var(--border-2);
+  color: var(--muted);
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.icon-btn:hover {
+  color: var(--text);
+  border-color: var(--violet);
+}
+
+.feed-head {
+  margin-bottom: 24px;
+}
+
+.feed-head h1 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(34px, 6vw, 54px);
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.feed-head p {
+  color: var(--muted);
+  margin: 8px 0 0;
+  font-size: 15px;
+}
+
+
+/* ── Content / grid ──────────────────────────────────────── */
+
+.content {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px 28px 96px;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0 20px;
+}
+
+.section-head h2 {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.home-punct {
+  color: var(--violet);
+}
+
+.count {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--violet);
+  background: rgba(154, 130, 242, 0.12);
+  padding: 3px 9px;
+  border-radius: 99px;
+}
+
+
+/* ── Empty state ─────────────────────────────────────────── */
+
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.empty-logo {
+  /* Was sized for the old, near-square stacked mark (168px tall was
+     ~292px wide at that aspect). The new wordmark is a wide 5.9:1
+     horizontal lockup, so the same height would render ~994px wide --
+     sized by width instead to keep it a sane, centered presence. */
+  width: min(360px, 80%);
+  height: auto;
+  display: block;
+  margin: 0 auto 20px;
+}
+
+.empty h3 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+}
+
+.empty p {
+  color: var(--muted);
+  margin: 0 0 22px;
+}
+
+
+.page {
+  max-width: none;
+  margin: 0;
+  padding: 32px 28px 90px;
+}
+@media (max-width: 560px) {
+  /* .topbar handles its own safe-area-aware left/right padding (see
+     header.css) -- excluded here so a plain 16px doesn't overwrite its
+     max(16px, env(safe-area-inset-*)) on notched/rotated devices. */
+  .page {
+    padding-left: var(--gutter-mobile);
+    padding-right: var(--gutter-mobile);
+  }
+}
+/* Standard interior-page content column, aligned with the footer and
+   homepage's ~1220px system (Tunnels/Map/Trail). Watch keeps .page's full
+   width -- its player + related rail benefit from the wider canvas. */
+.standard-page {
+  max-width: 1220px;
+  margin: 0 auto;
+}
+/* .home-browse controls the intentional homepage-to-footer spacing;
+   .page's generic 90px bottom padding was stacking with it (plus the
+   footer's own margin-top) into a large empty band. Homepage only --
+   other routes keep .page's normal bottom breathing room. */
+.home-page {
+  padding-bottom: 0;
+}
+
+.search {
+  flex: 1;
+  max-width: 300px;
+  background: var(--panel);
+  border: 1px solid var(--border-2);
+  border-radius: 9px;
+  padding: 8px 12px;
+  color: var(--text);
+  font: inherit;
+  font-size: 13.5px;
+}
+
+.search::placeholder {
+  color: var(--muted);
+}
+
+.search:focus {
+  outline: none;
+  border-color: var(--violet);
+}
+
+
+/* ── Animations ──────────────────────────────────────────── */
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px rgba(154, 130, 242, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(154, 130, 242, 0.05);
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+
+.live {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 99px;
+  background: var(--muted);
+}
+
+.dot.live {
+  background: var(--violet);
+  box-shadow: 0 0 0 4px rgba(154, 130, 242, 0.18);
+  animation: pulse 2s infinite;
+}
+
+
+/* ── Motion & detail polish ────────────────────────────────── */
+/* Gentle page transition on route change. */
+@keyframes route-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.route-fade {
+  animation: route-in 240ms ease both;
+}
+
+/* Thin, branded scrollbars everywhere (cohesion at the seams). */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-2) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-2);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+  background-clip: padding-box;
+}
+
+/* Consistent, visible keyboard focus (mouse clicks stay clean). */
+:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
+  /* No border-radius here — forcing it onto every focused element rounded the
+     underline-style search box and curled its green border. The outline follows
+     each element's own radius anyway. */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-fade {
+    animation: none;
+  }
+}
+
+/* Film grain overlay -- relocated here from mid-file; a body-level effect, not watch-page-specific. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
