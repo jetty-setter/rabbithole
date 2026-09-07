@@ -5,11 +5,23 @@ import {
   connectionsFor,
   followTopic,
   jumpToStep,
+  mergeConnections,
   scoreTopics,
   startingTopics,
   stepBack,
   tunnelPath,
+  type CuratedConnection,
 } from "../topicGraph";
+
+function curatedEdge(topic: string, rel = "mechanism"): CuratedConnection {
+  return {
+    topic,
+    relationship_type: rel,
+    explanation: `why ${topic} connects`,
+    strength: 1,
+    source: "editorial",
+  };
+}
 
 describe("buildTopicGraph", () => {
   it("counts each tag once per video and dedupes repeats within a video", () => {
@@ -124,6 +136,86 @@ describe("connectionsFor", () => {
     const { edges, scoreByTag } = fixture();
     expect(connectionsFor("apollo", edges, scoreByTag).length).toBeLessThan(8);
     expect(connectionsFor("apollo", edges, scoreByTag).map((c) => c.tag)).toContain("space");
+  });
+});
+
+describe("mergeConnections", () => {
+  const scoreByTag = new Map<string, number>([
+    ["alpha", 10],
+    ["beta", 8],
+    ["gamma", 5],
+    ["delta", 3],
+  ]);
+
+  it("passes an organic-only edge through unchanged (fallback still applies)", () => {
+    const spokes = mergeConnections(
+      [{ tag: "beta", shared: 2 }],
+      [],
+      scoreByTag,
+      "alpha",
+    );
+    expect(spokes).toEqual([{ tag: "beta", shared: 2, curated: null }]);
+  });
+
+  it("makes a curated-only edge a navigable spoke with shared: 0", () => {
+    const edge = curatedEdge("gamma");
+    const spokes = mergeConnections([], [edge], scoreByTag, "alpha");
+    expect(spokes).toEqual([{ tag: "gamma", shared: 0, curated: edge }]);
+  });
+
+  it("collapses an organic + curated pair to one spoke carrying the curated metadata", () => {
+    const edge = curatedEdge("beta", "overlap");
+    const spokes = mergeConnections(
+      [{ tag: "beta", shared: 3 }],
+      [edge],
+      scoreByTag,
+      "alpha",
+    );
+    expect(spokes).toHaveLength(1);
+    expect(spokes[0]).toEqual({ tag: "beta", shared: 3, curated: edge });
+  });
+
+  it("ranks curated edges ahead of weak organic ones so the cap can't drop them", () => {
+    const organic = [
+      { tag: "beta", shared: 1 },
+      { tag: "gamma", shared: 1 },
+      { tag: "delta", shared: 1 },
+    ];
+    const curated = [curatedEdge("zeta")];
+    const spokes = mergeConnections(organic, curated, scoreByTag, "alpha", 2);
+    expect(spokes.map((s) => s.tag)).toEqual(["zeta", "beta"]);
+  });
+
+  it("keeps a strong organic edge ahead of a curated one within the cap", () => {
+    const spokes = mergeConnections(
+      [{ tag: "beta", shared: 4 }],
+      [curatedEdge("gamma")],
+      scoreByTag,
+      "alpha",
+      8,
+    );
+    // both fit, but curated sorts first by design
+    expect(spokes.map((s) => s.tag)).toEqual(["gamma", "beta"]);
+  });
+
+  it("never emits the centre itself as its own spoke", () => {
+    const spokes = mergeConnections(
+      [{ tag: "alpha", shared: 2 }],
+      [curatedEdge("alpha")],
+      scoreByTag,
+      "alpha",
+    );
+    expect(spokes).toEqual([]);
+  });
+
+  it("caps after merging", () => {
+    const organic = Array.from({ length: 10 }, (_, i) => ({
+      tag: `org${i}`,
+      shared: 1,
+    }));
+    const spokes = mergeConnections(organic, [curatedEdge("cur")], scoreByTag, "alpha", 8);
+    expect(spokes).toHaveLength(8);
+    expect(spokes[0].tag).toBe("cur");
   });
 });
 

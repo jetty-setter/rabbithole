@@ -3,11 +3,11 @@ import { Link } from "react-router-dom";
 import { useApp } from "./App";
 import {
   buildTopicGraph,
-  connectionCount,
   connectionsFor,
   followTopic,
   jumpToStep,
   MAX_CONNECTIONS,
+  mergeConnections,
   scoreTopics,
   startingTopics,
   stepBack,
@@ -77,11 +77,46 @@ export function TopicMapPage() {
 
   const center = path.length ? path[path.length - 1] : null;
 
-  // If the catalogue changes out from under an active path (e.g. the centre
-  // topic no longer exists), fall back to the starting view.
+  // Curated connections for the centred topic — editorially-authored
+  // relationship + "why this connects" records (GET /topics/{slug}/connections,
+  // see docs/RABBITHOLE_PRODUCT_MODEL.md section 5). These are first-class
+  // graph edges: a curated connection makes a spoke navigable even when the
+  // two topics share no video (folded in by mergeConnections below).
+  // `curatedFor` records which centre `curated` actually belongs to, so an
+  // in-flight fetch and the reset guard don't act on stale data.
+  const [curated, setCurated] = useState<TopicConnection[]>([]);
+  const [curatedFor, setCuratedFor] = useState<string | null>(null);
   useEffect(() => {
-    if (path.length && !countByTag.has(path[path.length - 1])) setPath([]);
-  }, [countByTag, path]);
+    let live = true;
+    if (!center) {
+      setCurated([]);
+      setCuratedFor(null);
+      return;
+    }
+    getTopicConnections(center).then((c) => {
+      if (live) {
+        setCurated(c);
+        setCuratedFor(center);
+      }
+    });
+    return () => {
+      live = false;
+    };
+  }, [center]);
+
+  // If the catalogue changes out from under an active path (a video is
+  // deleted, its last tag disappears), fall back to the starting view — but
+  // only once we've confirmed the centre is neither an organic topic nor a
+  // curated-only one. The `curatedFor` gate stops this from bouncing every
+  // curated-only centre back to the start before its connections load.
+  useEffect(() => {
+    if (!path.length) return;
+    const c = path[path.length - 1];
+    if (countByTag.has(c)) return;
+    if (curatedFor !== c) return;
+    if (curated.length > 0) return;
+    setPath([]);
+  }, [countByTag, path, curatedFor, curated]);
 
   // Escape steps back one level.
   useEffect(() => {
@@ -93,47 +128,41 @@ export function TopicMapPage() {
     return () => window.removeEventListener("keydown", on);
   }, [path.length]);
 
-  const connections = useMemo(
-    () => (center ? connectionsFor(center, edges, scoreByTag, MAX_CONNECTIONS) : []),
+  // Organic connections, uncapped — mergeConnections applies the cap after
+  // folding in the curated edges.
+  const organic = useMemo(
+    () => (center ? connectionsFor(center, edges, scoreByTag, Infinity) : []),
     [center, edges, scoreByTag],
   );
-  const totalConnections = useMemo(
-    () => (center ? connectionCount(center, edges) : 0),
-    [center, edges],
+
+  // The spoke list the navigator renders: organic + curated, deduped to one
+  // spoke per topic, curated copy winning where both exist, capped.
+  const spokes = useMemo(
+    () =>
+      center
+        ? mergeConnections(organic, curated, scoreByTag, center, MAX_CONNECTIONS)
+        : [],
+    [center, organic, curated, scoreByTag],
   );
 
-  // Curated connections for the centred topic — editorially-authored
-  // relationship + "why this connects" data (see docs/RABBITHOLE_PRODUCT_MODEL.md,
-  // section 5). Purely additive: this never changes which topics exist or
-  // which ones are connected (that's still 100% the tag-co-occurrence graph
-  // above) — it only enriches a spoke that's ALREADY there, when curated data
-  // happens to exist for it. Empty for the overwhelming majority of topics
-  // today, which is exactly the fallback: nothing below renders differently
-  // than before for an uncurated topic.
-  const [curated, setCurated] = useState<TopicConnection[]>([]);
-  useEffect(() => {
-    let live = true;
-    if (!center) {
-      setCurated([]);
-      return;
+  // "connected to N topics" — the union of organic and curated neighbours.
+  const totalConnections = useMemo(() => {
+    if (!center) return 0;
+    const seen = new Set<string>();
+    for (const e of edges) {
+      if (e.source === center) seen.add(e.target);
+      else if (e.target === center) seen.add(e.source);
     }
-    getTopicConnections(center).then((c) => {
-      if (live) setCurated(c);
-    });
-    return () => {
-      live = false;
-    };
-  }, [center]);
+    for (const c of curated) seen.add(c.topic);
+    seen.delete(center);
+    return seen.size;
+  }, [center, edges, curated]);
 
-  const curatedByTag = useMemo(
-    () => new Map(curated.map((c) => [c.topic, c])),
-    [curated],
-  );
-  // Only explain connections that are actually visible as a spoke -- never
+  // The curated relationships among the spokes actually on screen — never
   // reference a topic the user can't currently click through to.
   const curatedVisible = useMemo(
-    () => connections.map((c) => curatedByTag.get(c.tag)).filter((c): c is TopicConnection => !!c),
-    [connections, curatedByTag],
+    () => spokes.map((s) => s.curated).filter((c): c is TopicConnection => !!c),
+    [spokes],
   );
 
   if (loading && nodes.length === 0) return <SkeletonFeed />;
@@ -199,17 +228,17 @@ export function TopicMapPage() {
           <div className="topic-nav-head" aria-live="polite">
             <h2>#{center}</h2>
             <p>
-              {plural(centerVideos, "video")} · connected to{" "}
-              {plural(totalConnections, "topic")}
+              {centerVideos > 0 && `${plural(centerVideos, "video")} · `}
+              connected to {plural(totalConnections, "topic")}
             </p>
           </div>
 
-          {connections.length === 0 ? (
+          {spokes.length === 0 ? (
             <p className="topic-nav-empty">No strong connections yet.</p>
           ) : narrow ? (
             <ul className="topic-spoke-list" key={center}>
-              {connections.map((c) => {
-                const rel = curatedByTag.get(c.tag);
+              {spokes.map((c) => {
+                const rel = c.curated;
                 return (
                   <li key={c.tag}>
                     <button
@@ -242,8 +271,8 @@ export function TopicMapPage() {
                 preserveAspectRatio="none"
                 aria-hidden="true"
               >
-                {connections.map((c, i) => {
-                  const { x, y } = spoke(i, connections.length);
+                {spokes.map((c, i) => {
+                  const { x, y } = spoke(i, spokes.length);
                   return (
                     <line
                       key={c.tag}
@@ -265,12 +294,12 @@ export function TopicMapPage() {
                 #{center}
               </div>
 
-              {connections.map((c, i) => {
-                const { x, y } = spoke(i, connections.length);
+              {spokes.map((c, i) => {
+                const { x, y } = spoke(i, spokes.length);
                 // A small, subtle nod to how many videos the topic has —
                 // never enough to overpower the label.
                 const dot = 7 + Math.min(countByTag.get(c.tag) ?? 1, 8);
-                const rel = curatedByTag.get(c.tag);
+                const rel = c.curated;
                 return (
                   <button
                     key={c.tag}
@@ -319,9 +348,11 @@ export function TopicMapPage() {
           )}
 
           <div className="topic-nav-foot">
-            <Link className="btn-primary topic-nav-cta" to={tunnelPath(center)}>
-              Explore {plural(centerVideos, "video")} in #{center} →
-            </Link>
+            {centerVideos > 0 && (
+              <Link className="btn-primary topic-nav-cta" to={tunnelPath(center)}>
+                Explore {plural(centerVideos, "video")} in #{center} →
+              </Link>
+            )}
             <div className="topic-nav-controls">
               {path.length > 1 && (
                 <button
