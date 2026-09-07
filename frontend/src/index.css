@@ -372,10 +372,11 @@ body {
   }
   .home-hero {
     width: 100%;
-    /* DIAGNOSTIC-4488 -- temporary exaggerated value to prove the live
-       deployment serves this build; will be replaced with the real
-       final value once confirmed live. */
-    padding: 4px 24px 0;
+    /* Image/fade -> eyebrow gap: final value, confirmed live via the
+       DIAGNOSTIC-4488 build and a cache-busted URL (a carrier-level
+       cache on the bare URL, unrelated to this deploy pipeline, was
+       masking the result -- see commit history). */
+    padding: 12px 24px 0;
   }
   /* Mobile-only search footprint: subordinate to the headline rather
      than the desktop field's full 62px -- but not so short it stops
@@ -679,9 +680,10 @@ body {
        padding-top do the breathing room, so the hero-black -> --bg-2
        gradient stays continuous. */
     margin: 0 -16px;
-    /* DIAGNOSTIC-4488 -- temporary exaggerated value (combines with
-       .section-head:first-child's margin-top below: 6+2=8px). */
-    padding: 6px 16px 44px;
+    /* Capability strip -> "Start Somewhere" gap: final value, confirmed
+       live via the DIAGNOSTIC-4488 build (combines with
+       .section-head:first-child's unchanged 2px margin-top: 16+2=18px). */
+    padding: 16px 16px 44px;
   }
 }
 
@@ -4636,8 +4638,9 @@ body::after {
        viewport with it), full desktop-adjacent scale read a touch
        oversized. Weight/family/color/the purple period are untouched. */
     font-size: clamp(28px, 8.85vw, 44px);
-    /* DIAGNOSTIC-4488 -- temporary exaggerated value. */
-    margin-bottom: 8px;
+    /* Headline -> search gap: final value, confirmed live via the
+       DIAGNOSTIC-4488 build. */
+    margin-bottom: 14px;
   }
   /* Phone: a line may wrap gracefully on a very narrow viewport rather
      than overflow. */
@@ -4645,12 +4648,14 @@ body::after {
     white-space: normal;
   }
   .home-hero-eyebrow {
-    /* DIAGNOSTIC-4488 -- temporary exaggerated value. */
-    margin-bottom: 4px;
+    /* Eyebrow -> headline gap: final value, confirmed live via the
+       DIAGNOSTIC-4488 build. */
+    margin-bottom: 10px;
   }
-  /* DIAGNOSTIC-4488 -- temporary exaggerated value. */
+  /* Search -> capability-strip gap: final value, confirmed live via the
+     DIAGNOSTIC-4488 build. */
   .home-hero-points {
-    margin-top: 4px;
+    margin-top: 8px;
     /* Three-column capability strip instead of three stacked sentences
        -- no markup change: each .home-hero-point is a <p> containing a
        <span class="home-hero-point-verb"> followed by plain text (" what
