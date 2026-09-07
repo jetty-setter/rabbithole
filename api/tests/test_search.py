@@ -104,6 +104,30 @@ def test_index_is_idempotent(aws_stack, monkeypatch):
     assert search_mod.search("snow")[0]["video_id"] == "v1"
 
 
+def test_scan_all_follows_every_page():
+    """A single .scan() returns only the first ~1MB page. Once the
+    embeddings table grew past that, a non-paginated scan of already-indexed
+    ids under-reported and _ensure_indexed re-embedded dozens of videos on
+    every search until it blew the 30s API Gateway timeout."""
+
+    class FakeTable:
+        def __init__(self):
+            self.calls = []
+
+        def scan(self, **kw):
+            self.calls.append(kw.get("ExclusiveStartKey"))
+            if "ExclusiveStartKey" not in kw:
+                return {"Items": [{"video_id": "a"}], "LastEvaluatedKey": {"video_id": "a"}}
+            if kw["ExclusiveStartKey"] == {"video_id": "a"}:
+                return {"Items": [{"video_id": "b"}], "LastEvaluatedKey": {"video_id": "b"}}
+            return {"Items": [{"video_id": "c"}]}
+
+    t = FakeTable()
+    items = search_mod._scan_all(t, ProjectionExpression="video_id")
+    assert [i["video_id"] for i in items] == ["a", "b", "c"]
+    assert len(t.calls) == 3  # walked all three pages
+
+
 def test_search_endpoint_filters_unlisted(client, videos_table, monkeypatch):
     monkeypatch.setattr(search_mod, "_model", lambda: _FakeModel())
     _seed("pubv", "snow snow")

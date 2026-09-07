@@ -111,18 +111,30 @@ def index_video(video_id: str) -> int:
     return len(passages)
 
 
+def _scan_all(table, **kwargs) -> list[dict]:
+    """Full paginated scan. A plain .scan() returns only the first ~1MB page,
+    so once the embeddings table grew past that a single-page scan of
+    already-indexed ids under-reported, making _ensure_indexed re-embed
+    dozens of videos on every search until it blew the API Gateway timeout."""
+    resp = table.scan(**kwargs)
+    items = resp.get("Items", [])
+    while "LastEvaluatedKey" in resp:
+        resp = table.scan(ExclusiveStartKey=resp["LastEvaluatedKey"], **kwargs)
+        items += resp.get("Items", [])
+    return items
+
+
 def _ensure_indexed() -> None:
     """Index any ready video that has a transcript but no chunks yet."""
-    # Get all videos with transcripts
-    video_resp = aws.videos_table().scan(
+    video_items = _scan_all(
+        aws.videos_table(),
         FilterExpression=Attr("has_transcript").eq(True),
         ProjectionExpression="video_id",
     )
-    video_ids = {i["video_id"] for i in video_resp.get("Items", []) if i.get("video_id")}
+    video_ids = {i["video_id"] for i in video_items if i.get("video_id")}
 
-    # Get all already-indexed video_ids in one scan (avoids N+1 DynamoDB queries)
-    chunk_resp = aws.embeddings_table().scan(ProjectionExpression="video_id")
-    indexed_ids = {i["video_id"] for i in chunk_resp.get("Items", []) if i.get("video_id")}
+    chunk_items = _scan_all(aws.embeddings_table(), ProjectionExpression="video_id")
+    indexed_ids = {i["video_id"] for i in chunk_items if i.get("video_id")}
 
     # Only index the difference
     for vid in video_ids - indexed_ids:
