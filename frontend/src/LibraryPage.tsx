@@ -11,7 +11,7 @@ import { MapIcon } from "./Icons";
 // with a subtly emphasised opening word.
 const HERO_POINTS: [string, string][] = [
   ["Search", "what was said."],
-  ["Jump", "to the moment."],
+  ["Jump", "to the exact moment."],
   ["Explore", "what connects."],
 ];
 
