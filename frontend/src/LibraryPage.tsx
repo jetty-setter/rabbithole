@@ -129,7 +129,7 @@ export function LibraryPage() {
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
                   </button>
                 </form>
-                <ul className="home-hero-points">
+                <ul className="home-hero-points" role="list">
                   {HERO_POINTS.map(([verb, rest]) => (
                     <li className="home-hero-point" key={verb}>
                       <span className="home-hero-point-verb">{verb}</span> {rest}
