@@ -103,7 +103,40 @@ jobs:
           aws s3 sync dist/ "s3://$FRONTEND_BUCKET/" --delete \
             --exclude "index.html"
           aws s3 cp dist/index.html "s3://$FRONTEND_BUCKET/index.html" \
-            --cache-control "no-cache, no-store, must-revalidate" \
+            --cache-control "no-cache, no-store, must-revalidate, max-age=0" \
             --content-type "text/html"
           aws cloudfront create-invalidation \
             --distribution-id "$DISTRIBUTION_ID" --paths "/*" >/dev/null
+
+      # Prove the public hostname is actually serving THIS build, rather
+      # than trusting that a successful sync + invalidation implies it.
+      # Polls (invalidation propagation isn't instant) until the live
+      # index.html references this run's exact CSS filename AND that CSS
+      # file, fetched live, contains this build's content -- not inferred
+      # from local dist/, git, or CI exit codes.
+      - name: Verify live deployment
+        run: |
+          cd frontend
+          CSS_FILE=$(basename dist/assets/index-*.css)
+          echo "This build's CSS asset: $CSS_FILE"
+          PROD_URL="https://rabbithole.stephsimmons.dev"
+          for i in $(seq 1 24); do
+            LIVE_HTML=$(curl -sS --max-time 10 "$PROD_URL/?v=$(date +%s%N)" || true)
+            LIVE_CSS_PATH=$(echo "$LIVE_HTML" | grep -oE '/assets/index-[A-Za-z0-9]+\.css' | head -1)
+            echo "Attempt $i: live index references $LIVE_CSS_PATH"
+            if [ "$LIVE_CSS_PATH" = "/assets/$CSS_FILE" ]; then
+              LIVE_CSS=$(curl -sS --max-time 10 "$PROD_URL$LIVE_CSS_PATH?v=$(date +%s%N)" || true)
+              LIVE_BYTES=$(echo -n "$LIVE_CSS" | wc -c)
+              LOCAL_BYTES=$(wc -c < "dist/assets/$CSS_FILE")
+              echo "Live CSS bytes: $LIVE_BYTES, local build CSS bytes: $LOCAL_BYTES"
+              if [ "$LIVE_BYTES" = "$LOCAL_BYTES" ]; then
+                echo "VERIFIED: $PROD_URL is serving this build's exact CSS ($CSS_FILE, $LIVE_BYTES bytes)."
+                exit 0
+              fi
+              echo "Filename matches but byte count differs -- unexpected, retrying."
+            fi
+            sleep 10
+          done
+          echo "FAILED: $PROD_URL did not converge to this build's assets within 4 minutes."
+          echo "Live index.html referenced: $LIVE_CSS_PATH"
+          exit 1
