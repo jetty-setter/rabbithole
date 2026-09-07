@@ -85,6 +85,25 @@ jobs:
           cd frontend
           npm ci
           npm run build
-          aws s3 sync dist/ "s3://$FRONTEND_BUCKET/" --delete
+          # index.html is the one file whose CONTENT changes on every deploy
+          # while its URL never does. The CloudFront distribution's
+          # Managed-CachingOptimized policy applies its own 24h default TTL
+          # to any object the origin doesn't send an explicit Cache-Control
+          # for, and neither S3 nor this sync ever set one -- so index.html
+          # (and the browser's own cache of it, entirely outside
+          # CloudFront's invalidation) could serve a stale page for up to a
+          # day after a deploy despite the invalidation below succeeding.
+          # Only dist/assets/*.js|css are content-hashed by Vite (safe to
+          # cache forever, a new build gets a new filename); the images/
+          # logos/favicons at the dist root come from public/ unhashed and
+          # have been updated in place under the same filename before, so
+          # they're deliberately left on the origin's default (unset)
+          # cache-control rather than also marked immutable. Only
+          # index.html needs the explicit no-cache override here.
+          aws s3 sync dist/ "s3://$FRONTEND_BUCKET/" --delete \
+            --exclude "index.html"
+          aws s3 cp dist/index.html "s3://$FRONTEND_BUCKET/index.html" \
+            --cache-control "no-cache, no-store, must-revalidate" \
+            --content-type "text/html"
           aws cloudfront create-invalidation \
             --distribution-id "$DISTRIBUTION_ID" --paths "/*" >/dev/null
