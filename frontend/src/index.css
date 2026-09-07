@@ -373,9 +373,10 @@ body {
   .home-hero {
     width: 100%;
     /* Horizontal padding unchanged. Top padding (image/fade -> eyebrow
-       gap): 19px -> 24px, per the explicit rendered-gap targets for
-       this stack. */
-    padding: 24px 24px 0;
+       gap): 24px -> 20px, per this round's explicit rendered-gap
+       target. Diagnostically confirmed via getBoundingClientRect that
+       this property is the sole, unoverridden source of that gap. */
+    padding: 20px 24px 0;
   }
   /* Mobile-only search footprint: subordinate to the headline rather
      than the desktop field's full 62px -- but not so short it stops
@@ -679,11 +680,11 @@ body {
        padding-top do the breathing room, so the hero-black -> --bg-2
        gradient stays continuous. */
     margin: 0 -16px;
-    /* Top padding trimmed 40px -> 30px (combines with
+    /* Top padding trimmed 30px -> 26px (combines with
        .section-head:first-child's 2px margin-top below to form the
-       capability-strip -> "Start Somewhere" gap: 30+2=32px, per the
-       explicit rendered-gap targets for this stack). */
-    padding: 30px 16px 44px;
+       capability-strip -> "Start Somewhere" gap: 26+2=28px, per this
+       round's explicit rendered-gap target). */
+    padding: 26px 16px 44px;
   }
 }
 
@@ -4638,9 +4639,9 @@ body::after {
        viewport with it), full desktop-adjacent scale read a touch
        oversized. Weight/family/color/the purple period are untouched. */
     font-size: clamp(28px, 8.85vw, 44px);
-    /* Headline -> search gap: 20px -> 24px, per the explicit rendered-
-       gap targets for this stack. */
-    margin-bottom: 24px;
+    /* Headline -> search gap: 24px -> 20px, per this round's explicit
+       rendered-gap target. */
+    margin-bottom: 20px;
   }
   /* Phone: a line may wrap gracefully on a very narrow viewport rather
      than overflow. */
@@ -4648,15 +4649,17 @@ body::after {
     white-space: normal;
   }
   .home-hero-eyebrow {
-    /* Eyebrow -> headline gap: 14px -> 20px, per the explicit rendered-
-       gap targets for this stack. */
-    margin-bottom: 20px;
+    /* Eyebrow -> headline gap: 20px -> 16px, per this round's explicit
+       rendered-gap target. */
+    margin-bottom: 16px;
   }
-  /* Search -> capability-strip gap: 26px -> 18px, per the explicit
-     rendered-gap targets for this stack -- the strip should read as
-     closely bound to the search action above it. */
+  /* Search -> capability-strip gap: 18px -> 12px, per this round's
+     explicit rendered-gap target. Diagnostically confirmed (temporarily
+     set to 4px and re-measured -- the rendered gap tracked exactly) that
+     this margin-top is the sole, unoverridden controlling rule; nothing
+     in the cascade overrides it. */
   .home-hero-points {
-    margin-top: 18px;
+    margin-top: 12px;
     /* Three-column capability strip instead of three stacked sentences
        -- no markup change: each .home-hero-point is a <p> containing a
        <span class="home-hero-point-verb"> followed by plain text (" what
