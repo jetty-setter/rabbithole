@@ -444,7 +444,7 @@
   }
 }
 
-/* ── Browse: "Start somewhere" + topic chips ─────────────────────────── */
+/* ── Browse: "Start with an idea" + Featured + Explore more ──────────── */
 /* Continues the hero's own near-black rather than switching to a flat
    panel gray; a very faint violet wash carries the hero's atmosphere a
    little further down so the color language doesn't just stop at the fold. */
@@ -488,59 +488,160 @@
   letter-spacing: -0.012em;
   text-transform: uppercase;
 }
-.start-row {
+/* ── "Start with an idea" — one curated curiosity path ──────────────────
+   A hand-picked example of one idea leading to the next: an entry video,
+   four idea steps, then "Keep going". NOT the highest-count tags, NOT the
+   Map, NOT a graph. It's a single horizontal row that sits still when it
+   fits and scrolls horizontally when it doesn't (narrow desktop, mobile);
+   type and spacing carry it -- no pills, no borders on the steps. */
+.cpath {
+  margin: 2px 0 26px;
+}
+.cpath-track {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
 }
-/* Homepage-only chip treatment -- .tunnel-chip itself (Tunnels/Creator
-   pages) is untouched. Squared corners, quieter border, violet held to
-   an accent instead of a colored badge. */
-.start-row .start-chip {
-  padding: 10px 16px;
-  gap: 12px;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  background: transparent;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
+.cpath-track::-webkit-scrollbar {
+  display: none;
 }
-.start-row .start-chip:hover {
-  border-color: var(--violet);
-  transform: none;
-}
-.start-row .start-chip .tunnel-count {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--muted);
-  background: none;
-  padding: 0;
-  border-radius: 0;
-}
-.start-map-link {
-  display: inline-flex;
+.cpath-item {
+  flex: 0 0 auto;
+  display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  background: transparent;
-  color: var(--text);
+  scroll-snap-align: start;
+}
+
+/* The entry point -- the heaviest element in the path, but deliberately
+   lighter and smaller than the Featured card below it. */
+.cpath-start-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
   text-decoration: none;
-  font-size: 13px;
+  color: var(--text);
+}
+.cpath-start-thumb {
+  position: relative;
+  flex: 0 0 auto;
+  width: 176px;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000;
+}
+.cpath-start-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.cpath-start-thumb .thumb-ph {
+  width: 40%;
+  height: auto;
+  margin: 28% 30%;
+  opacity: 0.4;
+}
+.cpath-play {
+  position: absolute;
+  left: 9px;
+  bottom: 8px;
+  width: 21px;
+  height: 21px;
+  display: grid;
+  place-items: center;
+  padding-left: 2px;
+  font-size: 8px;
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 50%;
+}
+.cpath-start-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 210px;
+}
+.cpath-start-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--violet-light);
+}
+.cpath-start-title {
+  font-family: var(--display);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.22;
+  letter-spacing: -0.004em;
+}
+.cpath-start-by {
+  font-size: 12px;
+  color: var(--muted);
+}
+.cpath-start-link:hover .cpath-start-title {
+  color: var(--violet-soft);
+}
+
+/* Idea steps -- name + optional "for example" line, no container. */
+.cpath-arrow {
+  flex: 0 0 auto;
+  margin: 0 13px;
+  font-size: 15px;
+  color: var(--muted);
+  opacity: 0.65;
+}
+.cpath-step-link,
+.cpath-more-link {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-decoration: none;
+  color: var(--text);
+  white-space: nowrap;
+}
+.cpath-step-name {
+  font-family: var(--display);
+  font-size: 14px;
   font-weight: 500;
-  transition: border-color 130ms ease;
+  letter-spacing: 0.004em;
 }
-.start-map-link svg {
-  width: 15px;
-  height: 15px;
-  color: var(--violet);
+.cpath-step-eg {
+  font-size: 11.5px;
+  color: var(--muted);
 }
-.start-map-link:hover {
-  border-color: var(--violet);
+.cpath-step-link:hover .cpath-step-name {
+  color: var(--violet-soft);
+}
+
+.cpath-more-link {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--violet-light);
+}
+.cpath-more-link:hover {
+  color: var(--violet-soft);
+}
+
+.cpath-start-link:focus-visible,
+.cpath-step-link:focus-visible,
+.cpath-more-link:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 3px;
+  border-radius: 3px;
 }
 
 @media (max-width: 560px) {
@@ -564,9 +665,22 @@
   .home-browse .featured {
     margin-bottom: 28px;
   }
-  .start-row {
-    gap: 10px;
-    margin-bottom: 22px;
+  .cpath {
+    /* Full-bleed the scroller to the gutter so the last step can scroll
+       fully into view and a slice of the next one peeks past the edge. */
+    margin: 0 calc(-1 * var(--gutter-mobile)) 20px;
+  }
+  .cpath-track {
+    padding: 4px var(--gutter-mobile);
+  }
+  .cpath-start-thumb {
+    width: 148px;
+  }
+  .cpath-start-body {
+    max-width: 168px;
+  }
+  .cpath-arrow {
+    margin: 0 10px;
   }
   .archive-cta {
     margin-top: 36px;
