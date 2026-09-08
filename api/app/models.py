@@ -147,8 +147,7 @@ class ContentTopic(BaseModel):
     """One curated (or AI-suggested, editor-reviewed) association between a
     piece of content and a Topic. Lives as a `topics` list attribute directly
     on the video item -- same shape as the existing `tags`/`thumbnail_candidates`
-    list attributes, not a separate join table (see
-    docs/RABBITHOLE_IMPLEMENTATION_GAP.md, P0-5)."""
+    list attributes, not a separate join table."""
 
     topic_id: str
     relevance: float = 1.0
@@ -250,7 +249,7 @@ class Topic(BaseModel):
     unstructured fallback (still what Tunnels/Map use for anything that
     hasn't been curated yet); a Topic is what lets RabbitHole say something a
     bare tag never could: a real name, a short description, and a place in a
-    Connection. See docs/RABBITHOLE_PRODUCT_MODEL.md, section 4."""
+    Connection."""
 
     topic_id: str
     slug: str
@@ -265,9 +264,8 @@ class Topic(BaseModel):
 
 class Connection(BaseModel):
     """A first-class, persisted relationship between two Topics -- what lets
-    Map answer "why does following this make sense?" instead of just "these
-    two tags co-occurred N times." See docs/RABBITHOLE_PRODUCT_MODEL.md,
-    section 5."""
+    Map answer "why does following this make sense?" instead of just
+    "these two tags co-occurred N times"."""
 
     from_topic: str
     to_topic: str

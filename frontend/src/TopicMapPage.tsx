@@ -79,8 +79,8 @@ export function TopicMapPage() {
   const center = path.length ? path[path.length - 1] : null;
 
   // Curated connections for the centred topic — editorially-authored
-  // relationship + "why this connects" records (GET /topics/{slug}/connections,
-  // see docs/RABBITHOLE_PRODUCT_MODEL.md section 5). These are first-class
+  // relationship + "why this connects" records (GET /topics/{slug}/connections).
+  // These are first-class
   // graph edges: a curated connection makes a spoke navigable even when the
   // two topics share no video (folded in by mergeConnections below).
   // `curatedFor` records which centre `curated` actually belongs to, so an
