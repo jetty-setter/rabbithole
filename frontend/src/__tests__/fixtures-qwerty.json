@@ -1,0 +1,264 @@
+{
+    "slug": "how-the-qwerty-keyboard-took-over",
+    "title": "How the QWERTY Keyboard Took Over",
+    "subtitle": "QWERTY is the standard Latin-alphabet key layout, arranged in the early 1870s for the first commercial typewriter and never displaced.",
+    "hook": "The layout on almost every keyboard you have used was fixed by the mechanical limits of a machine from 1873. Christopher Latham Sholes and his collaborators spent years rearranging the keys of an early typewriter whose type bars jammed when neighbouring letters were struck in quick succession. The arrangement they settled on outlived the jamming problem, the typewriter itself, and every attempt since to replace it.",
+    "short_version": "QWERTY spread with the first commercially successful typewriters and then survived on momentum. Its makers merged into a single dominant firm, typing schools trained millions of people on it, and a celebrated speed contest tied its reputation to the new skill of touch typing. By the time anyone proposed a better layout, switching meant retraining every typist and every teacher. So the keyboard did not win on merit \u2014 it won on being first, and then being everywhere. Economists still argue about what that says about how markets choose standards.",
+    "what_we_know": [
+        {
+            "text": "QWERTY emerged gradually through a series of typewriter prototypes, not from a single design decision.",
+            "citations": [
+                {
+                    "source_id": "s1",
+                    "number": 1
+                }
+            ]
+        },
+        {
+            "text": "Some of its key positions may reflect the habits of telegraph operators, among the typewriter's first heavy users.",
+            "citations": [
+                {
+                    "source_id": "s2",
+                    "number": 2
+                }
+            ]
+        },
+        {
+            "text": "The layout has passed essentially unchanged from mechanical typewriters to electric ones, computers, and phone touchscreens.",
+            "citations": [
+                {
+                    "source_id": "s3",
+                    "number": 3
+                }
+            ]
+        },
+        {
+            "text": "In controlled tests, experienced typists show only small speed differences between QWERTY and alternative layouts.",
+            "citations": [
+                {
+                    "source_id": "s5",
+                    "number": 4
+                }
+            ]
+        },
+        {
+            "text": "Reviews of the evidence report no demonstrated, large productivity gain from moving away from QWERTY.",
+            "citations": [
+                {
+                    "source_id": "s4",
+                    "number": 5
+                }
+            ]
+        }
+    ],
+    "contested_open": {
+        "intro": "How much of QWERTY's grip is genuine lock-in \u2014 and whether it was ever meaningfully worse than the alternatives \u2014 is still argued.",
+        "items": [
+            {
+                "claim": "QWERTY was deliberately designed to slow typists down.",
+                "state": "debunked",
+                "body": "The separation of common letter pairs was aimed at stopping their type bars from clashing, not at limiting the typist. On an 1870s machine the operator's speed was set by the mechanism, not the key order.",
+                "why": "Nothing in the record from Sholes or his collaborators names slowing the typist as a goal, and the pattern of separated keys tracks type-bar collisions rather than letter frequency.",
+                "citations": [
+                    {
+                        "source_id": "s1",
+                        "number": 1
+                    },
+                    {
+                        "source_id": "s2",
+                        "number": 2
+                    }
+                ]
+            },
+            {
+                "claim": "QWERTY is an inferior standard that persists only because switching costs are collectively too high.",
+                "state": "contested",
+                "body": "Paul David made QWERTY the standard example of economic lock-in. Stan Liebowitz and Stephen Margolis countered that the evidence for a large advantage from the Dvorak layout comes mainly from studies Dvorak ran himself and does not survive scrutiny. Both sides agree any real difference between layouts is small.",
+                "why": "The disagreement is about what a small, hard-to-measure difference implies for how markets settle on standards \u2014 not about a demonstrated flaw in QWERTY.",
+                "citations": [
+                    {
+                        "source_id": "s3",
+                        "number": 3
+                    },
+                    {
+                        "source_id": "s5",
+                        "number": 4
+                    },
+                    {
+                        "source_id": "s4",
+                        "number": 5
+                    }
+                ]
+            }
+        ],
+        "open_questions": [
+            "How far the specific key positions were shaped by 19th-century telegraph transcription, rather than by type-bar mechanics alone, is still debated and only partly documented."
+        ]
+    },
+    "timeline": [
+        {
+            "label": "1868",
+            "text": "Sholes, Glidden and Soule patent an early typewriter.",
+            "precision": "year",
+            "citations": [
+                {
+                    "source_id": "s1",
+                    "number": 1
+                }
+            ]
+        },
+        {
+            "label": "c. 1873",
+            "text": "The QWERTY key arrangement reaches its lasting form.",
+            "precision": "year",
+            "citations": []
+        },
+        {
+            "label": "1874",
+            "text": "Remington ships the Sholes and Glidden Type-Writer.",
+            "precision": "year",
+            "citations": []
+        },
+        {
+            "label": "1878",
+            "text": "The Remington No. 2 adds a shift key and lower case, and sells widely.",
+            "precision": "year",
+            "citations": []
+        },
+        {
+            "label": "1888",
+            "text": "Frank McGurrin wins a widely reported typing contest, touch-typing on QWERTY.",
+            "precision": "year",
+            "citations": [
+                {
+                    "source_id": "s1",
+                    "number": 1
+                }
+            ]
+        },
+        {
+            "label": "1893",
+            "text": "The main US typewriter makers merge and adopt QWERTY as a shared standard.",
+            "precision": "year",
+            "citations": [
+                {
+                    "source_id": "s1",
+                    "number": 1
+                }
+            ]
+        },
+        {
+            "label": "1936",
+            "text": "August Dvorak patents his Simplified Keyboard.",
+            "precision": "year",
+            "citations": []
+        },
+        {
+            "label": "1956",
+            "text": "A US government study finds keyboard retraining is not cost-justified.",
+            "precision": "year",
+            "citations": [
+                {
+                    "source_id": "s4",
+                    "number": 5
+                }
+            ]
+        }
+    ],
+    "keep_digging": [
+        {
+            "order": 1,
+            "why_care": "The most serious attempt to replace QWERTY, and the example both sides of the lock-in argument reach for first.",
+            "coming_soon": {
+                "title": "The Dvorak Keyboard"
+            }
+        },
+        {
+            "order": 2,
+            "why_care": "The economic idea that early, semi-accidental choices get locked in \u2014 QWERTY is the case it is most often taught and fought over.",
+            "coming_soon": {
+                "title": "Path Dependence"
+            }
+        },
+        {
+            "order": 3,
+            "why_care": "The skill that made the keyboard invisible; once people typed QWERTY from muscle memory, changing the layout stopped being realistic.",
+            "coming_soon": {
+                "title": "Touch Typing"
+            }
+        },
+        {
+            "order": 4,
+            "why_care": "A completely different key system that did win its niche, because QWERTY could not keep up with courtroom transcription speed.",
+            "coming_soon": {
+                "title": "Stenotype Machines"
+            }
+        }
+    ],
+    "sources": [
+        {
+            "number": 1,
+            "type": "reference",
+            "classification": "secondary",
+            "title": "The Typewriter and the Men Who Made It",
+            "authors": "Current, Richard N.",
+            "publisher": "University of Illinois Press",
+            "date": "1954",
+            "year": 1954,
+            "url": "https://www.gutenberg.org/ebooks/33796",
+            "citation": "Current, Richard N \u201cThe Typewriter and the Men Who Made It.\u201d University of Illinois Press, 1954. https://www.gutenberg.org/ebooks/33796"
+        },
+        {
+            "number": 2,
+            "type": "peer-reviewed",
+            "classification": "secondary",
+            "title": "On the Prehistory of QWERTY",
+            "authors": "Yasuoka, Koichi; Yasuoka, Motoko",
+            "publisher": "ZINBUN 42",
+            "date": "2011",
+            "year": 2011,
+            "doi": "10.14989/139379",
+            "citation": "Yasuoka, Koichi; Yasuoka, Motoko \u201cOn the Prehistory of QWERTY.\u201d ZINBUN 42, 2011. doi:10.14989/139379"
+        },
+        {
+            "number": 3,
+            "type": "peer-reviewed",
+            "classification": "secondary",
+            "title": "Clio and the Economics of QWERTY",
+            "authors": "David, Paul A.",
+            "publisher": "American Economic Review 75(2)",
+            "date": "1985",
+            "year": 1985,
+            "url": "https://www.jstor.org/stable/1805621",
+            "citation": "David, Paul A \u201cClio and the Economics of QWERTY.\u201d American Economic Review 75(2), 1985. https://www.jstor.org/stable/1805621"
+        },
+        {
+            "number": 4,
+            "type": "peer-reviewed",
+            "classification": "secondary",
+            "title": "Why Alternative Keyboards Are Not Necessarily Better",
+            "authors": "Norman, Donald A.; Fisher, Diane",
+            "publisher": "Human Factors 24(5)",
+            "date": "1982",
+            "year": 1982,
+            "doi": "10.1177/001872088202400502",
+            "citation": "Norman, Donald A.; Fisher, Diane \u201cWhy Alternative Keyboards Are Not Necessarily Better.\u201d Human Factors 24(5), 1982. doi:10.1177/001872088202400502"
+        },
+        {
+            "number": 5,
+            "type": "peer-reviewed",
+            "classification": "secondary",
+            "title": "The Fable of the Keys",
+            "authors": "Liebowitz, S. J.; Margolis, S. E.",
+            "publisher": "Journal of Law and Economics 33(1)",
+            "date": "1990",
+            "year": 1990,
+            "url": "https://personal.utdallas.edu/~liebowit/keys1.html",
+            "doi": "10.1086/467198",
+            "citation": "Liebowitz, S. J.; Margolis, S. E \u201cThe Fable of the Keys.\u201d Journal of Law and Economics 33(1), 1990. doi:10.1086/467198"
+        }
+    ],
+    "author_display": "RabbitHole Editorial",
+    "published_at": "2026-09-08T02:56:14.317685+00:00",
+    "updated_at": "2026-09-08T02:56:14.317685+00:00"
+}
