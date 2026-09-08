@@ -20,6 +20,15 @@ TOPICS_TABLE = os.getenv("TOPICS_TABLE", "rabbithole-dev-topics")
 TOPIC_CONNECTIONS_TABLE = os.getenv(
     "TOPIC_CONNECTIONS_TABLE", "rabbithole-dev-topic-connections"
 )
+# RabbitHole V1 content model (see docs/RABBITHOLE_SCHEMA.md). Distinct from
+# the taxonomy tables above -- a RabbitHole is an article, a Topic is a label.
+RABBITHOLES_TABLE = os.getenv("RABBITHOLES_TABLE", "rabbithole-dev-rabbitholes")
+RABBITHOLE_CONNECTIONS_TABLE = os.getenv(
+    "RABBITHOLE_CONNECTIONS_TABLE", "rabbithole-dev-rabbithole-connections"
+)
+RABBITHOLE_REVISIONS_TABLE = os.getenv(
+    "RABBITHOLE_REVISIONS_TABLE", "rabbithole-dev-rabbithole-revisions"
+)
 # Local sentence-embedding model (bundled in the image) for semantic search.
 EMBED_MODEL = os.getenv("EMBED_MODEL", "BAAI/bge-small-en-v1.5")
 EMBED_CACHE_DIR = os.getenv("EMBED_CACHE_DIR", "/opt/models")

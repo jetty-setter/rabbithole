@@ -88,6 +88,8 @@ from .models import (
     VoteRequest,
 )
 
+from . import rabbithole_routes
+
 app = FastAPI(title="RabbitHole API", version="0.2.0")
 
 app.add_middleware(
@@ -96,6 +98,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# RabbitHole V1 content model (see docs/RABBITHOLE_SCHEMA.md).
+app.include_router(rabbithole_routes.router)
 
 _UNSAFE = re.compile(r"[^A-Za-z0-9._-]+")
 

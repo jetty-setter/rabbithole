@@ -23,6 +23,9 @@ os.environ["COMMENTS_TABLE"] = "test-comments"
 os.environ["EMBEDDINGS_TABLE"] = "test-embeddings"
 os.environ["TOPICS_TABLE"] = "test-topics"
 os.environ["TOPIC_CONNECTIONS_TABLE"] = "test-connections"
+os.environ["RABBITHOLES_TABLE"] = "test-rabbitholes"
+os.environ["RABBITHOLE_CONNECTIONS_TABLE"] = "test-rh-connections"
+os.environ["RABBITHOLE_REVISIONS_TABLE"] = "test-rh-revisions"
 os.environ["UPLOADS_BUCKET"] = "test-uploads"
 os.environ["STREAMING_BUCKET"] = "test-streaming"
 os.environ["CLOUDFRONT_DOMAIN"] = "cdn.example.com"
@@ -92,6 +95,77 @@ def aws_stack():
             ],
             BillingMode="PAY_PER_REQUEST",
         )
+        ddb.create_table(
+            TableName="test-rabbitholes",
+            KeySchema=[{"AttributeName": "id", "KeyType": "HASH"}],
+            AttributeDefinitions=[
+                {"AttributeName": "id", "AttributeType": "S"},
+                {"AttributeName": "slug", "AttributeType": "S"},
+                {"AttributeName": "status", "AttributeType": "S"},
+                {"AttributeName": "updated_at", "AttributeType": "S"},
+                {"AttributeName": "gsi_pub", "AttributeType": "S"},
+                {"AttributeName": "published_at", "AttributeType": "S"},
+            ],
+            BillingMode="PAY_PER_REQUEST",
+            GlobalSecondaryIndexes=[
+                {
+                    "IndexName": "by-slug",
+                    "KeySchema": [{"AttributeName": "slug", "KeyType": "HASH"}],
+                    "Projection": {"ProjectionType": "ALL"},
+                },
+                {
+                    "IndexName": "by-status",
+                    "KeySchema": [
+                        {"AttributeName": "status", "KeyType": "HASH"},
+                        {"AttributeName": "updated_at", "KeyType": "RANGE"},
+                    ],
+                    "Projection": {"ProjectionType": "ALL"},
+                },
+                {
+                    "IndexName": "published-feed",
+                    "KeySchema": [
+                        {"AttributeName": "gsi_pub", "KeyType": "HASH"},
+                        {"AttributeName": "published_at", "KeyType": "RANGE"},
+                    ],
+                    "Projection": {"ProjectionType": "ALL"},
+                },
+            ],
+        )
+        ddb.create_table(
+            TableName="test-rh-connections",
+            KeySchema=[
+                {"AttributeName": "source_id", "KeyType": "HASH"},
+                {"AttributeName": "dest_key", "KeyType": "RANGE"},
+            ],
+            AttributeDefinitions=[
+                {"AttributeName": "source_id", "AttributeType": "S"},
+                {"AttributeName": "dest_key", "AttributeType": "S"},
+                {"AttributeName": "destination_id", "AttributeType": "S"},
+            ],
+            BillingMode="PAY_PER_REQUEST",
+            GlobalSecondaryIndexes=[
+                {
+                    "IndexName": "inbound",
+                    "KeySchema": [
+                        {"AttributeName": "destination_id", "KeyType": "HASH"},
+                        {"AttributeName": "source_id", "KeyType": "RANGE"},
+                    ],
+                    "Projection": {"ProjectionType": "ALL"},
+                },
+            ],
+        )
+        ddb.create_table(
+            TableName="test-rh-revisions",
+            KeySchema=[
+                {"AttributeName": "id", "KeyType": "HASH"},
+                {"AttributeName": "rev", "KeyType": "RANGE"},
+            ],
+            AttributeDefinitions=[
+                {"AttributeName": "id", "AttributeType": "S"},
+                {"AttributeName": "rev", "AttributeType": "S"},
+            ],
+            BillingMode="PAY_PER_REQUEST",
+        )
         s3 = boto3.client("s3", region_name="us-east-1")
         s3.create_bucket(Bucket="test-uploads")
         s3.create_bucket(Bucket="test-streaming")
@@ -120,6 +194,21 @@ def topics_table(aws_stack):
 @pytest.fixture
 def connections_table(aws_stack):
     return boto3.resource("dynamodb", region_name="us-east-1").Table("test-connections")
+
+
+@pytest.fixture
+def rabbitholes_table(aws_stack):
+    return boto3.resource("dynamodb", region_name="us-east-1").Table("test-rabbitholes")
+
+
+@pytest.fixture
+def rh_connections_table(aws_stack):
+    return boto3.resource("dynamodb", region_name="us-east-1").Table("test-rh-connections")
+
+
+@pytest.fixture
+def rh_revisions_table(aws_stack):
+    return boto3.resource("dynamodb", region_name="us-east-1").Table("test-rh-revisions")
 
 
 def token(username: str) -> str:

@@ -145,3 +145,134 @@ resource "aws_dynamodb_table" "topic_connections" {
 output "topic_connections_table" {
   value = aws_dynamodb_table.topic_connections.name
 }
+
+# ── RabbitHole V1 content model (docs/RABBITHOLE_SCHEMA.md) ──────────────
+# A RabbitHole is one item (prose + bounded sub-sections + sources embedded
+# as JSON); SLUG#<slug> sentinel items in the same table reserve slugs via a
+# conditional TransactWriteItems. No DynamoDB Streams -- RabbitHoles have no
+# real-time surface.
+
+resource "aws_dynamodb_table" "rabbitholes" {
+  name         = "${local.name}-rabbitholes"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+  attribute {
+    name = "slug"
+    type = "S"
+  }
+  attribute {
+    name = "status"
+    type = "S"
+  }
+  attribute {
+    name = "updated_at"
+    type = "S"
+  }
+  attribute {
+    name = "gsi_pub"
+    type = "S"
+  }
+  attribute {
+    name = "published_at"
+    type = "S"
+  }
+
+  # get RabbitHole by slug (the public read path)
+  global_secondary_index {
+    name            = "by-slug"
+    hash_key        = "slug"
+    projection_type = "ALL"
+  }
+
+  # editorial listing: every RabbitHole in a status, newest-updated first
+  global_secondary_index {
+    name            = "by-status"
+    hash_key        = "status"
+    range_key       = "updated_at"
+    projection_type = "ALL"
+  }
+
+  # public feed: sparse -- only published items carry gsi_pub ("PUB")
+  global_secondary_index {
+    name            = "published-feed"
+    hash_key        = "gsi_pub"
+    range_key       = "published_at"
+    projection_type = "ALL"
+  }
+
+  point_in_time_recovery {
+    enabled = true
+  }
+}
+
+output "rabbitholes_table" {
+  value = aws_dynamodb_table.rabbitholes.name
+}
+
+# Directed "Keep Digging" edges. One item per edge; reverse edges are derived
+# from the `inbound` GSI, never stored twice.
+resource "aws_dynamodb_table" "rabbithole_connections" {
+  name         = "${local.name}-rabbithole-connections"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "source_id"
+  range_key    = "dest_key"
+
+  attribute {
+    name = "source_id"
+    type = "S"
+  }
+  attribute {
+    name = "dest_key"
+    type = "S"
+  }
+  attribute {
+    name = "destination_id"
+    type = "S"
+  }
+
+  # "what leads here" -- sparse: stub edges have no destination_id
+  global_secondary_index {
+    name            = "inbound"
+    hash_key        = "destination_id"
+    range_key       = "source_id"
+    projection_type = "ALL"
+  }
+
+  point_in_time_recovery {
+    enabled = true
+  }
+}
+
+output "rabbithole_connections_table" {
+  value = aws_dynamodb_table.rabbithole_connections.name
+}
+
+# Append-only snapshot of the full RabbitHole item on each publish.
+resource "aws_dynamodb_table" "rabbithole_revisions" {
+  name         = "${local.name}-rabbithole-revisions"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
+  range_key    = "rev"
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+  attribute {
+    name = "rev"
+    type = "S"
+  }
+
+  point_in_time_recovery {
+    enabled = true
+  }
+}
+
+output "rabbithole_revisions_table" {
+  value = aws_dynamodb_table.rabbithole_revisions.name
+}

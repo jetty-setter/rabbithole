@@ -117,6 +117,35 @@ Listing uses a bounded `Scan` (fine at portfolio scale; a GSI on `created_at` is
 production move). The API maps stored keys to CloudFront URLs at read time, so the bucket
 layout can change without breaking clients.
 
+### RabbitHole content model (V1)
+
+The product is being rebuilt around **RabbitHoles** — short, sourced editorial
+pieces (`Hook → The short version → What we know → What's contested or still open →
+optional Timeline → Keep digging → Sources`). The full editorial and engineering
+spec lives in [`RABBITHOLE_CONTENT_MODEL.md`](./RABBITHOLE_CONTENT_MODEL.md),
+[`RABBITHOLE_CONTENT_MODEL_VALIDATION.md`](./RABBITHOLE_CONTENT_MODEL_VALIDATION.md)
+and [`RABBITHOLE_SCHEMA.md`](./RABBITHOLE_SCHEMA.md). It is a distinct domain from
+the video pipeline above — video survives only as a future *evidence* attachment
+referenced by `video_id`.
+
+Three DynamoDB tables, all `PAY_PER_REQUEST`, PITR on, **no Streams**:
+
+| Table | Keys | GSIs | Holds |
+|---|---|---|---|
+| `rabbitholes` | `id` (`rh_…`) | `by-slug`, `by-status` (editorial list), `published-feed` (sparse — public feed) | one item per RabbitHole: prose + `what_we_know` / `contested_open` / `timeline` / `sources` embedded as JSON; plus `SLUG#<slug>` sentinel items |
+| `rabbithole-connections` | `source_id` + `dest_key` | `inbound` (reverse edges) | one item per directed "Keep Digging" edge |
+| `rabbithole-revisions` | `id` + `rev` | — | append-only snapshot of the full item on each publish |
+
+Design choices: sources are RabbitHole-local with stable ids (`s1…`) so inline
+citations survive reordering; slug uniqueness is a conditional `TransactWriteItems`
+on the sentinel; reverse connections are derived from the `inbound` GSI, never
+stored twice; the publish gate (`app/rabbithole_validation.py`) is one pure
+function enforced at the API — word-count / "no manufactured mystery" style rules
+stay in editorial tooling. Credibility is 3 states + a Debunked flag; the default
+(Established) carries no label. The taxonomy tables (`topics` /
+`topic_connections`) are **not** reused as the RabbitHole graph — a Topic is a
+label, a RabbitHole is an article. Code: `app/rabbithole_{models,store,validation,render,routes}.py`.
+
 ---
 
 ## Autoscaling: deterministic scale-to-zero
