@@ -16,10 +16,13 @@
 .rh-page::before {
   content: "";
   position: absolute;
-  inset: -80px -48% auto -38%;
+  top: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1120px, 94vw);
   height: 560px;
   background: radial-gradient(
-    54% 70% at 30% 0%,
+    54% 70% at 32% 0%,
     rgba(154, 130, 242, 0.14),
     transparent 68%
   );
