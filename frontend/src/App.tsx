@@ -32,6 +32,7 @@ import { WatchPage } from "./WatchPage";
 import { AdminPage } from "./AdminPage";
 import { CreatorPage } from "./CreatorPage";
 import { TopicMapPage } from "./TopicMapPage";
+import { RabbitHolePage } from "./RabbitHolePage";
 import { NotFoundPage } from "./NotFoundPage";
 
 export interface AppCtx {
@@ -299,6 +300,7 @@ export default function App() {
         <Route path="/watch/:id" element={<WatchPage />} />
         <Route path="/creator/:username" element={<CreatorPage />} />
         <Route path="/map" element={<TopicMapPage />} />
+        <Route path="/rabbitholes/:slug" element={<RabbitHolePage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>

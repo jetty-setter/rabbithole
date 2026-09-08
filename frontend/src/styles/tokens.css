@@ -16,6 +16,11 @@
   --violet: #9a82f2;
   --violet-soft: #b29cf8;
   --violet-light: #c4b5fd;
+  /* Warm coral — the second, sparingly-used accent. Muted on purpose: it
+     marks an epistemic state ("debunked") and warm editorial detail, never
+     an error. Distinct from --danger, which stays reserved for real alerts. */
+  --coral: #e08a6f;
+  --coral-soft: #eaa892;
   /* Semantic states only — never decorative. */
   --danger: #ff5468;
   --warning: #fbbf24;

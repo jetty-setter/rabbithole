@@ -705,3 +705,121 @@ export function uploadToS3(
     xhr.send(file);
   });
 }
+
+// ── RabbitHole reader model (public GET /rabbitholes/:slug) ─────────────
+// A RabbitHole is a short, sourced editorial piece. This is the exact shape
+// the API returns for a published one; optional sections are simply absent.
+// Internal fields (relationship_type, created_by, editorial_note, …) are
+// never in this payload — the API strips them.
+
+export type CredibilityState = "contested" | "unsupported" | "debunked";
+
+export interface RhCitation {
+  source_id: string;
+  /** Display number, assigned by the API in source order — use as-is. */
+  number: number;
+}
+
+export interface RhFact {
+  text: string;
+  /** Absent / null / "established" ⇒ Established (render no chip). */
+  state?: CredibilityState | "established" | null;
+  why?: string | null;
+  citations: RhCitation[];
+}
+
+export interface RhContestedItem {
+  claim: string;
+  state: "established" | CredibilityState;
+  body: string;
+  why?: string | null;
+  citations: RhCitation[];
+}
+
+export interface RhContestedOpen {
+  intro?: string | null;
+  items: RhContestedItem[];
+  open_questions: string[];
+}
+
+export interface RhTimelineEntry {
+  label: string;
+  text: string;
+  precision: string;
+  citations: RhCitation[];
+}
+
+export interface RhConnectionTarget {
+  slug: string;
+  title: string;
+  subtitle?: string | null;
+}
+
+export interface RhConnection {
+  order: number;
+  why_care: string;
+  /** Present when the destination is a published RabbitHole. */
+  destination?: RhConnectionTarget | null;
+  /** Present instead when the destination isn't published yet. */
+  coming_soon?: { title: string } | null;
+}
+
+export interface RhSource {
+  number: number;
+  type: string;
+  classification?: string | null;
+  title: string;
+  authors?: string | null;
+  publisher?: string | null;
+  date?: string | null;
+  year?: number | null;
+  url?: string | null;
+  doi?: string | null;
+  archive_url?: string | null;
+  note?: string | null;
+  /** Pre-rendered reference string from the API. */
+  citation: string;
+}
+
+export interface RabbitHole {
+  slug: string;
+  title: string;
+  subtitle?: string | null;
+  hook?: string | null;
+  short_version?: string | null;
+  what_we_know: RhFact[];
+  contested_open?: RhContestedOpen | null;
+  timeline?: RhTimelineEntry[] | null;
+  keep_digging: RhConnection[];
+  sources: RhSource[];
+  author_display?: string | null;
+  published_at?: string | null;
+  updated_at?: string | null;
+}
+
+/** Fetch a published RabbitHole by slug. `null` on 404 (drives the
+ *  not-found state); throws on a network / server error. */
+export async function getRabbitHole(slug: string): Promise<RabbitHole | null> {
+  const res = await fetch(`${API_URL}/rabbitholes/${encodeURIComponent(slug)}`);
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`rabbithole request failed (${res.status})`);
+  return res.json();
+}
+
+/** A best-effort "resolve to a real link" for a Source: prefer its own URL,
+ *  fall back to a DOI resolver, then an archive URL. `null` ⇒ no link. */
+export function sourceHref(s: RhSource): string | null {
+  if (s.url) return s.url;
+  if (s.doi) return `https://doi.org/${s.doi}`;
+  if (s.archive_url) return s.archive_url;
+  return null;
+}
+
+/** "1954" / "March 2015" style dates from the API are already human; this is
+ *  only for the ISO published_at/updated_at timestamps. */
+export function monthYear(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+}
