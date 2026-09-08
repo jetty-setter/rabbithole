@@ -4,8 +4,8 @@ import { useApp } from "./App";
 import { canWatch, pickFeatured } from "./api";
 import { EditorialCard } from "./EditorialCard";
 import { FeaturedCard } from "./FeaturedCard";
+import { CuriosityPath } from "./CuriosityPath";
 import { SkeletonFeed } from "./Skeleton";
-import { MapIcon } from "./Icons";
 
 // The hero's three-line product statement: each reads as a plain sentence
 // with a subtly emphasised opening word.
@@ -48,16 +48,6 @@ export function LibraryPage() {
   // Curated, not a full catalog dump: three clean rows of four, predictable
   // page length, no awkward partial final row. The rest lives at /fresh.
   const homeGridList = gridList.slice(0, 12);
-
-  // A taste of the ways to follow curiosity here, right under the search
-  // hero — otherwise Tunnels, Trail-through-search, and the Map are only
-  // discoverable via the sidebar, and a first-time visitor may never find
-  // them at all.
-  const startTopics = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const v of ready) for (const t of v.tags || []) counts.set(t, (counts.get(t) || 0) + 1);
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
-  }, [ready]);
 
   // Tell the nav to hold its Search trigger while the hero's own search is on
   // screen, and hand it back once the hero scrolls away (or the page
@@ -144,27 +134,10 @@ export function LibraryPage() {
               <div className="home-browse-inner">
                 <div className="section-head">
                   <h2>
-                    Start somewhere<span className="home-punct">.</span>
+                    Start with an idea<span className="home-punct">.</span>
                   </h2>
                 </div>
-                {startTopics.length > 0 && (
-                  <div className="start-row">
-                    {startTopics.map(([tag, n]) => (
-                      <Link
-                        key={tag}
-                        to={`/tunnels/${encodeURIComponent(tag)}`}
-                        className="tunnel-chip start-chip"
-                      >
-                        <span className="tunnel-tag">#{tag}</span>
-                        <span className="tunnel-count">{n}</span>
-                      </Link>
-                    ))}
-                    <Link to="/map" className="start-map-link">
-                      <MapIcon />
-                      Explore the topic map
-                    </Link>
-                  </div>
-                )}
+                <CuriosityPath videos={ready} />
                 <FeaturedCard v={featured} />
                 {homeGridList.length > 0 && (
                   <>
