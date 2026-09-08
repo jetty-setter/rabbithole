@@ -43,7 +43,8 @@ resource "aws_iam_role_policy" "api_lambda" {
         Action = [
           "dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem",
           "dynamodb:DeleteItem", "dynamodb:Scan", "dynamodb:Query",
-          "dynamodb:BatchWriteItem",
+          "dynamodb:BatchWriteItem", "dynamodb:BatchGetItem",
+          "dynamodb:TransactWriteItems",
         ]
         Resource = [
           aws_dynamodb_table.videos.arn,
@@ -52,6 +53,11 @@ resource "aws_iam_role_policy" "api_lambda" {
           aws_dynamodb_table.embeddings.arn,
           aws_dynamodb_table.topics.arn,
           aws_dynamodb_table.topic_connections.arn,
+          aws_dynamodb_table.rabbitholes.arn,
+          "${aws_dynamodb_table.rabbitholes.arn}/index/*",
+          aws_dynamodb_table.rabbithole_connections.arn,
+          "${aws_dynamodb_table.rabbithole_connections.arn}/index/*",
+          aws_dynamodb_table.rabbithole_revisions.arn,
         ]
       },
       {
@@ -101,14 +107,18 @@ resource "aws_lambda_function" "api" {
       EMBEDDINGS_TABLE        = aws_dynamodb_table.embeddings.name
       TOPICS_TABLE            = aws_dynamodb_table.topics.name
       TOPIC_CONNECTIONS_TABLE = aws_dynamodb_table.topic_connections.name
-      ANTHROPIC_KEY_PARAM     = local.anthropic_key_param
-      AI_MODEL                = var.ai_model
-      CLOUDFRONT_DOMAIN       = aws_cloudfront_distribution.streaming.domain_name
-      CREATOR_USERNAME        = "admin"
-      DEMO_USERNAME           = "visitor"
-      JWT_SECRET              = random_password.jwt.result
-      ALLOWED_ORIGINS         = join(",", local.frontend_origins)
-      PRESIGN_EXPIRY_SECONDS  = "900"
+
+      RABBITHOLES_TABLE            = aws_dynamodb_table.rabbitholes.name
+      RABBITHOLE_CONNECTIONS_TABLE = aws_dynamodb_table.rabbithole_connections.name
+      RABBITHOLE_REVISIONS_TABLE   = aws_dynamodb_table.rabbithole_revisions.name
+      ANTHROPIC_KEY_PARAM          = local.anthropic_key_param
+      AI_MODEL                     = var.ai_model
+      CLOUDFRONT_DOMAIN            = aws_cloudfront_distribution.streaming.domain_name
+      CREATOR_USERNAME             = "admin"
+      DEMO_USERNAME                = "visitor"
+      JWT_SECRET                   = random_password.jwt.result
+      ALLOWED_ORIGINS              = join(",", local.frontend_origins)
+      PRESIGN_EXPIRY_SECONDS       = "900"
     }
   }
 }
