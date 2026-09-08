@@ -85,8 +85,8 @@ output "embeddings_table" {
   value = aws_dynamodb_table.embeddings.name
 }
 
-# Curated Topic/Concept entities -- the semantic layer above raw video tags
-# (see docs/RABBITHOLE_PRODUCT_MODEL.md). `slug` is the natural key: it's
+# Curated Topic/Concept entities -- the semantic layer above raw video tags.
+# `slug` is the natural key: it's
 # what the API and frontend already address a topic by (/topics/{slug}),
 # so there's no separate UUID indirection to look up first.
 resource "aws_dynamodb_table" "topics" {

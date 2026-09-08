@@ -35,6 +35,9 @@ infra/build/*.zip
 .env.*
 !.env.example
 
+# One-off purge/backfill snapshots (scripts/purge-legacy-catalog.py etc.)
+purge-snapshot-*/
+
 # OS / editor
 .DS_Store
 .idea/

@@ -470,7 +470,7 @@ export interface Creator {
 // The semantic layer above raw tags. Tags remain the uncurated fallback
 // everywhere (Tunnels/Map keep working with zero Topic rows present); a
 // Topic is what lets RabbitHole show a real name, a short description, and
-// a place in a Connection. See docs/RABBITHOLE_PRODUCT_MODEL.md.
+// a place in a Connection.
 
 export interface Topic {
   topic_id: string;

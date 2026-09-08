@@ -4,7 +4,6 @@ import { useApp } from "./App";
 import { canWatch, pickFeatured } from "./api";
 import { EditorialCard } from "./EditorialCard";
 import { FeaturedCard } from "./FeaturedCard";
-import { CuriosityPath } from "./CuriosityPath";
 import { SkeletonFeed } from "./Skeleton";
 
 // The hero's three-line product statement: each reads as a plain sentence
@@ -132,12 +131,6 @@ export function LibraryPage() {
           {featured && (
             <div className="home-browse">
               <div className="home-browse-inner">
-                <div className="section-head">
-                  <h2>
-                    Start with an idea<span className="home-punct">.</span>
-                  </h2>
-                </div>
-                <CuriosityPath videos={ready} />
                 <FeaturedCard v={featured} />
                 {homeGridList.length > 0 && (
                   <>
