@@ -1,29 +1,34 @@
 import { useEffect, useState } from "react";
 
-import { getRabbitHole, listRabbitHoles, type RabbitHole } from "./api";
+import { getRabbitHole, type RabbitHole } from "./api";
 import { FeaturedRabbitHole } from "./components/home/FeaturedRabbitHole";
 import { HomeHero } from "./components/home/HomeHero";
 import { useDocumentMeta } from "./hooks/useDocumentMeta";
 
-const FALLBACK_SLUG = "how-the-qwerty-keyboard-took-over";
+/**
+ * The RabbitHole the homepage leads with. Pinned for now — deliberately not
+ * "the newest published one", which is too volatile for the front door. When
+ * the API grows a homepage-featured field/config, this is the single line to
+ * replace: fetch that slug instead of this constant.
+ */
+const HOME_FEATURED_SLUG = "how-the-qwerty-keyboard-took-over";
 
 /**
- * Homepage: the hero, then the most recent published RabbitHole as the entry
- * point (with the connections leading out of it), then a quiet line on what
- * this is. Driven entirely by the live API — no video-catalog dependency.
+ * Homepage: the hero, then the pinned featured RabbitHole as the entry point
+ * (with the connections leading out of it), then a quiet line on what this
+ * is. Driven entirely by the live API — no video-catalog dependency.
  */
 export function LibraryPage() {
   const [featured, setFeatured] = useState<RabbitHole | null>(null);
 
   useEffect(() => {
     let live = true;
-    listRabbitHoles(1)
-      .then((items) => (items[0] ? getRabbitHole(items[0].slug) : null))
+    getRabbitHole(HOME_FEATURED_SLUG)
       .then((rh) => {
         if (live && rh) setFeatured(rh);
       })
       .catch(() => {
-        /* homepage still works without a featured piece */
+        /* hero still renders; the featured block just stays absent */
       });
     return () => {
       live = false;
@@ -32,7 +37,9 @@ export function LibraryPage() {
 
   useDocumentMeta();
 
-  const startHref = featured ? `/rabbitholes/${featured.slug}` : `/rabbitholes/${FALLBACK_SLUG}`;
+  // The CTA always points at the pinned RabbitHole, even before (or if) its
+  // full detail loads.
+  const startHref = `/rabbitholes/${HOME_FEATURED_SLUG}`;
 
   return (
     <main className="page home-page">
