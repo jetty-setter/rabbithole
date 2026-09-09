@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { displayTitle, fetchCues, formatDuration, listRabbitHoles, normalizeTag, pickFeatured, relativeTime, transcriptSectionState, type Video } from "../api";
+import { displayTitle, fetchCues, formatDuration, listRabbitHoles, normalizeTag, pickFeatured, rabbitHoleTeaser, relativeTime, transcriptSectionState, type Video } from "../api";
 
 describe("transcriptSectionState", () => {
   it("shows transcribing while a job is in flight", () => {
@@ -191,5 +191,34 @@ describe("listRabbitHoles", () => {
   it("degrades to [] when items is missing or not an array", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ items: null }) }));
     expect(await listRabbitHoles()).toEqual([]);
+  });
+});
+
+describe("rabbitHoleTeaser", () => {
+  it("takes the first sentence of the hook", () => {
+    expect(
+      rabbitHoleTeaser({
+        hook: "The layout was fixed by a machine from 1873. A second sentence.",
+        short_version: null,
+      }),
+    ).toBe("The layout was fixed by a machine from 1873.");
+  });
+
+  it("falls back to short_version when hook is missing", () => {
+    expect(
+      rabbitHoleTeaser({ hook: null, short_version: "Short lead. More." }),
+    ).toBe("Short lead.");
+  });
+
+  it("returns '' when there is nothing to show", () => {
+    expect(rabbitHoleTeaser({ hook: null, short_version: null })).toBe("");
+    expect(rabbitHoleTeaser({ hook: "   ", short_version: undefined })).toBe("");
+  });
+
+  it("caps an over-long first sentence with an ellipsis", () => {
+    const long = `${"word ".repeat(60)}end.`;
+    const out = rabbitHoleTeaser({ hook: long, short_version: null }, 80);
+    expect(out.length).toBeLessThanOrEqual(80);
+    expect(out.endsWith("…")).toBe(true);
   });
 });
