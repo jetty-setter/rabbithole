@@ -138,40 +138,44 @@
   margin: 0;
 }
 
-/* A compact flat editorial action: an aubergine-black block (--hero-black
-   lifted toward --violet) that reads as a deliberate branded surface, warm
-   ivory text, a bright violet arrow. 2px corner, no border, underline, glow
-   or shadow. Hover flips it to full RabbitHole violet with near-black text
-   and eases the arrow right. */
+/* An editorial CTA lockup, not a control. The hero's display face at a
+   confident reading size, warm ivory, with a RabbitHole-violet arrow — no
+   fill, border, outline, underline, radius, shadow or glow. It belongs to
+   the hero's typography, deliberately placed in the copy column rather than
+   sitting on it as a widget. The vertical padding is a transparent hit area
+   only (a comfortable target with no visible box); the matching negative
+   left margin cancels the horizontal padding so the text still starts on
+   the copy spine. Hover warms the text to violet and eases the arrow ~3px
+   right; nothing else appears. Keyboard focus is the global :focus-visible
+   outline (mouse clicks stay clean). */
 .home-hero-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 13px 22px;
-  font-family: var(--sans);
+  gap: 9px;
+  margin-left: -4px;
+  padding: 12px 4px;
+  font-family: var(--display);
   font-weight: 700;
-  font-size: 13.5px;
-  letter-spacing: 0.04em;
+  font-size: 18px;
+  letter-spacing: 0.01em;
   color: var(--text);
-  background: #201a32;
-  border-radius: 2px;
   text-decoration: none;
-  transition: background 160ms ease, color 160ms ease;
+  transition: color 160ms ease;
 }
 
 .home-hero-btn-arrow {
-  color: var(--violet-light);
-  transition: transform 160ms ease, color 160ms ease;
+  color: var(--violet);
+  transition: transform 160ms ease;
 }
 
-.home-hero-btn:hover {
-  background: var(--violet);
-  color: #0a0a0d;
+.home-hero-btn:hover,
+.home-hero-btn:focus-visible {
+  color: var(--violet);
 }
 
-.home-hero-btn:hover .home-hero-btn-arrow {
-  color: #0a0a0d;
-  transform: translateX(2px);
+.home-hero-btn:hover .home-hero-btn-arrow,
+.home-hero-btn:focus-visible .home-hero-btn-arrow {
+  transform: translateX(3px);
 }
 
 /* ── Hero: compact desktop / tablet landscape (901–1080px) ─────────────── */
