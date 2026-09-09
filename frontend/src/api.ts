@@ -848,3 +848,17 @@ export function monthYear(iso: string | null | undefined): string {
   if (Number.isNaN(d.getTime())) return "";
   return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
 }
+
+/** A one-line teaser for a RabbitHole: the first sentence of its `hook`,
+ *  falling back to the first sentence of `short_version`. Trimmed to a single
+ *  sentence and capped so a long lead does not run away on the homepage. */
+export function rabbitHoleTeaser(
+  rh: Pick<RabbitHole, "hook" | "short_version">,
+  maxLen = 200,
+): string {
+  const source = (rh.hook ?? rh.short_version ?? "").trim();
+  if (!source) return "";
+  const first = source.split(/(?<=[.?!])\s+/)[0].trim();
+  if (first.length <= maxLen) return first;
+  return `${first.slice(0, maxLen - 1).trimEnd()}…`;
+}

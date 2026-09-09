@@ -1,42 +1,46 @@
 import { useEffect, useState } from "react";
 
-import { listRabbitHoles, type RabbitHoleListItem } from "./api";
-import { HomeAbout } from "./components/home/HomeAbout";
-import { HomeDiscovery } from "./components/home/HomeDiscovery";
+import { getRabbitHole, listRabbitHoles, type RabbitHole } from "./api";
 import { HomeHero } from "./components/home/HomeHero";
+import { HomeLatest } from "./components/home/HomeLatest";
 import { useDocumentMeta } from "./hooks/useDocumentMeta";
 
-/**
- * Where "Start somewhere" points before the published feed has loaded, and if
- * the request fails. QWERTY is the RabbitHole known to be live. This is a
- * resilience fallback only. The homepage is not built around it and never
- * shows it as homepage content.
- */
-const FALLBACK_SLUG = "how-the-qwerty-keyboard-took-over";
+/** How many recent RabbitHoles the homepage index shows once there are enough. */
+const HOME_LATEST_LIMIT = 5;
 
 /**
- * Homepage: the hero, a short statement of what RabbitHole is, and — once
- * enough RabbitHoles are published — a small editorial list to browse. The
- * hero renders immediately; everything below waits on the live feed and simply
- * stays absent until there is real content to show.
+ * Homepage: the locked hero, then straight into the most recent published
+ * RabbitHoles. No explanation block between them. Everything below the hero
+ * comes from the live feed; the hero itself never waits on it.
  */
 export function LibraryPage() {
-  const [published, setPublished] = useState<RabbitHoleListItem[] | null>(null);
-  const [startSlug, setStartSlug] = useState(FALLBACK_SLUG);
+  const [entries, setEntries] = useState<RabbitHole[]>([]);
+  const [startSlug, setStartSlug] = useState("");
 
   useEffect(() => {
     let live = true;
-    // listRabbitHoles() swallows its own errors and resolves to [].
-    listRabbitHoles(24).then((items) => {
-      if (!live) return;
-      setPublished(items);
-      if (items.length > 0) {
-        // Drop the visitor into a real published RabbitHole. Random, chosen
-        // once, never surfaced in the UI.
-        const pick = items[Math.floor(Math.random() * items.length)];
-        setStartSlug(pick.slug);
-      }
-    });
+    // listRabbitHoles() resolves to [] on any error.
+    listRabbitHoles(24)
+      .then(async (list) => {
+        if (!live || list.length === 0) return;
+        // "Start somewhere" drops the visitor into a random published
+        // RabbitHole. Chosen once, never surfaced in the UI.
+        setStartSlug(list[Math.floor(Math.random() * list.length)].slug);
+
+        // The index needs each RabbitHole's hook / short_version, which only
+        // come with the full record.
+        const full = await Promise.all(
+          list
+            .slice(0, HOME_LATEST_LIMIT)
+            .map((it) => getRabbitHole(it.slug).catch(() => null)),
+        );
+        if (live) {
+          setEntries(full.filter((rh): rh is RabbitHole => rh !== null));
+        }
+      })
+      .catch(() => {
+        /* hero still renders; the index just stays empty */
+      });
     return () => {
       live = false;
     };
@@ -44,20 +48,19 @@ export function LibraryPage() {
 
   useDocumentMeta();
 
-  const discovery = published ?? [];
+  const startHref = startSlug ? `/rabbitholes/${startSlug}` : "/";
 
   return (
     <main className="page home-page">
-      <HomeHero startHref={`/rabbitholes/${startSlug}`} />
+      <HomeHero startHref={startHref} />
 
-      <div className="home-below">
-        <div className="home-below-inner">
-          <HomeAbout />
-          {discovery.length >= 2 && (
-            <HomeDiscovery items={discovery.slice(0, 5)} />
-          )}
+      {entries.length > 0 && (
+        <div className="home-below">
+          <div className="home-below-inner">
+            <HomeLatest items={entries} />
+          </div>
         </div>
-      </div>
+      )}
     </main>
   );
 }

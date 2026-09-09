@@ -258,8 +258,8 @@
 
 /* ── Below the fold ──────────────────────────────────────────────────────
    Continues the hero's near-black, then settles to --bg. Left edge lines up
-   with the hero copy so the hero, the statement and the index share one
-   editorial spine rather than jumping to centre. */
+   with the hero copy so the hero and the index share one editorial spine
+   rather than jumping to centre. */
 
 .home-below {
   width: 100vw;
@@ -270,7 +270,7 @@
      the cinematic dissolve stays, the dead black band goes. Still enough
      that the copy does not look attached to the rabbit. Left inset matches
      .home-hero-grid's. */
-  padding: clamp(40px, 5vh, 52px) 28px clamp(80px, 12vh, 120px)
+  padding: clamp(40px, 5vh, 52px) 28px clamp(64px, 9vh, 96px)
     clamp(56px, calc(7vw + 16px), 160px);
 }
 
@@ -287,40 +287,13 @@
   }
 }
 
-/* ── What RabbitHole is ─────────────────────────────────────────────────
-   A two-sentence editorial statement. The lead line carries it on size;
-   the body line is quiet underneath. No heading, no rule. */
+/* ── Latest RabbitHoles — the editorial index ──────────────────────────
+   Sits straight under the hero. A contents list, not cards: heading, then
+   title + one-line teaser + a quiet "Read RabbitHole" affordance. The first
+   entry gets a size bump. Hierarchy is type, weight and space only. */
 
-.home-about-lead {
-  margin: 0;
-  max-width: 24ch;
-  font-family: var(--display);
-  font-weight: 600;
-  font-size: clamp(23px, 3.4vw, 33px);
-  line-height: 1.16;
-  letter-spacing: -0.02em;
-  color: var(--text);
-  text-wrap: balance;
-}
-
-.home-about-body {
-  margin: 18px 0 0;
-  max-width: 42ch;
-  font-size: clamp(15px, 1.6vw, 17px);
-  line-height: 1.6;
-  color: var(--muted);
-}
-
-/* ── Worth a look — the editorial index ────────────────────────────────
-   Only rendered when two or more RabbitHoles are published. A contents
-   list, not cards: title and one line, hover shifts the title colour. */
-
-.home-discovery {
-  margin-top: clamp(72px, 12vh, 112px);
-}
-
-.home-discovery-h {
-  margin: 0 0 30px;
+.home-latest-h {
+  margin: 0 0 32px;
   font-family: var(--display);
   font-size: 12px;
   font-weight: 700;
@@ -329,27 +302,27 @@
   color: var(--violet-soft);
 }
 
-.home-discovery-list {
+.home-latest-list {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.home-discovery-item + .home-discovery-item {
-  margin-top: 36px;
+.home-latest-item + .home-latest-item {
+  margin-top: 40px;
 }
 
-.home-discovery-link {
+.home-latest-link {
   display: block;
   text-decoration: none;
   color: inherit;
 }
 
-.home-discovery-title {
-  display: block;
+.home-latest-title {
+  margin: 0;
   font-family: var(--display);
   font-weight: 700;
-  font-size: clamp(20px, 2.4vw, 26px);
+  font-size: clamp(21px, 2.6vw, 27px);
   line-height: 1.16;
   letter-spacing: -0.02em;
   color: var(--text);
@@ -357,29 +330,54 @@
   transition: color 140ms ease;
 }
 
-.home-discovery-link:hover .home-discovery-title,
-.home-discovery-link:focus-visible .home-discovery-title {
+.home-latest-item.is-lead .home-latest-title {
+  font-size: clamp(26px, 3.6vw, 38px);
+  line-height: 1.1;
+}
+
+.home-latest-link:hover .home-latest-title,
+.home-latest-link:focus-visible .home-latest-title {
   color: var(--violet-soft);
 }
 
-.home-discovery-desc {
-  display: block;
-  margin-top: 9px;
+.home-latest-hook {
+  margin: 10px 0 0;
   max-width: 52ch;
-  font-size: 15px;
+  font-size: clamp(15px, 1.6vw, 16.5px);
   line-height: 1.55;
   color: var(--muted);
 }
 
-.home-discovery-meta {
-  display: block;
-  margin-top: 9px;
-  font-size: 11.5px;
+.home-latest-item.is-lead .home-latest-hook {
+  max-width: 46ch;
+  font-size: clamp(16px, 1.9vw, 18px);
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.home-latest-action {
+  display: inline-block;
+  margin-top: 14px;
+  font-family: var(--sans);
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
-  opacity: 0.7;
+  letter-spacing: 0.02em;
+  color: var(--violet-soft);
+}
+
+.home-latest-arrow {
+  display: inline-block;
+  transition: transform 150ms ease;
+}
+
+.home-latest-link:hover .home-latest-action,
+.home-latest-link:focus-visible .home-latest-action {
+  color: var(--violet-light);
+}
+
+.home-latest-link:hover .home-latest-arrow,
+.home-latest-link:focus-visible .home-latest-arrow {
+  transform: translateX(3px);
 }
 
 /* Stacked layout: the hero copy sits at the mobile gutter, so the sections
@@ -395,7 +393,9 @@
 @media (prefers-reduced-motion: reduce) {
   .home-hero-btn,
   .home-hero-btn-arrow,
-  .home-discovery-title {
+  .home-latest-title,
+  .home-latest-action,
+  .home-latest-arrow {
     transition: none;
   }
 }
