@@ -138,43 +138,35 @@
   margin: 0;
 }
 
-/* An editorial "read on" link, not a product button: violet text with a
-   single underline under the words, the arrow sitting just outside it and
-   easing away on hover. No box, no fill, no radius. */
+/* A compact flat editorial action: a cream block with near-black text and a
+   2px corner, no outline or underline. Hover warms the block toward violet
+   and nudges the arrow. Not a pill, not a SaaS button. */
 .home-hero-btn {
   display: inline-flex;
-  align-items: baseline;
-  gap: 9px;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
   font-family: var(--sans);
-  font-weight: 600;
-  font-size: 14px;
-  letter-spacing: 0.03em;
-  color: var(--violet-soft);
+  font-weight: 700;
+  font-size: 13.5px;
+  letter-spacing: 0.04em;
+  color: #0a0a0d;
+  background: var(--text);
+  border-radius: 2px;
   text-decoration: none;
-  transition: color 150ms ease, gap 150ms ease;
-}
-
-.home-hero-btn-label {
-  border-bottom: 1.5px solid var(--violet);
-  padding-bottom: 3px;
-  transition: border-color 150ms ease;
+  transition: background 160ms ease;
 }
 
 .home-hero-btn-arrow {
-  transition: transform 150ms ease;
+  transition: transform 160ms ease;
 }
 
 .home-hero-btn:hover {
-  color: var(--violet-light);
-  gap: 12px;
-}
-
-.home-hero-btn:hover .home-hero-btn-label {
-  border-color: var(--violet-light);
+  background: var(--violet-soft);
 }
 
 .home-hero-btn:hover .home-hero-btn-arrow {
-  transform: translateX(2px);
+  transform: translateX(3px);
 }
 
 /* ── Hero: compact desktop / tablet landscape (901–1080px) ─────────────── */
@@ -286,24 +278,13 @@
 /* ── Featured RabbitHole ─────────────────────────────────────────────── */
 
 .home-featured-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0 0 20px;
+  margin: 0 0 18px;
   font-family: var(--display);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--muted);
-}
-
-.home-featured-eyebrow::before {
-  content: "";
-  width: 16px;
-  height: 2px;
-  background: var(--violet);
-  flex: none;
+  color: var(--violet-soft);
 }
 
 .home-featured-lead {
@@ -338,13 +319,17 @@
   color: var(--muted);
 }
 
+/* The hook reads as an editorial standfirst: set in the display face, a
+   step up in size from the description, full-strength text colour. Its
+   weight and scale carry it, with no rule down the side. */
 .home-featured-hook {
-  margin: 24px 0 0;
-  padding-left: 20px;
-  border-left: 2px solid var(--violet);
-  max-width: 52ch;
-  font-size: clamp(16px, 1.7vw, 18px);
-  line-height: 1.5;
+  margin: 26px 0 0;
+  max-width: 40ch;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(19px, 2.2vw, 24px);
+  line-height: 1.4;
+  letter-spacing: -0.01em;
   color: var(--text);
 }
 
@@ -366,39 +351,66 @@
 }
 
 .home-featured-cta {
-  margin-left: 6px;
+  margin-left: 4px;
   color: var(--violet-soft);
   text-decoration: none;
-  border-bottom: 1px solid transparent;
-  transition: border-color 120ms ease;
+  transition: color 120ms ease;
 }
 
 .home-featured-cta:hover {
-  border-bottom-color: var(--violet-soft);
+  color: var(--violet-light);
 }
 
+/* Set apart from the metadata above by space alone, with no divider rule. */
 .home-featured-next {
-  margin-top: 40px;
-  padding-top: 30px;
-  border-top: 1px solid var(--border);
+  margin-top: 56px;
 }
 
 .home-featured-next-h {
-  margin: 0 0 18px;
+  margin: 0 0 22px;
   font-family: var(--display);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
+  color: var(--violet-soft);
+}
+
+/* The connection list is shared markup with the reader page, which draws it
+   as a violet timeline (spine + node dots) with a bordered "coming soon"
+   chip. On the homepage those are dropped: the heading, the indent-free
+   grouping and the type carry the structure. Titles step forward in weight,
+   "coming soon" is plain small caps, the rest is quiet. */
+.home-featured-next .rh-keep-list {
+  border-left: 0;
+}
+
+.home-featured-next .rh-keep-item {
+  padding: 0 0 24px;
+}
+
+.home-featured-next .rh-keep-item:last-child {
+  padding-bottom: 0;
+}
+
+.home-featured-next .rh-keep-node {
+  display: none;
+}
+
+.home-featured-next .rh-keep-soon {
+  margin-left: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  vertical-align: baseline;
   color: var(--muted);
 }
 
 /* ── "What this is" — quiet, near the bottom ─────────────────────────── */
 
+/* Separated from the feature by a wide margin only. */
 .home-what {
-  margin-top: 64px;
-  padding-top: 34px;
-  border-top: 1px solid var(--border);
+  margin-top: 88px;
 }
 
 .home-what-steps {
@@ -446,14 +458,10 @@
     margin-right: calc(-1 * var(--gutter-mobile));
     padding: 40px var(--gutter-mobile) 64px;
   }
-  .home-featured-hook {
-    padding-left: 16px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .home-hero-btn,
-  .home-hero-btn-label,
   .home-hero-btn-arrow,
   .home-featured-title,
   .home-featured-cta {
