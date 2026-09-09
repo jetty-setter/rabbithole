@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 
 const SITE_TITLE = "RabbitHole";
-const DEFAULT_TITLE = "RabbitHole — Follow Curiosity Deeper";
+const DEFAULT_TITLE = "RabbitHole — Follow the interesting thing";
 const DEFAULT_DESCRIPTION =
-  "Search what was actually said across video, jump directly to the moment, and follow connected ideas wherever they lead.";
+  "Short, well-sourced RabbitHoles on the strange, the disputed, and the overlooked — and how they connect.";
 
 /** Sets document.title + the og/twitter/description meta tags for the
  *  current route, restoring the site defaults on unmount. Every route

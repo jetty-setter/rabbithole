@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { displayTitle, fetchCues, formatDuration, normalizeTag, pickFeatured, relativeTime, transcriptSectionState, type Video } from "../api";
+import { displayTitle, fetchCues, formatDuration, listRabbitHoles, normalizeTag, pickFeatured, relativeTime, transcriptSectionState, type Video } from "../api";
 
 describe("transcriptSectionState", () => {
   it("shows transcribing while a job is in flight", () => {
@@ -163,5 +163,33 @@ describe("fetchCues", () => {
   it("returns [] when the payload isn't an array", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) }));
     expect(await fetchCues("/x")).toEqual([]);
+  });
+});
+
+describe("listRabbitHoles", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("returns the items array from the feed payload", async () => {
+    const items = [{ id: "1", slug: "a", title: "A", status: "published", source_count: 3 }];
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ items }) });
+    vi.stubGlobal("fetch", fetchMock);
+
+    expect(await listRabbitHoles(5)).toEqual(items);
+    expect(fetchMock.mock.calls[0][0]).toContain("/rabbitholes?limit=5");
+  });
+
+  it("degrades to [] on a non-ok response", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, json: async () => ({}) }));
+    expect(await listRabbitHoles()).toEqual([]);
+  });
+
+  it("degrades to [] when fetch throws", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network")));
+    expect(await listRabbitHoles()).toEqual([]);
+  });
+
+  it("degrades to [] when items is missing or not an array", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ items: null }) }));
+    expect(await listRabbitHoles()).toEqual([]);
   });
 });

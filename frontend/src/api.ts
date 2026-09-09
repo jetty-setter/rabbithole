@@ -806,6 +806,31 @@ export async function getRabbitHole(slug: string): Promise<RabbitHole | null> {
   return res.json();
 }
 
+/** One entry in the published-RabbitHole feed (GET /rabbitholes). */
+export interface RabbitHoleListItem {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle?: string | null;
+  status: string;
+  published_at?: string | null;
+  updated_at?: string | null;
+  source_count: number;
+}
+
+/** The published RabbitHoles, newest first. Returns `[]` on any error so the
+ *  homepage degrades to "nothing published yet" rather than breaking. */
+export async function listRabbitHoles(limit = 12): Promise<RabbitHoleListItem[]> {
+  try {
+    const res = await fetch(`${API_URL}/rabbitholes?limit=${limit}`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data.items) ? data.items : [];
+  } catch {
+    return [];
+  }
+}
+
 /** A best-effort "resolve to a real link" for a Source: prefer its own URL,
  *  fall back to a DOI resolver, then an archive URL. `null` ⇒ no link. */
 export function sourceHref(s: RhSource): string | null {
