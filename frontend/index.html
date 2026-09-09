@@ -9,28 +9,44 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=3" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-    <title>RabbitHole — Follow Curiosity Deeper</title>
-    <meta name="description" content="Search what was actually said across video, jump directly to the moment, and follow connected ideas wherever they lead." />
+    <title>RabbitHole — Follow the interesting thing</title>
+    <meta name="description" content="Short, well-sourced RabbitHoles on the strange, the disputed, and the overlooked — and how they connect." />
     <link rel="canonical" href="https://rabbithole.stephsimmons.dev/" />
 
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://rabbithole.stephsimmons.dev/" />
-    <meta property="og:title" content="RabbitHole — Follow Curiosity Deeper" />
-    <meta property="og:description" content="Search what was actually said across video, jump directly to the moment, and follow connected ideas wherever they lead." />
-    <meta property="og:image" content="https://rabbithole.stephsimmons.dev/og-card.jpg" />
+    <meta property="og:title" content="RabbitHole — Follow the interesting thing" />
+    <meta property="og:description" content="Short, well-sourced RabbitHoles on the strange, the disputed, and the overlooked — and how they connect." />
+    <meta property="og:image" content="https://rabbithole.stephsimmons.dev/og-hero.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="RabbitHole — Follow Curiosity Deeper" />
-    <meta name="twitter:description" content="Search what was actually said across video, jump directly to the moment, and follow connected ideas wherever they lead." />
-    <meta name="twitter:image" content="https://rabbithole.stephsimmons.dev/og-card.jpg" />
+    <meta name="twitter:title" content="RabbitHole — Follow the interesting thing" />
+    <meta name="twitter:description" content="Short, well-sourced RabbitHoles on the strange, the disputed, and the overlooked — and how they connect." />
+    <meta name="twitter:image" content="https://rabbithole.stephsimmons.dev/og-hero.jpg" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
+    />
+    <!-- Above-the-fold homepage hero background: prime the LCP image early.
+         Split at the same 900px breakpoint the CSS uses to swap sources. -->
+    <link
+      rel="preload"
+      as="image"
+      href="/RabbitHole_Hero_TRUE_FINAL_1920.webp"
+      media="(min-width: 901px)"
+      fetchpriority="high"
+    />
+    <link
+      rel="preload"
+      as="image"
+      href="/RabbitHole_Hero_TRUE_FINAL_1200.webp"
+      media="(max-width: 900px)"
+      fetchpriority="high"
     />
   </head>
   <body>

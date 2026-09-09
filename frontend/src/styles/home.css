@@ -1,606 +1,453 @@
 /* ── Homepage ─────────────────────────────────────────────────────────
-   Hero, mobile hero, eyebrow/headline, search, capability strip, "Start
-   somewhere", topic chips, the featured card, and the homepage's own grid
-   treatment all live in this one file, desktop and mobile together.
-   Shared primitives (.grid/.section-head/.home-punct/.count) live in
-   base.css; the homepage-only overrides of them are scoped here via a
-   .home-browse ancestor selector. */
+   The hero (cinematic full-bleed photograph + copy in the left negative
+   space) and everything below it — the featured RabbitHole and the quiet
+   "what this is" line. Desktop and mobile together. Shared primitives
+   live in base.css / rabbithole.css; the reused .rh-keep-* connection
+   list comes straight from rabbithole.css. */
 
-/* ── Hero: desktop ────────────────────────────────────────────────────
-   Full-bleed background plate (RabbitHole_Hero_3840x2160_Final.webp) with
-   the copy column positioned over it. */
+/* ── Hero ─────────────────────────────────────────────────────────────── */
+
 .home-hero-grid {
   position: relative;
   width: 100vw;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
-  /* Pulls up into .page's shared 32px top padding so the hero paints its
-     own background there instead of leaving a flat --bg gap under the header. */
+  /* Pull up into .page's 32px top padding so the photo paints under the
+     header instead of leaving a flat --bg gap. */
   margin-top: -32px;
-  /* Sized off the real viewport remainder below the sticky header, not a
-     guessed vh number; floored/capped so it never collapses or balloons. */
-  min-height: clamp(560px, calc(100svh - var(--header-height)), 980px);
-  padding-top: clamp(64px, 9vh, 108px);
-  padding-right: 28px;
-  padding-bottom: 72px;
-  /* +20px over the whole range (was clamp(64px, 8vw, 180px)) -- the copy
-     column was sitting close enough to the left edge that the eyebrow
-     read as bleeding into the background rather than placed inside the
-     frame. Same clamp shape, just shifted inward. */
-  padding-left: clamp(84px, calc(8vw + 20px), 200px);
+  min-height: clamp(540px, 72svh, 720px);
+  display: flex;
+  align-items: center;
   overflow: hidden;
   isolation: isolate;
   background-color: var(--hero-black);
-  background-image: url("/RabbitHole_Hero_3840x2160_Final.webp");
+  /* Copy column sits in the left negative space; generous left inset so
+     the eyebrow reads as placed inside the frame, not bleeding off it. */
+  padding: clamp(56px, 8vh, 100px) 28px clamp(56px, 8vh, 100px)
+    clamp(56px, calc(7vw + 16px), 160px);
+}
+
+.home-hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: url("/RabbitHole_Hero_TRUE_FINAL_1920.webp");
   background-repeat: no-repeat;
   background-size: cover;
-  /* Anchored right: the manhole lid sits close to the source plate's true
-     right edge, so a centred crop slices through it on any viewport
-     narrower than 16:9. Anchoring right keeps the lid/rabbit/portal intact
-     and lets any overflow come off the least important part of the frame
-     (far-left brick wall) instead. */
-  background-position: right center;
+  /* Anchored right of centre: on any viewport narrower than 16:9 the crop
+     comes off the least important part (far-left staircase / wall) and
+     keeps the rabbit and CRT whole. */
+  background-position: 76% 50%;
+}
+
+/* The only readability treatment: a soft left-side darkening that is fully
+   transparent by ~46% (well before the rabbit at ~53%), plus a bottom fade
+   so the photo dissolves into the section below with no hard seam. Near-
+   black (rgba 3,1,5) — it deepens the already-dark left edge, it does not
+   tint the room. */
+.home-hero-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      100deg,
+      rgba(3, 1, 5, 0.66) 0%,
+      rgba(3, 1, 5, 0.44) 16%,
+      rgba(3, 1, 5, 0.2) 32%,
+      rgba(3, 1, 5, 0.05) 44%,
+      transparent 54%
+    ),
+    linear-gradient(
+      180deg,
+      transparent 70%,
+      rgba(3, 1, 5, 0.42) 88%,
+      var(--bg) 100%
+    );
 }
 
 .home-hero {
   position: relative;
   z-index: 2;
-  width: min(620px, 45vw);
-  max-width: 620px;
-  /* Settles the stack off the top-left corner; the artwork is a centered
-     background on .home-hero-grid so this doesn't move it. */
-  padding-top: 20px;
+  max-width: min(520px, 44vw);
 }
 
-/* Local contrast for the copy over the photo: a weak left-to-right veil
-   (never fully opaque, so the alley still reads through) plus a bottom
-   fade so the image dissolves into the next section with no hard seam. */
-.home-hero-grid::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background:
-    linear-gradient(90deg,
-      rgba(3, 1, 5, 0.30) 0%,
-      rgba(3, 1, 5, 0.16) 22%,
-      rgba(3, 1, 5, 0.05) 40%,
-      transparent 55%),
-    linear-gradient(180deg,
-      transparent 76%,
-      rgba(3, 1, 5, 0.5) 91%,
-      var(--hero-black) 100%);
-}
-
-/* ── Hero: compact desktop / tablet landscape (761-1080px) ───────────────
-   A narrowed browser window or a tablet in landscape is still a desktop-
-   class viewport -- keeps the same side-by-side mechanism as full desktop
-   (copy overlaid on the right-anchored photo, not the phone's separate
-   stacked image section below), just scaled down so the artwork stops
-   dominating and "Start somewhere" lands materially closer to the fold. */
-@media (min-width: 761px) and (max-width: 1080px) {
-  .home-hero-grid {
-    min-height: clamp(460px, 70vh, 620px);
-    padding-top: clamp(48px, 6vh, 72px);
-    /* +10px over the whole range (was clamp(40px, 6vw, 88px)) -- half of
-       desktop's +20px shift, matching this tier's already-scaled-down
-       proportions. */
-    padding-left: clamp(50px, calc(6vw + 10px), 98px);
-    padding-bottom: 48px;
-  }
-  .home-hero {
-    /* A bit more of the available width than desktop's 45vw -- at these
-       narrower viewports 45vw left the search field/capability strip
-       cramped against a wide empty margin before the art. */
-    width: min(480px, 52vw);
-  }
-  .home-hero-eyebrow {
-    margin-bottom: 16px;
-  }
-  .home-h1 {
-    font-size: clamp(34px, 4.6vw, 52px);
-    margin-bottom: 20px;
-  }
-  .home-hero-points {
-    margin-top: 18px;
-  }
-  .home-hero-point + .home-hero-point {
-    margin-top: 6px;
-  }
-  .home-browse {
-    /* Closer to the fold -- desktop's 68px was tuned for a full-height
-       hero, which this tier no longer has. */
-    padding-top: 36px;
-  }
-}
-
-/* ── Hero: mobile ─────────────────────────────────────────────────────
-   Structural requirement: on phones the artwork is its own section with
-   zero text over it -- image first, then copy below in normal flow. No
-   absolute positioning, no DOM change.
-
-   The plate moves off .home-hero-grid's own background and onto its
-   ::before instead: a plain ::before on a flex container becomes a real
-   flex item ahead of .home-hero in the box tree, so it lands first in
-   source order with no markup change and nothing added to the
-   accessibility tree (the photo was always decorative CSS, never an
-   <img>). Kept as a background-image rather than an <img>/object-fit:
-   the crop is a hand-tuned auto/158% zoom at a 78% 66% position, baked
-   into one two-layer background-image (fade + photo) -- object-fit's
-   cover/contain can't reproduce that exact scale without shifting the
-   crop, so swapping it for markup risks the composition for no gain
-   (the layer is already decorative and outside the a11y tree either way).
-
-   Fires at true-mobile widths only (≤760px, matching every other phone-
-   specific rule in this file) -- 761-1080px gets its own compact tier
-   below instead of this full stack. */
-@media (max-width: 760px) {
-  .home-hero-grid {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    height: auto;
-    padding: 12px 0 0;
-    background-image: none;
-    /* Matches the ::before fade's own terminal colour exactly -- the
-       shared desktop rule fills this box with --hero-black (#030105),
-       one shade off --bg (#050505), which showed as a seam otherwise. */
-    background-color: var(--bg);
-  }
-  .home-hero-grid::before {
-    content: "";
-    display: block;
-    flex: none;
-    width: 100%;
-    /* A lead-in, not a poster -- was 48vh (this box drove most of the
-       "several oversized blocks" feel). Zoom/position below are
-       untouched: at auto 158% the rendered plate's width still clears
-       every supported phone width with margin to spare at this shorter
-       height, so the same crop keeps covering edge-to-edge with no
-       stretching. */
-    height: 38vh;
-    background-repeat: no-repeat, no-repeat;
-    /* Bottom-fade painted over the photo, then the plate itself, zoomed
-       (auto 158%) and positioned (78% 66%) so the rabbit sits a little
-       above centre with the glowing hole beneath it, biased right so the
-       manhole lid survives the extra zoom without clipping. */
-    background-image:
-      linear-gradient(180deg,
-        transparent 84%,
-        rgba(5, 5, 5, 0.5) 93%,
-        var(--bg) 100%),
-      url("/RabbitHole_Hero_Mobile.webp");
-    background-position: center bottom, 78% 66%;
-    background-size: 100% 100%, auto 158%;
-  }
-  .home-hero-grid::after {
-    /* No overlay to speak of once nothing is laid over the photo. */
-    display: none;
-  }
-  .home-hero {
-    width: 100%;
-    /* Image/fade -> eyebrow gap. */
-    padding: 8px 24px 0;
-  }
-}
-
-/* Short phones: give the copy column back a little viewport by trimming
-   the image section rather than shrinking any type or spacing. */
-@media (max-width: 760px) and (max-height: 700px) {
-  .home-hero-grid {
-    padding-top: 8px;
-  }
-  .home-hero-grid::before {
-    height: 32vh;
-  }
-}
-
-/* Short landscape phones: a wide-but-short viewport shouldn't force a
-   tall hero. */
-@media (max-width: 760px) and (orientation: landscape) and (max-height: 560px) {
-  .home-hero-grid {
-    min-height: 520px;
-  }
-}
-
-/* ── Eyebrow / headline / capability strip ───────────────────────────── */
-
-/* Small editorial eyebrow above the headline -- quiet, not a second
-   title, not a pill. */
 .home-hero-eyebrow {
-  margin: 0 0 28px;
-  font-size: 11.5px;
+  margin: 0 0 22px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.19em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--violet-light);
+  text-shadow: 0 1px 10px rgba(3, 1, 5, 0.6);
 }
+
 .home-h1 {
   font-family: var(--display);
   font-weight: 800;
-  font-size: clamp(42px, 5.1vw, 76px);
-  line-height: 1.03;
-  letter-spacing: -0.03em;
+  font-size: clamp(33px, 3.95vw, 54px);
+  line-height: 1.04;
+  letter-spacing: -0.026em;
   text-transform: uppercase;
-  margin: 0 0 37px;
+  margin: 0 0 22px;
   position: relative;
 }
-/* Local contrast lens behind the H1 only, so it stays readable where its
-   right end crosses into the lit part of the alley, without darkening
-   the whole region the way a full-height veil would. Transparent at its
-   own edge -- no visible box. */
+
+/* A local contrast lens behind the headline only, so its right end stays
+   readable where it crosses into the lit part of the room. Transparent at
+   its own edge — no visible box. */
 .home-h1::before {
   content: "";
   position: absolute;
   z-index: -1;
-  left: -9%;
-  right: -15%;
-  top: -0.28em;
-  bottom: -0.12em;
+  left: -10%;
+  right: -22%;
+  top: -0.24em;
+  bottom: -0.1em;
   background: radial-gradient(
-    120% 135% at 26% 50%,
-    rgba(3, 1, 5, 0.55),
-    rgba(3, 1, 5, 0.32) 58%,
+    118% 130% at 24% 50%,
+    rgba(3, 1, 5, 0.6),
+    rgba(3, 1, 5, 0.34) 55%,
     transparent 100%
   );
   pointer-events: none;
 }
-/* Both lines share size/weight/line-height/left edge -- one headline
-   block, not a headline plus subtitle. Each stays on its own line. */
+
 .home-h1-line {
   display: block;
   white-space: nowrap;
 }
-/* Final period: a quiet light-lavender brand signature, not animated. */
+
 .home-hero-dot {
   color: var(--violet-light);
 }
-/* Three-item capability list, below the search since search is the
-   primary action here. list-style/padding reset for the <ul>. */
-.home-hero-points {
-  list-style: none;
-  padding: 0;
-  margin: 29px 0 0;
-}
-.home-hero-point {
-  margin: 0;
-  font-size: 15px;
+
+.home-hero-sub {
+  margin: 0 0 30px;
+  max-width: 34ch;
+  font-size: clamp(15px, 1.5vw, 17px);
   line-height: 1.5;
-  /* A shade lighter than --muted -- secondary to the H1/search/verb, but
-     legible against the pavement behind it. */
-  color: #c2bcb8;
-  text-shadow: 0 1px 4px rgba(3, 1, 5, 0.35);
-}
-.home-hero-point + .home-hero-point {
-  margin-top: 9px;
-}
-.home-hero-point-verb {
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--violet-soft);
+  color: #cfc9c1;
+  text-shadow: 0 1px 10px rgba(3, 1, 5, 0.55);
 }
 
-/* Phone: headline scale, wrapping, and the capability strip's 3-column
-   layout. Placed right after the desktop rules above (was previously
-   ~4200 lines away in index.css). True-mobile only (≤760px) -- the
-   compact tier below keeps desktop-scale type, just tightened. */
-@media (max-width: 760px) {
-  .home-h1 {
-    /* Own content section below the hero image now, not sharing a
-       viewport with it -- full desktop-adjacent scale read oversized.
-       Trimmed a little further (was 28-44px/1.03) so the headline reads
-       strong without dominating the now-shorter stack. */
-    font-size: clamp(26px, 8vw, 38px);
-    line-height: 1.0;
-    /* Headline -> search gap. */
-    margin-bottom: 10px;
+.home-hero-cta {
+  margin: 0;
+}
+
+.home-hero-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 13px 24px;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  color: var(--violet);
+  text-decoration: none;
+  border: 1.5px solid var(--violet);
+  border-radius: 11px;
+  background: rgba(3, 1, 5, 0.34);
+  backdrop-filter: blur(3px);
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.home-hero-btn:hover {
+  background: var(--violet);
+  color: #0a0a0d;
+}
+
+/* ── Hero: compact desktop / tablet landscape (901–1080px) ─────────────── */
+@media (min-width: 901px) and (max-width: 1080px) {
+  .home-hero-grid {
+    min-height: clamp(460px, 66vh, 600px);
+    padding-left: clamp(40px, calc(5vw + 12px), 88px);
+    padding-bottom: clamp(44px, 7vh, 80px);
   }
-  .home-h1-line {
-    /* A line may wrap gracefully on a very narrow viewport instead of overflowing. */
-    white-space: normal;
+  .home-hero {
+    max-width: min(420px, 50vw);
+  }
+  .home-hero-media {
+    /* Container is near or below the image's 16:9 ratio here, so it starts
+       cropping horizontally — anchor hard right to keep the whole CRT. */
+    background-position: 94% 50%;
+  }
+  .home-h1 {
+    font-size: clamp(33px, 4vw, 46px);
+  }
+}
+
+/* ── Hero: narrow — tablet portrait & phones (≤900px) ─────────────────────
+   Below ~900px the copy column, the rabbit and the CRT can no longer all
+   share one row without the CRT being clipped or the rabbit crowded, so the
+   photo becomes a full-width landscape band at the top (rabbit + CRT intact,
+   the visual joke preserved) and the copy sits below it on the page ground —
+   no text over the photo. */
+@media (max-width: 900px) {
+  .home-hero-grid {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 0;
+    background-color: var(--bg);
+  }
+  .home-hero-media {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: clamp(230px, 40vh, 340px);
+    flex: none;
+    /* Smaller crop for the phone band; right two-thirds so the rabbit is
+       centred-ish with the CRT on the edge — the visual joke intact. */
+    background-image: url("/RabbitHole_Hero_TRUE_FINAL_1200.webp");
+    background-position: 82% 56%;
+  }
+  .home-hero-scrim {
+    background: linear-gradient(
+      180deg,
+      transparent 62%,
+      rgba(5, 5, 5, 0.55) 86%,
+      var(--bg) 100%
+    );
+  }
+  .home-hero {
+    max-width: none;
+    width: 100%;
+    padding: 22px var(--gutter-mobile) 4px;
   }
   .home-hero-eyebrow {
-    /* Eyebrow -> headline gap -- pulled in so the eyebrow reads as part
-       of the same block as the headline, not a separate floating line. */
-    margin-bottom: 6px;
+    margin-bottom: 10px;
   }
-  .home-hero-points {
-    /* Search -> capability-strip gap. */
-    margin-top: 10px;
-    display: flex;
-    gap: 18px;
-    /* Left-aligned, not space-between -- at these widths space-between
-       scattered the three fixed-width columns across the row with large
-       dead gaps between them, reading as disconnected islands rather
-       than one strip. */
-    justify-content: flex-start;
-  }
-  /* Equal-width columns, left-aligned. 78px reliably wraps each of the
-     three descriptions to two lines at supported widths; flex-shrink
-     still lets them narrow further at 320px rather than overflow.
-     overflow-wrap is a safety net if the copy changes and no longer
-     wraps as cleanly -- current copy doesn't need it. */
-  .home-hero-point {
-    flex: 0 1 78px;
-    min-width: 0;
-    margin: 0;
-    font-size: 12.5px;
-    line-height: 1.35;
-    overflow-wrap: break-word;
-  }
-  .home-hero-point + .home-hero-point {
-    /* Columns, not stacked rows. */
-    margin-top: 0;
-  }
-  .home-hero-point-verb {
-    /* Its own line ("label on top") with a little air before the description. */
-    display: block;
-    margin-bottom: 3px;
-    font-size: 13.5px;
-  }
-}
-/* Narrow phones: the 8vw scale above is tuned for 390px+. Below that
-   "WONDER MORE." plus its dot no longer fits and wraps to an unintended
-   third line, so scale down (and a little slower) to keep the two-line
-   block intact. */
-@media (max-width: 380px) {
   .home-h1 {
-    font-size: clamp(23px, 7.4vw, 26px);
+    font-size: clamp(28px, 8.6vw, 40px);
+    line-height: 1.02;
+    margin-bottom: 14px;
+  }
+  .home-h1-line {
+    white-space: normal;
+  }
+  .home-h1::before {
+    display: none;
+  }
+  .home-hero-sub {
+    max-width: none;
+    margin-bottom: 22px;
+    text-shadow: none;
+  }
+  .home-hero-btn {
+    background: transparent;
+    backdrop-filter: none;
   }
 }
 
-/* ── Search ───────────────────────────────────────────────────────────── */
-.home-search-form {
+/* Keep "INTERESTING THING." on a single line down to the smallest phones,
+   so the headline is a clean two lines rather than a three-line stagger. */
+@media (max-width: 440px) {
+  .home-h1 {
+    font-size: clamp(26px, 7vw, 34px);
+  }
+}
+
+/* ── Below the fold ──────────────────────────────────────────────────────
+   Continues the hero's near-black, then settles to --bg. Reading column
+   matches the RabbitHole reader page (760px) for cohesion. */
+
+.home-below {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  background: linear-gradient(to bottom, var(--hero-black), var(--bg) 44%);
+  padding: clamp(56px, 8vh, 88px) 28px clamp(80px, 12vh, 120px);
+}
+
+.home-below-inner {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* ── Featured RabbitHole ─────────────────────────────────────────────── */
+
+.home-featured-eyebrow {
   display: flex;
   align-items: center;
   gap: 10px;
-  max-width: 560px;
-  min-height: 62px;
-  background: rgba(13, 13, 14, 0.42);
-  border: 1px solid rgba(251, 245, 232, 0.18);
-  border-radius: 15px;
-  padding: 8px 12px 8px 20px;
-  backdrop-filter: blur(8px);
-  transition: border-color 180ms ease;
+  margin: 0 0 20px;
+  font-family: var(--display);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
-.home-search-form:focus-within {
-  border-color: rgba(251, 245, 232, 0.34);
-}
-.home-search-ico {
+
+.home-featured-eyebrow::before {
+  content: "";
   width: 16px;
-  height: 16px;
-  color: var(--muted);
+  height: 2px;
+  background: var(--violet);
   flex: none;
 }
-.home-search-input {
-  flex: 1;
-  background: transparent;
-  border: none;
+
+.home-featured-lead {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.home-featured-title {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(27px, 3.6vw, 40px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
   color: var(--text);
-  font: inherit;
-  font-size: 14.5px;
-  min-width: 0;
-  /* On phones the placeholder renders at 16px (utilities.css, to stop
-     iOS Safari zooming on focus) -- too wide to fit next to the icon/
-     arrow at 320-360px, so truncate with an ellipsis instead of running
-     under the search button. */
-  overflow: hidden;
-  text-overflow: ellipsis;
+  margin: 0;
+  max-width: 20ch;
+  text-wrap: balance;
+  transition: color 140ms ease;
 }
-.home-search-input:focus {
-  outline: none;
+
+.home-featured-lead:hover .home-featured-title,
+.home-featured-lead:focus-visible .home-featured-title {
+  color: var(--violet-soft);
 }
-.home-search-input::placeholder {
+
+.home-featured-sub {
+  margin: 14px 0 0;
+  max-width: 56ch;
+  font-size: 15px;
+  line-height: 1.5;
   color: var(--muted);
 }
-.home-search-btn {
-  flex: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+
+.home-featured-hook {
+  margin: 24px 0 0;
+  padding-left: 20px;
+  border-left: 2px solid var(--violet);
+  max-width: 52ch;
+  font-size: clamp(16px, 1.7vw, 18px);
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.home-featured-meta {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  color: var(--violet);
-  cursor: pointer;
-  transition: transform 180ms ease, background 180ms ease;
-}
-.home-search-btn:hover {
-  transform: translateX(4px);
-  background: transparent;
-}
-.home-search-btn svg {
-  width: 15px;
-  height: 15px;
-  color: var(--violet);
-}
-@media (max-width: 760px) {
-  /* Subordinate to the headline, and shorter than the desktop field's
-     62px (was 67px -- taller than desktop, which read heavy next to the
-     now-tighter headline). 58px is still enough room for the 44px tap
-     target below plus a little breathing room. Compound selector so
-     this wins on specificity (not source order) over the base rule
-     above regardless of import order. */
-  .home-hero-grid .home-search-form {
-    max-width: none;
-    min-height: 58px;
-    padding: 6px 12px 6px 18px;
-  }
-}
-@media (max-width: 760px) {
-  /* Grow the input's hit box to the field height, and the submit arrow
-     to a full 44px tap target. */
-  .home-search-input {
-    align-self: stretch;
-  }
-  .home-search-btn {
-    width: 44px;
-    height: 44px;
-  }
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 9px;
+  margin: 24px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
-/* ── Browse: Featured + "Explore more" ──────────────────────────────── */
-/* Continues the hero's own near-black rather than switching to a flat
-   panel gray; a very faint violet wash carries the hero's atmosphere a
-   little further down so the color language doesn't just stop at the fold. */
-.home-browse {
-  color: var(--text);
-  background:
-    radial-gradient(ellipse 70% 420px at 76% 0%, rgba(154, 130, 242, 0.07), transparent 70%),
-    linear-gradient(to bottom, var(--hero-black), var(--bg-2) 560px);
-  margin: 0 -28px 0;
-  /* Sole source of homepage-to-footer spacing -- .page's bottom padding
-     is zeroed on the homepage (.home-page) and the footer adds none of
-     its own, so this is the only value controlling the gap before it. */
-  padding: 68px 28px 56px;
-}
-.home-browse-inner {
-  max-width: 1220px;
-  margin: 0 auto;
-}
-.home-browse .featured {
-  margin-bottom: 8px;
-}
-.home-browse .section-head:first-child {
-  margin-top: 0;
-}
-/* The homepage's section headings use the hero's own display type, not the
-   generic .section-head style DenPage/TunnelsPage also use. */
-.home-browse .section-head:first-child h2 {
-  font-family: var(--display);
-  font-size: 29px;
-  font-weight: 600;
-  letter-spacing: -0.012em;
-  text-transform: uppercase;
-}
-.home-browse .section-head-explore {
-  margin-top: 56px;
-}
-.home-browse .section-head-explore h2 {
-  font-family: var(--display);
-  font-size: 29px;
-  font-weight: 600;
-  letter-spacing: -0.012em;
-  text-transform: uppercase;
-}
-@media (max-width: 560px) {
-  .home-browse {
-    /* Full-bleed to the phone gutter (matches .page's mobile padding);
-       the section's own padding-top does the breathing room so the
-       hero-black -> --bg-2 gradient stays continuous. */
-    margin: 0 calc(-1 * var(--gutter-mobile));
-    /* Capability strip -> "Start Somewhere" gap (16 + the 2px
-       section-head margin-top below = 18px, down from 26px) -- part of
-       tightening the whole hero stack so this section reveals sooner. */
-    padding: 16px var(--gutter-mobile) 44px;
-  }
-  .home-browse .section-head:first-child {
-    margin-top: 2px;
-    margin-bottom: 26px;
-  }
-  .home-browse .section-head-explore {
-    margin-top: 40px;
-  }
-  .home-browse .featured {
-    margin-bottom: 28px;
-  }
-  .archive-cta {
-    margin-top: 36px;
-  }
+.home-featured-dot {
+  color: var(--border-2);
 }
 
-/* ── Homepage grid + featured card ────────────────────────────────────
-   .ecard/.home-grid are shared with /fresh, /trail, /trending (base
-   rules in cards.css), which keep the tall poster-style card. These
-   scoped overrides (via the .home-browse ancestor, so specificity wins
-   regardless of import order) give the homepage a 4-column, image-
-   forward, horizontal-thumbnail treatment instead. */
-.home-browse .home-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  column-gap: 22px;
-  row-gap: 32px;
+.home-featured-cta {
+  margin-left: 6px;
+  color: var(--violet-soft);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 120ms ease;
 }
-.home-browse .ecard {
-  position: static;
-  aspect-ratio: auto;
-  border-radius: 0;
+
+.home-featured-cta:hover {
+  border-bottom-color: var(--violet-soft);
+}
+
+.home-featured-next {
+  margin-top: 40px;
+  padding-top: 30px;
+  border-top: 1px solid var(--border);
+}
+
+.home-featured-next-h {
+  margin: 0 0 18px;
+  font-family: var(--display);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── "What this is" — quiet, near the bottom ─────────────────────────── */
+
+.home-what {
+  margin-top: 64px;
+  padding-top: 34px;
+  border-top: 1px solid var(--border);
+}
+
+.home-what-steps {
+  list-style: none;
+  margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: normal;
-  background: none;
-  transition: transform 220ms ease;
-}
-.home-browse .ecard:hover {
-  transform: translateY(-3px);
-}
-.home-browse .ecard::after {
-  content: none;
-}
-.home-browse .ecard-thumb {
-  position: relative;
-  inset: auto;
-  z-index: auto;
-  aspect-ratio: 16 / 10;
-  border-radius: 8px;
-  overflow: hidden;
-  background: var(--bg-2);
-  margin-bottom: 12px;
-  /* Barely-there definition so a near-black thumbnail doesn't disappear
-     into the page background. */
-  border: 1px solid rgba(251, 245, 232, 0.07);
-}
-.home-browse .ecard-thumb img {
-  transition: transform 320ms ease;
-}
-.home-browse .ecard:hover .ecard-thumb img {
-  transform: scale(1.04);
-}
-.home-browse .ecard-thumb .thumb-ph {
-  font-size: 26px;
-}
-.home-browse .ecard-cat {
-  position: static;
-  z-index: auto;
-  margin-bottom: 6px;
-}
-.home-browse .ecard-title {
-  position: static;
-  z-index: auto;
-  font-size: 16px;
-  margin: 0 0 8px;
-  /* Reserves room for two lines so the play/duration row aligns across a
-     row regardless of whether each title wraps once or twice. */
-  min-height: 2.4em;
-}
-.home-browse .ecard-meta {
-  position: static;
-  z-index: auto;
-}
-.home-browse .ecard-dur {
-  color: rgba(251, 245, 232, 0.6);
+  counter-reset: step;
 }
 
-@media (max-width: 1080px) {
-  .home-browse .home-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+.home-what-steps li {
+  counter-increment: step;
+  position: relative;
+  padding-left: 34px;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(17px, 2vw, 21px);
+  line-height: 1.32;
+  color: var(--text);
+}
+
+.home-what-steps li + li {
+  margin-top: 14px;
+}
+
+.home-what-steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0.15em;
+  font-family: var(--display);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--violet);
+}
+
+.home-what-note {
+  margin: 26px 0 0;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+@media (max-width: 560px) {
+  .home-below {
+    margin-left: calc(-1 * var(--gutter-mobile));
+    margin-right: calc(-1 * var(--gutter-mobile));
+    padding: 44px var(--gutter-mobile) 64px;
+  }
+  .home-featured-hook {
+    padding-left: 16px;
   }
 }
-@media (max-width: 760px) {
-  .home-browse .home-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+@media (prefers-reduced-motion: reduce) {
+  .home-hero-btn,
+  .home-featured-title,
+  .home-featured-cta {
+    transition: none;
   }
 }
-@media (max-width: 480px) {
-  .home-browse .home-grid {
-    grid-template-columns: 1fr;
-  }
-}
+
+/* ── Legacy, still referenced elsewhere ──────────────────────────────────
+   These predate the homepage rebuild and are no longer used on this page,
+   but other views still rely on them: `.archive-cta` is the "back to the
+   homepage" link on TrailPage, and `.featured*` styles the video-feed
+   FeaturedCard. Kept here verbatim so nothing else regresses; they can move
+   to their own files when those areas are next touched. */
 
 .archive-cta {
   display: inline-flex;
@@ -631,8 +478,6 @@
   }
 }
 
-/* Big editorial hero at the top of the feed (FeaturedCard), currently
-   rendered only on the homepage. */
 .featured {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
