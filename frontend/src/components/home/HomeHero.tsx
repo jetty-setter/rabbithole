@@ -16,7 +16,7 @@ export function HomeHero({ startHref }: { startHref: string }) {
       </div>
 
       <div className="home-hero">
-        <p className="home-hero-eyebrow">For things worth following</p>
+        <p className="home-hero-eyebrow">Curiosity, with sources</p>
         <h1 className="home-h1">
           <span className="home-h1-line">Follow the</span>
           <span className="home-h1-line">
@@ -29,8 +29,10 @@ export function HomeHero({ startHref }: { startHref: string }) {
         </p>
         <div className="home-hero-cta">
           <Link to={startHref} className="home-hero-btn">
-            Start somewhere
-            <span aria-hidden="true"> &rarr;</span>
+            <span className="home-hero-btn-label">Start somewhere</span>
+            <span className="home-hero-btn-arrow" aria-hidden="true">
+              &rarr;
+            </span>
           </Link>
         </div>
       </div>

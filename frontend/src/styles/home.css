@@ -138,27 +138,43 @@
   margin: 0;
 }
 
+/* An editorial "read on" link, not a product button: violet text with a
+   single underline under the words, the arrow sitting just outside it and
+   easing away on hover. No box, no fill, no radius. */
 .home-hero-btn {
   display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 13px 24px;
+  align-items: baseline;
+  gap: 9px;
   font-family: var(--sans);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 14px;
-  letter-spacing: 0.01em;
-  color: var(--violet);
+  letter-spacing: 0.03em;
+  color: var(--violet-soft);
   text-decoration: none;
-  border: 1.5px solid var(--violet);
-  border-radius: 11px;
-  background: rgba(3, 1, 5, 0.34);
-  backdrop-filter: blur(3px);
-  transition: background 150ms ease, color 150ms ease;
+  transition: color 150ms ease, gap 150ms ease;
+}
+
+.home-hero-btn-label {
+  border-bottom: 1.5px solid var(--violet);
+  padding-bottom: 3px;
+  transition: border-color 150ms ease;
+}
+
+.home-hero-btn-arrow {
+  transition: transform 150ms ease;
 }
 
 .home-hero-btn:hover {
-  background: var(--violet);
-  color: #0a0a0d;
+  color: var(--violet-light);
+  gap: 12px;
+}
+
+.home-hero-btn:hover .home-hero-btn-label {
+  border-color: var(--violet-light);
+}
+
+.home-hero-btn:hover .home-hero-btn-arrow {
+  transform: translateX(2px);
 }
 
 /* ── Hero: compact desktop / tablet landscape (901–1080px) ─────────────── */
@@ -238,10 +254,6 @@
     margin-bottom: 22px;
     text-shadow: none;
   }
-  .home-hero-btn {
-    background: transparent;
-    backdrop-filter: none;
-  }
 }
 
 /* Keep "INTERESTING THING." on a single line down to the smallest phones,
@@ -261,7 +273,9 @@
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
   background: linear-gradient(to bottom, var(--hero-black), var(--bg) 44%);
-  padding: clamp(56px, 8vh, 88px) 28px clamp(80px, 12vh, 120px);
+  /* Tight top padding so "Start here" rises into view close under the hero
+     fade — the cinematic dissolve stays, the dead black band goes. */
+  padding: clamp(36px, 4.5vh, 44px) 28px clamp(80px, 12vh, 120px);
 }
 
 .home-below-inner {
@@ -430,7 +444,7 @@
   .home-below {
     margin-left: calc(-1 * var(--gutter-mobile));
     margin-right: calc(-1 * var(--gutter-mobile));
-    padding: 44px var(--gutter-mobile) 64px;
+    padding: 40px var(--gutter-mobile) 64px;
   }
   .home-featured-hook {
     padding-left: 16px;
@@ -439,6 +453,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .home-hero-btn,
+  .home-hero-btn-label,
+  .home-hero-btn-arrow,
   .home-featured-title,
   .home-featured-cta {
     transition: none;
