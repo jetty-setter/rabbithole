@@ -138,28 +138,29 @@
   margin: 0;
 }
 
-/* A compact flat editorial action: a deep-charcoal block that reads as its
-   own surface against the dark photo, ivory text, a violet arrow. 2px
-   corner, no fill highlight, no border, no underline. Hover flips it to
-   RabbitHole violet with near-black text and eases the arrow right. */
+/* A compact flat editorial action: an aubergine-black block (--hero-black
+   lifted toward --violet) that reads as a deliberate branded surface, warm
+   ivory text, a bright violet arrow. 2px corner, no border, underline, glow
+   or shadow. Hover flips it to full RabbitHole violet with near-black text
+   and eases the arrow right. */
 .home-hero-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 11px 18px;
+  padding: 13px 22px;
   font-family: var(--sans);
   font-weight: 700;
   font-size: 13.5px;
   letter-spacing: 0.04em;
   color: var(--text);
-  background: #1c1a20;
+  background: #201a32;
   border-radius: 2px;
   text-decoration: none;
   transition: background 160ms ease, color 160ms ease;
 }
 
 .home-hero-btn-arrow {
-  color: var(--violet);
+  color: var(--violet-light);
   transition: transform 160ms ease, color 160ms ease;
 }
 
