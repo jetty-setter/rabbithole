@@ -64,7 +64,7 @@ function renderHome() {
 }
 
 const startHref = () =>
-  screen.getByRole("link", { name: /start somewhere/i }).getAttribute("href");
+  screen.getByRole("link", { name: /dive in/i }).getAttribute("href");
 
 // Clear call history between tests but keep implementations — mockReset()
 // would drop the impl and make the effect throw (which hangs vitest).
