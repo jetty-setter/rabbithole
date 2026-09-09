@@ -29,7 +29,7 @@ export function HomeHero({ startHref }: { startHref: string }) {
         </p>
         <div className="home-hero-cta">
           <Link to={startHref} className="home-hero-btn">
-            <span className="home-hero-btn-label">Start somewhere</span>
+            Start somewhere
             <span className="home-hero-btn-arrow" aria-hidden="true">
               &rarr;
             </span>
