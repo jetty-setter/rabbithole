@@ -16,7 +16,7 @@ export function HomeHero({ startHref }: { startHref: string }) {
       </div>
 
       <div className="home-hero">
-        <p className="home-hero-eyebrow">A field guide to the strange</p>
+        <p className="home-hero-eyebrow">For things worth following</p>
         <h1 className="home-h1">
           <span className="home-h1-line">Follow the</span>
           <span className="home-h1-line">
@@ -24,8 +24,8 @@ export function HomeHero({ startHref }: { startHref: string }) {
           </span>
         </h1>
         <p className="home-hero-sub">
-          Short, well-sourced RabbitHoles on the strange, the disputed, and the
-          overlooked &mdash; and how they connect.
+          Short, well-sourced RabbitHoles about the things that get more
+          interesting the closer you look &mdash; and where they lead.
         </p>
         <div className="home-hero-cta">
           <Link to={startHref} className="home-hero-btn">

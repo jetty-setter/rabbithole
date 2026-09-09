@@ -129,6 +129,9 @@
   line-height: 1.5;
   color: #cfc9c1;
   text-shadow: 0 1px 10px rgba(3, 1, 5, 0.55);
+  /* Even out the 2-3 line wrap so no line is left with a stray word or two
+     (matters most on the wide, uncapped mobile band). */
+  text-wrap: balance;
 }
 
 .home-hero-cta {
