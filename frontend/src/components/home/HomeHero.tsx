@@ -29,7 +29,7 @@ export function HomeHero({ startHref }: { startHref: string }) {
         </p>
         <div className="home-hero-cta">
           <Link to={startHref} className="home-hero-btn">
-            Start somewhere
+            Dive in
             <span className="home-hero-btn-arrow" aria-hidden="true">
               &rarr;
             </span>

@@ -138,9 +138,10 @@
   margin: 0;
 }
 
-/* A compact flat editorial action: a cream block with near-black text and a
-   2px corner, no outline or underline. Hover warms the block toward violet
-   and nudges the arrow. Not a pill, not a SaaS button. */
+/* A compact flat editorial action: a deep-charcoal block that reads as its
+   own surface against the dark photo, ivory text, a violet arrow. 2px
+   corner, no fill highlight, no border, no underline. Hover flips it to
+   RabbitHole violet with near-black text and eases the arrow right. */
 .home-hero-btn {
   display: inline-flex;
   align-items: center;
@@ -150,23 +151,26 @@
   font-weight: 700;
   font-size: 13.5px;
   letter-spacing: 0.04em;
-  color: #0a0a0d;
-  background: var(--text);
+  color: var(--text);
+  background: #1c1a20;
   border-radius: 2px;
   text-decoration: none;
-  transition: background 160ms ease;
+  transition: background 160ms ease, color 160ms ease;
 }
 
 .home-hero-btn-arrow {
-  transition: transform 160ms ease;
+  color: var(--violet);
+  transition: transform 160ms ease, color 160ms ease;
 }
 
 .home-hero-btn:hover {
-  background: var(--violet-soft);
+  background: var(--violet);
+  color: #0a0a0d;
 }
 
 .home-hero-btn:hover .home-hero-btn-arrow {
-  transform: translateX(3px);
+  color: #0a0a0d;
+  transform: translateX(2px);
 }
 
 /* ── Hero: compact desktop / tablet landscape (901–1080px) ─────────────── */

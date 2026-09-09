@@ -23,8 +23,8 @@ export function LibraryPage() {
     listRabbitHoles(24)
       .then(async (list) => {
         if (!live || list.length === 0) return;
-        // "Start somewhere" drops the visitor into a random published
-        // RabbitHole. Chosen once, never surfaced in the UI.
+        // "Dive in" drops the visitor into a random published RabbitHole.
+        // Chosen once, never surfaced in the UI.
         setStartSlug(list[Math.floor(Math.random() * list.length)].slug);
 
         // The index needs each RabbitHole's hook / short_version, which only
