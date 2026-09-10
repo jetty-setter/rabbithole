@@ -135,19 +135,22 @@
 }
 
 /* Hero search: a real <form> — an <input> and a submit <button> — styled
-   to sit inside the cinematic frame rather than float on it. A
-   charcoal/violet-black field with warm-ivory entered text and a warm-grey
-   placeholder; the submit is a solid deep-violet disc with the label
-   "Dive in" set inside it, nested into the field's right end so the two
-   read as one interaction. Capped well short of the rabbit/CRT. No arrow,
-   chevron, icon, glow, shadow, gradient, divider or pill. */
+   to sit inside the cinematic frame rather than float on it. A near-black
+   charcoal field with warm-ivory entered text and a subdued placeholder;
+   the submit is a separate near-black disc, set 14px clear of the field,
+   ringed by a thin restrained-violet edge with an uppercase "DIVE / IN"
+   label inside. Two distinct objects that read as one interaction. Capped
+   well short of the rabbit/CRT. No arrow, chevron, icon, glow, shadow,
+   gradient, divider or pill. */
 .home-hero-search {
   display: flex;
   align-items: center;
+  /* The disc is its own object, not nested into the field. */
+  gap: 14px;
   /* A touch wider than the headline column so it reads as its own line of
      the composition, never so wide it reaches the rabbit. Shrinks to the
      available width on narrow screens. */
-  width: 444px;
+  width: 468px;
   max-width: 100%;
 }
 
@@ -155,13 +158,13 @@
   flex: 1 1 auto;
   min-width: 0;
   height: 52px;
-  padding: 0 38px 0 18px;
+  padding: 0 18px;
   font-family: var(--sans);
   font-size: 15px;
   color: var(--text);
-  /* Charcoal lifted a touch toward violet-black -- reads as part of the
-     dark room, not a bright widget dropped on top of it. */
-  background: #16131e;
+  /* Near-black charcoal, no violet cast -- recedes into the dark room so
+     it never competes with the artwork. */
+  background: #101014;
   border: 1px solid rgba(251, 245, 232, 0.14);
   border-radius: 6px;
   transition: border-color 140ms ease;
@@ -187,38 +190,39 @@
   appearance: none;
 }
 
-/* The submit: a true circle, label inside, no icon. A deep, muted
-   aubergine-violet -- darker and a touch warmer/less blue than the bright
-   brand lavender, so it sits inside the cinematic hero rather than on top
-   of it; same family as TUMBLE, never a clone of its fill. Warm-ivory text
-   clears AA on it comfortably. "Dive in" wraps to two lines inside the
-   disc. */
+/* The submit: a true circle, label inside, no icon. Near-black so it
+   belongs to the photograph, with RabbitHole violet used only as a thin
+   functional ring -- an entry point, not a filled form control. The label
+   is uppercase "DIVE / IN": editorial, a little severe. Warm-ivory text
+   clears AA comfortably on the near-black. */
 .home-hero-search-submit {
   flex: none;
-  width: 68px;
-  height: 68px;
-  /* Nest ~1/6 of the disc over the field's right end -- one control, no
-     arbitrary gap -- while the field's right padding keeps text clear. */
-  margin-left: -12px;
+  width: 76px;
+  height: 76px;
   display: grid;
   place-items: center;
-  padding: 0 13px;
-  border: none;
+  /* Enough horizontal inset that "DIVE IN" can't sit on one line -- it
+     breaks at the space to the intended two-line "DIVE / IN" stack, while
+     "DIVE" alone still fits. */
+  padding: 0 20px;
+  border: 1px solid rgba(154, 130, 242, 0.5);
   border-radius: 50%;
-  background: #382754;
+  background: #0e0e12;
   color: var(--text);
   font-family: var(--sans);
   font-weight: 700;
-  font-size: 13px;
-  line-height: 1.05;
-  letter-spacing: 0.01em;
+  font-size: 11.5px;
+  line-height: 1.15;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   text-align: center;
   cursor: pointer;
-  transition: background 140ms ease, transform 140ms ease;
+  transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
 }
 
 .home-hero-search-submit:hover {
-  background: #48336a;
+  border-color: rgba(154, 130, 242, 0.85);
+  background: #131319;
 }
 
 .home-hero-search-submit:active {
@@ -244,9 +248,9 @@
     font-size: clamp(33px, 4vw, 46px);
   }
   /* The rabbit sits closer to the copy in this band -- trim the field so
-     its circle keeps clear air. */
+     the detached disc keeps clear air. */
   .home-hero-search {
-    width: 400px;
+    width: 424px;
   }
 }
 
@@ -307,20 +311,22 @@
     margin-bottom: 22px;
     text-shadow: none;
   }
-  /* Phone / small tablet: input + circular button stay on one row (the
-     disc never drops below a 60px touch target); the field takes the
-     column width, capped so it doesn't stretch absurdly wide on tablets. */
+  /* Phone / small tablet: input + detached disc stay on one row (the disc
+     stays a real circle, never a knob); the field takes the column width,
+     capped so it doesn't stretch absurdly wide on tablets. */
   .home-hero-search {
     width: 100%;
     max-width: 520px;
+    gap: 12px;
   }
   .home-hero-search-input {
     height: 50px;
   }
   .home-hero-search-submit {
-    width: 62px;
-    height: 62px;
-    font-size: 12.5px;
+    width: 70px;
+    height: 70px;
+    padding: 0 15px;
+    font-size: 11px;
   }
 }
 
