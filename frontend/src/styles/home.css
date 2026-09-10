@@ -134,48 +134,93 @@
   text-wrap: balance;
 }
 
-.home-hero-cta {
-  margin: 0;
+/* Hero search: a real <form> — an <input> and a submit <button> — styled
+   to sit inside the cinematic frame rather than float on it. A
+   charcoal/violet-black field with warm-ivory entered text and a warm-grey
+   placeholder; the submit is a solid deep-violet disc with the label
+   "Dive in" set inside it, nested into the field's right end so the two
+   read as one interaction. Capped well short of the rabbit/CRT. No arrow,
+   chevron, icon, glow, shadow, gradient, divider or pill. */
+.home-hero-search {
+  display: flex;
+  align-items: center;
+  /* A touch wider than the headline column so it reads as its own line of
+     the composition, never so wide it reaches the rabbit. Shrinks to the
+     available width on narrow screens. */
+  width: 444px;
+  max-width: 100%;
 }
 
-/* A compact editorial action. A solid deep brand-violet block (a muted,
-   darkened --violet so warm ivory sits on it well past AA), warm ivory
-   text and arrow alike (the arrow shares --text so it holds full contrast
-   on the violet). 2px corner, no border, outline, underline, glow or
-   shadow. Hover lifts the fill to full RabbitHole violet with near-black
-   text — the site's standard filled-control hover — and eases the arrow
-   right. Keyboard focus keeps the global :focus-visible outline. */
-.home-hero-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
+.home-hero-search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 52px;
+  padding: 0 38px 0 18px;
+  font-family: var(--sans);
+  font-size: 15px;
+  color: var(--text);
+  /* Charcoal lifted a touch toward violet-black -- reads as part of the
+     dark room, not a bright widget dropped on top of it. */
+  background: #16131e;
+  border: 1px solid rgba(251, 245, 232, 0.14);
+  border-radius: 6px;
+  transition: border-color 140ms ease;
+}
+
+.home-hero-search-input::placeholder {
+  color: var(--muted);
+}
+
+/* Focus: a quiet violet edge for pointer focus; keyboard focus keeps the
+   global :focus-visible ring on top of it (only the non-keyboard outline
+   is suppressed). */
+.home-hero-search-input:focus {
+  border-color: rgba(178, 156, 248, 0.55);
+}
+.home-hero-search-input:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.home-hero-search-input::-webkit-search-cancel-button,
+.home-hero-search-input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* The submit: a true circle, label inside, no icon. Deep brand-violet so
+   it belongs to the same palette as TUMBLE without cloning its bright
+   fill; warm-ivory text clears AA on it comfortably. "Dive in" wraps to
+   two lines inside the disc. */
+.home-hero-search-submit {
+  flex: none;
+  width: 68px;
+  height: 68px;
+  /* Nest ~1/6 of the disc over the field's right end -- one control, no
+     arbitrary gap -- while the field's right padding keeps text clear. */
+  margin-left: -12px;
+  display: grid;
+  place-items: center;
+  padding: 0 13px;
+  border: none;
+  border-radius: 50%;
+  background: #382a6f;
+  color: var(--text);
   font-family: var(--sans);
   font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 0.02em;
-  color: var(--text);
-  background: #382a6f;
-  border-radius: 2px;
-  text-decoration: none;
-  transition: background 160ms ease, color 160ms ease;
+  font-size: 13px;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  text-align: center;
+  cursor: pointer;
+  transition: background 140ms ease, transform 140ms ease;
 }
 
-.home-hero-btn-arrow {
-  color: var(--text);
-  transition: transform 160ms ease, color 160ms ease;
+.home-hero-search-submit:hover {
+  background: #453488;
 }
 
-.home-hero-btn:hover,
-.home-hero-btn:focus-visible {
-  background: var(--violet);
-  color: #0a0a0d;
-}
-
-.home-hero-btn:hover .home-hero-btn-arrow,
-.home-hero-btn:focus-visible .home-hero-btn-arrow {
-  color: #0a0a0d;
-  transform: translateX(2px);
+.home-hero-search-submit:active {
+  transform: scale(0.98);
 }
 
 /* ── Hero: compact desktop / tablet landscape (901–1080px) ─────────────── */
@@ -195,6 +240,11 @@
   }
   .home-h1 {
     font-size: clamp(33px, 4vw, 46px);
+  }
+  /* The rabbit sits closer to the copy in this band -- trim the field so
+     its circle keeps clear air. */
+  .home-hero-search {
+    width: 400px;
   }
 }
 
@@ -254,6 +304,21 @@
     max-width: none;
     margin-bottom: 22px;
     text-shadow: none;
+  }
+  /* Phone / small tablet: input + circular button stay on one row (the
+     disc never drops below a 60px touch target); the field takes the
+     column width, capped so it doesn't stretch absurdly wide on tablets. */
+  .home-hero-search {
+    width: 100%;
+    max-width: 520px;
+  }
+  .home-hero-search-input {
+    height: 50px;
+  }
+  .home-hero-search-submit {
+    width: 62px;
+    height: 62px;
+    font-size: 12.5px;
   }
 }
 
@@ -471,8 +536,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-hero-btn,
-  .home-hero-btn-arrow,
+  .home-hero-search-submit,
   .home-latest-title,
   .home-latest-action,
   .home-latest-arrow {

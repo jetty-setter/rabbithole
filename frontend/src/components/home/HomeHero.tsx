@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useRef, useState, type FormEvent } from "react";
+import { useNavigate } from "react-router-dom";
 
 /**
  * Homepage hero. The approved 1980s-basement photograph is a full-bleed
@@ -7,8 +8,27 @@ import { Link } from "react-router-dom";
  * as the LCP element). Copy sits in the dark negative space on the left; the
  * rabbit + CRT stay dominant on the right. A restrained left-to-transparent
  * scrim is the only readability treatment and it fades out before the rabbit.
+ *
+ * The call to action is a real search: it submits into the existing
+ * `/search?q=` route (same navigation the old nav Search used), so typing a
+ * phrase and pressing Enter — or pressing the circular Dive in button — lands
+ * on the transcript-search results. An empty query never submits.
  */
-export function HomeHero({ startHref }: { startHref: string }) {
+export function HomeHero() {
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    const term = query.trim();
+    if (!term) {
+      inputRef.current?.focus();
+      return;
+    }
+    navigate(`/search?q=${encodeURIComponent(term)}`);
+  }
+
   return (
     <section className="home-hero-grid" aria-label="RabbitHole">
       <div className="home-hero-media" role="img" aria-label="A rabbit sits alone in a dark wood-panelled room, watching an interrupted broadcast on an old television.">
@@ -24,17 +44,22 @@ export function HomeHero({ startHref }: { startHref: string }) {
           </span>
         </h1>
         <p className="home-hero-sub">
-          Short, well-sourced RabbitHoles about the things that get more
-          interesting the closer you look and where they lead.
+          Some things only make sense when you&rsquo;ve gone too far.
         </p>
-        <div className="home-hero-cta">
-          <Link to={startHref} className="home-hero-btn">
+        <form className="home-hero-search" role="search" onSubmit={onSubmit}>
+          <input
+            ref={inputRef}
+            type="search"
+            className="home-hero-search-input"
+            placeholder="Look beneath the surface"
+            aria-label="Search RabbitHole transcripts"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <button type="submit" className="home-hero-search-submit">
             Dive in
-            <span className="home-hero-btn-arrow" aria-hidden="true">
-              &rarr;
-            </span>
-          </Link>
-        </div>
+          </button>
+        </form>
       </div>
     </section>
   );

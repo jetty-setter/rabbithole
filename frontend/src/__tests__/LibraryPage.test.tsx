@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { MemoryRouter, Route, Routes, useSearchParams } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { RabbitHole, RabbitHoleListItem } from "../api";
@@ -52,19 +52,28 @@ function rabbitHole(slug: string, over: Partial<RabbitHole> = {}): RabbitHole {
   };
 }
 
+// Stands in for the real search results route so a hero submission can be
+// observed, including the query it carried in `?q=`.
+function SearchProbe() {
+  const [params] = useSearchParams();
+  return <div>search results for: {params.get("q")}</div>;
+}
+
 function renderHome() {
   return render(
     <MemoryRouter initialEntries={["/"]}>
       <Routes>
         <Route path="/" element={<LibraryPage />} />
         <Route path="/rabbitholes/:slug" element={<div>reader page</div>} />
+        <Route path="/search" element={<SearchProbe />} />
       </Routes>
     </MemoryRouter>,
   );
 }
 
-const startHref = () =>
-  screen.getByRole("link", { name: /dive in/i }).getAttribute("href");
+const heroSearchInput = () =>
+  screen.getByRole("searchbox", { name: /search rabbithole/i });
+const diveInButton = () => screen.getByRole("button", { name: /dive in/i });
 
 // Clear call history between tests but keep implementations — mockReset()
 // would drop the impl and make the effect throw (which hangs vitest).
@@ -80,7 +89,9 @@ describe("LibraryPage — homepage", () => {
     expect(
       screen.getByRole("heading", { level: 1, name: /see what.?s\s+inside/i }),
     ).toBeTruthy();
-    expect(startHref()).toBe("/");
+    // The hero's call to action is a real search form, ready before any data.
+    expect(heroSearchInput()).toBeTruthy();
+    expect(diveInButton()).toBeTruthy();
   });
 
   it("has no explanation block and no START HERE treatment", async () => {
@@ -105,7 +116,7 @@ describe("LibraryPage — homepage", () => {
     ).toBeTruthy();
     expect(screen.queryByRole("region", { name: /latest/i })).toBeNull();
     expect(getRabbitHole).not.toHaveBeenCalled();
-    expect(startHref()).toBe("/");
+    expect(heroSearchInput()).toBeTruthy();
   });
 
   it("1 published: one 'Latest' entry, title + first-sentence hook + link", async () => {
@@ -128,8 +139,6 @@ describe("LibraryPage — homepage", () => {
     expect(within(region).getByRole("link").getAttribute("href")).toBe(
       "/rabbitholes/qwerty",
     );
-    // CTA points at a real published RabbitHole, not a hard-coded slug
-    await waitFor(() => expect(startHref()).toBe("/rabbitholes/qwerty"));
   });
 
   it("2+ published: a short 'Latest RabbitHoles' list, entries link by slug", async () => {
@@ -184,7 +193,7 @@ describe("LibraryPage — homepage", () => {
       screen.getByRole("heading", { level: 1, name: /see what.?s\s+inside/i }),
     ).toBeTruthy();
     expect(screen.queryByRole("region", { name: /latest/i })).toBeNull();
-    expect(startHref()).toBe("/");
+    expect(heroSearchInput()).toBeTruthy();
   });
 
   it("a failed detail fetch drops that entry without breaking the rest", async () => {
@@ -199,5 +208,45 @@ describe("LibraryPage — homepage", () => {
     const links = within(region).getAllByRole("link");
     expect(links).toHaveLength(1);
     expect(links[0].getAttribute("href")).toBe("/rabbitholes/ok");
+  });
+
+  it("hero search: a query + Dive in routes into /search, carrying the query", async () => {
+    listRabbitHoles.mockResolvedValue([]);
+    getRabbitHole.mockResolvedValue(null);
+    renderHome();
+
+    fireEvent.change(heroSearchInput(), { target: { value: "  gone too far  " } });
+    fireEvent.click(diveInButton());
+
+    expect(await screen.findByText("search results for: gone too far")).toBeTruthy();
+  });
+
+  it("hero search: Enter in the field submits the query", async () => {
+    listRabbitHoles.mockResolvedValue([]);
+    getRabbitHole.mockResolvedValue(null);
+    renderHome();
+
+    const input = heroSearchInput();
+    fireEvent.change(input, { target: { value: "the qwerty keyboard" } });
+    fireEvent.submit(input.closest("form")!);
+
+    expect(
+      await screen.findByText("search results for: the qwerty keyboard"),
+    ).toBeTruthy();
+  });
+
+  it("hero search: an empty query does not navigate", () => {
+    listRabbitHoles.mockReturnValue(new Promise(() => {}));
+    getRabbitHole.mockReturnValue(new Promise(() => {}));
+    renderHome();
+
+    fireEvent.change(heroSearchInput(), { target: { value: "   " } });
+    fireEvent.click(diveInButton());
+
+    expect(screen.queryByText(/^search results for:/)).toBeNull();
+    // still on the homepage
+    expect(
+      screen.getByRole("heading", { level: 1, name: /see what.?s\s+inside/i }),
+    ).toBeTruthy();
   });
 });

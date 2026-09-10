@@ -1,20 +1,7 @@
-import { useState, type FormEvent } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, NavLink } from "react-router-dom";
 import { Avatar } from "./Avatar";
 import { MapIcon } from "./Icons";
-
-const IconSearch = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="11" cy="11" r="7" />
-    <path d="M21 21l-4.3-4.3" />
-  </svg>
-);
-
-const IconClose = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-    <path d="M5 5l14 14M19 5L5 19" />
-  </svg>
-);
 
 const IconMenu = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -108,9 +95,6 @@ export function Header({
   onSignup,
   onLogout,
   onTumble,
-  query,
-  setQuery,
-  suppressSearch = false,
 }: {
   authed: boolean;
   username: string | null;
@@ -122,24 +106,8 @@ export function Header({
   onSignup: () => void;
   onLogout: () => void;
   onTumble: () => void;
-  query: string;
-  setQuery: (s: string) => void;
-  /** Homepage hides the nav Search while its own big hero search is on
-   *  screen — the search "follows" the user into the nav once it scrolls away. */
-  suppressSearch?: boolean;
 }) {
-  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-
-  function submitSearch(e: FormEvent) {
-    e.preventDefault();
-    const term = query.trim();
-    if (term) {
-      navigate(`/search?q=${encodeURIComponent(term)}`);
-      setSearchOpen(false);
-    }
-  }
 
   return (
     <header className="topbar">
@@ -176,24 +144,7 @@ export function Header({
       </ul>
 
       <div className="nav-right">
-        <button
-          type="button"
-          className={suppressSearch ? "nav-search-trigger is-suppressed" : "nav-search-trigger"}
-          onClick={() => setSearchOpen(true)}
-          aria-label="Search"
-          aria-hidden={suppressSearch || undefined}
-          tabIndex={suppressSearch ? -1 : undefined}
-        >
-          <IconSearch />
-          <span className="nav-search-trigger-label">Search</span>
-        </button>
-        <span className="nav-sep" />
-
-        {authed ? (
-          <button type="button" className="nav-upload-link" onClick={onUpload}>
-            Upload
-          </button>
-        ) : (
+        {!authed && (
           <>
             <button className="btn-ghost" onClick={onLogin}>
               Sign in
@@ -219,38 +170,13 @@ export function Header({
               <div className="menu-backdrop" onClick={() => setMenuOpen(false)} />
               <div className="account-menu">
                 {authed && <div className="menu-user">@{username}</div>}
-                {/* Primary nav + primary actions collapse out of the topbar
-                    below 720px -- mirror them here so mobile visitors keep
-                    Tunnels/Map/Trail/Tumble, Upload (authed), and sign-in. */}
+                {/* The primary nav row (Discover/Tunnels/Map/Trail/Tumble) and,
+                    for guests, Sign in / Sign up collapse out of the topbar on
+                    narrow viewports -- mirrored here so they stay reachable.
+                    Upload and Add external video are account actions, so they
+                    live in the always-visible authed block below instead. */}
                 <div className="menu-mobile-primary">
-                  {authed ? (
-                    <>
-                      <button
-                        type="button"
-                        className="menu-item"
-                        onClick={() => {
-                          setMenuOpen(false);
-                          onUpload();
-                        }}
-                      >
-                        <IconUpload />
-                        Upload
-                      </button>
-                      {onAddExternal && (
-                        <button
-                          type="button"
-                          className="menu-item"
-                          onClick={() => {
-                            setMenuOpen(false);
-                            onAddExternal();
-                          }}
-                        >
-                          <IconVideo />
-                          Add external video
-                        </button>
-                      )}
-                    </>
-                  ) : (
+                  {!authed && (
                     <>
                       <button
                         type="button"
@@ -272,9 +198,9 @@ export function Header({
                       >
                         Sign up
                       </button>
+                      <div className="menu-sep" />
                     </>
                   )}
-                  <div className="menu-sep" />
                   <Link to="/" className="menu-item" onClick={() => setMenuOpen(false)}>
                     <IconWatch />
                     Discover
@@ -326,6 +252,30 @@ export function Header({
                       <IconVideo />
                       Your videos
                     </Link>
+                    <button
+                      type="button"
+                      className="menu-item"
+                      onClick={() => {
+                        setMenuOpen(false);
+                        onUpload();
+                      }}
+                    >
+                      <IconUpload />
+                      Upload
+                    </button>
+                    {onAddExternal && (
+                      <button
+                        type="button"
+                        className="menu-item"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          onAddExternal();
+                        }}
+                      >
+                        <IconVideo />
+                        Add external video
+                      </button>
+                    )}
                     {isAdmin && (
                       <Link to="/admin" className="menu-item" onClick={() => setMenuOpen(false)}>
                         <IconAdmin />
@@ -349,29 +299,6 @@ export function Header({
           )}
         </div>
       </div>
-
-      {searchOpen && (
-        <div className="mobile-search-overlay">
-          <form className="mobile-search-form" onSubmit={submitSearch} role="search">
-            <IconSearch />
-            <input
-              className="mobile-search-input"
-              placeholder="Search what's said…"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              autoFocus
-            />
-            <button
-              type="button"
-              className="mobile-search-close"
-              onClick={() => setSearchOpen(false)}
-              aria-label="Close search"
-            >
-              <IconClose />
-            </button>
-          </form>
-        </div>
-      )}
     </header>
   );
 }
