@@ -20,6 +20,11 @@
   --violet: #9a82f2;
   --violet-soft: #b29cf8;
   --violet-light: #c4b5fd;
+  /* Darker, quieter step below --violet -- for controls that need to read
+     as clearly violet without drawing the eye the way the primary accent
+     (Tumble) does. Darkened and slightly desaturated, not just dimmed, so
+     it stays violet rather than sliding toward aubergine or brown. */
+  --violet-deep: #6d5aa8;
   /* Warm coral — the second, sparingly-used accent. Muted on purpose: it
      marks an epistemic state ("debunked") and warm editorial detail, never
      an error. Distinct from --danger, which stays reserved for real alerts. */
