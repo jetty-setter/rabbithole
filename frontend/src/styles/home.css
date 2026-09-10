@@ -23,7 +23,7 @@
   background-color: var(--hero-black);
   /* Copy column sits in the left negative space; generous left inset so
      the eyebrow reads as placed inside the frame, not bleeding off it. */
-  padding: clamp(56px, 8vh, 100px) 28px clamp(56px, 8vh, 100px)
+  padding: clamp(56px, 8vh, 100px) 28px clamp(36px, 4.5vh, 60px)
     clamp(56px, calc(7vw + 16px), 160px);
 }
 
@@ -60,9 +60,9 @@
     ),
     linear-gradient(
       180deg,
-      transparent 70%,
-      rgba(3, 1, 5, 0.42) 88%,
-      var(--bg) 100%
+      transparent 74%,
+      rgba(3, 1, 5, 0.34) 90%,
+      var(--home-latest-bg) 100%
     );
 }
 
@@ -138,44 +138,43 @@
   margin: 0;
 }
 
-/* An editorial CTA lockup, not a control. The hero's display face at a
-   confident reading size, warm ivory, with a RabbitHole-violet arrow — no
-   fill, border, outline, underline, radius, shadow or glow. It belongs to
-   the hero's typography, deliberately placed in the copy column rather than
-   sitting on it as a widget. The vertical padding is a transparent hit area
-   only (a comfortable target with no visible box); the matching negative
-   left margin cancels the horizontal padding so the text still starts on
-   the copy spine. Hover warms the text to violet and eases the arrow ~3px
-   right; nothing else appears. Keyboard focus is the global :focus-visible
-   outline (mouse clicks stay clean). */
+/* A compact editorial action. A solid deep brand-violet block (a muted,
+   darkened --violet so warm ivory sits on it well past AA), warm ivory
+   text, a lighter-violet arrow. 2px corner, no border, outline, underline,
+   glow or shadow. Hover lifts the fill to full RabbitHole violet with
+   near-black text — the site's standard filled-control hover — and eases
+   the arrow right. Keyboard focus keeps the global :focus-visible outline. */
 .home-hero-btn {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  margin-left: -4px;
-  padding: 12px 4px;
-  font-family: var(--display);
+  gap: 8px;
+  padding: 12px 20px;
+  font-family: var(--sans);
   font-weight: 700;
-  font-size: 18px;
-  letter-spacing: 0.01em;
+  font-size: 14px;
+  letter-spacing: 0.02em;
   color: var(--text);
+  background: #382a6f;
+  border-radius: 2px;
   text-decoration: none;
-  transition: color 160ms ease;
+  transition: background 160ms ease, color 160ms ease;
 }
 
 .home-hero-btn-arrow {
-  color: var(--violet);
-  transition: transform 160ms ease;
+  color: var(--violet-light);
+  transition: transform 160ms ease, color 160ms ease;
 }
 
 .home-hero-btn:hover,
 .home-hero-btn:focus-visible {
-  color: var(--violet);
+  background: var(--violet);
+  color: #0a0a0d;
 }
 
 .home-hero-btn:hover .home-hero-btn-arrow,
 .home-hero-btn:focus-visible .home-hero-btn-arrow {
-  transform: translateX(3px);
+  color: #0a0a0d;
+  transform: translateX(2px);
 }
 
 /* ── Hero: compact desktop / tablet landscape (901–1080px) ─────────────── */
@@ -266,7 +265,10 @@
 }
 
 /* ── Below the fold ──────────────────────────────────────────────────────
-   Continues the hero's near-black, then settles to --bg. Left edge lines up
+   The editorial surface under the hero. It picks up the hero's near-black
+   at its very top, then settles within ~20% onto --home-latest-bg — a
+   barely-there aubergine lift off pure black that gives the LATEST index
+   its own surface without any card, border or divider. Left edge lines up
    with the hero copy so the hero and the index share one editorial spine
    rather than jumping to centre. */
 
@@ -274,17 +276,24 @@
   width: 100vw;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
-  background: linear-gradient(to bottom, var(--hero-black), var(--bg) 44%);
-  /* Tight top padding so the next section sits close under the hero fade:
-     the cinematic dissolve stays, the dead black band goes. Still enough
-     that the copy does not look attached to the rabbit. Left inset matches
+  background-color: var(--home-latest-bg);
+  background-image: linear-gradient(
+    to bottom,
+    var(--hero-black) 0%,
+    var(--home-latest-bg) 18%,
+    var(--home-latest-bg) 86%,
+    var(--bg) 100%
+  );
+  /* Tight top padding so the index sits close under the hero fade: the
+     cinematic dissolve stays, the dead black band goes. Still enough that
+     the copy does not look attached to the rabbit. Left inset matches
      .home-hero-grid's. */
-  padding: clamp(40px, 5vh, 52px) 28px clamp(64px, 9vh, 96px)
+  padding: clamp(24px, 3vh, 34px) 28px clamp(48px, 7vh, 80px)
     clamp(56px, calc(7vw + 16px), 160px);
 }
 
 .home-below-inner {
-  max-width: 620px;
+  max-width: 1140px;
   margin: 0;
 }
 
@@ -298,8 +307,21 @@
 
 /* ── Latest RabbitHoles — the editorial index ──────────────────────────
    Sits straight under the hero. A contents list, not cards: heading, then
-   title + one-line teaser + a quiet "Read RabbitHole" affordance. The first
-   entry gets a size bump. Hierarchy is type, weight and space only. */
+   title + one-line teaser + a quiet "Read RabbitHole" affordance.
+   Hierarchy is type, weight and space only — no rules, bars or dividers.
+
+   Default (2+ published): a narrow single-column list, the first entry a
+   size up. Solo (exactly one published): a wide two-column opener — see
+   .home-latest--solo — so a single RabbitHole still reads as a deliberate
+   feature rather than one lonely line. */
+
+.home-latest {
+  max-width: 660px;
+}
+
+.home-latest--solo {
+  max-width: 1040px;
+}
 
 .home-latest-h {
   margin: 0 0 32px;
@@ -389,13 +411,61 @@
   transform: translateX(3px);
 }
 
+/* ── Solo feature: one published RabbitHole ────────────────────────────
+   A magazine opener, not a card. The link becomes a two-column grid:
+   a dominant title on the left, the hook and read action on the right.
+   No background, border or box — it rides the section tone; the interest
+   is the scale jump and the column break. Collapses to one stacked
+   column at ≤900px (title first, then hook + action). */
+.home-latest--solo .home-latest-link {
+  display: grid;
+  grid-template-columns: minmax(0, 28rem) minmax(0, 21rem);
+  column-gap: clamp(28px, 3vw, 52px);
+  align-items: start;
+}
+
+.home-latest--solo .home-latest-title {
+  font-size: clamp(29px, 4vw, 46px);
+  line-height: 1.05;
+  letter-spacing: -0.026em;
+}
+
+.home-latest--solo .home-latest-text {
+  padding-top: 6px;
+  max-width: 40ch;
+}
+
+.home-latest--solo .home-latest-hook {
+  margin: 0;
+  font-size: clamp(15px, 1.55vw, 17px);
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.home-latest--solo .home-latest-action {
+  margin-top: 22px;
+  font-size: 13.5px;
+}
+
 /* Stacked layout: the hero copy sits at the mobile gutter, so the sections
    below drop their desktop left inset and share that gutter. The 100vw /
    calc(50% - 50vw) full-bleed self-adjusts to .page's padding at every
    width, so only the inner padding changes here. */
 @media (max-width: 900px) {
   .home-below {
-    padding: 40px var(--gutter-mobile) clamp(64px, 12vh, 96px);
+    padding: 28px var(--gutter-mobile) clamp(48px, 9vh, 76px);
+  }
+  /* Solo feature stacks: title first, then hook + read action below it. */
+  .home-latest--solo .home-latest-link {
+    grid-template-columns: 1fr;
+    row-gap: 14px;
+  }
+  .home-latest--solo .home-latest-text {
+    padding-top: 0;
+    max-width: none;
+  }
+  .home-latest--solo .home-latest-title {
+    font-size: clamp(26px, 7.4vw, 34px);
   }
 }
 
