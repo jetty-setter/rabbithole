@@ -187,10 +187,12 @@
   appearance: none;
 }
 
-/* The submit: a true circle, label inside, no icon. Deep brand-violet so
-   it belongs to the same palette as TUMBLE without cloning its bright
-   fill; warm-ivory text clears AA on it comfortably. "Dive in" wraps to
-   two lines inside the disc. */
+/* The submit: a true circle, label inside, no icon. A deep, muted
+   aubergine-violet -- darker and a touch warmer/less blue than the bright
+   brand lavender, so it sits inside the cinematic hero rather than on top
+   of it; same family as TUMBLE, never a clone of its fill. Warm-ivory text
+   clears AA on it comfortably. "Dive in" wraps to two lines inside the
+   disc. */
 .home-hero-search-submit {
   flex: none;
   width: 68px;
@@ -203,7 +205,7 @@
   padding: 0 13px;
   border: none;
   border-radius: 50%;
-  background: #382a6f;
+  background: #382754;
   color: var(--text);
   font-family: var(--sans);
   font-weight: 700;
@@ -216,7 +218,7 @@
 }
 
 .home-hero-search-submit:hover {
-  background: #453488;
+  background: #48336a;
 }
 
 .home-hero-search-submit:active {
