@@ -78,7 +78,7 @@ describe("LibraryPage — homepage", () => {
     renderHome();
 
     expect(
-      screen.getByRole("heading", { level: 1, name: /follow the interesting thing/i }),
+      screen.getByRole("heading", { level: 1, name: /see what.?s\s+inside/i }),
     ).toBeTruthy();
     expect(startHref()).toBe("/");
   });
@@ -101,7 +101,7 @@ describe("LibraryPage — homepage", () => {
 
     await waitFor(() => expect(listRabbitHoles).toHaveBeenCalled());
     expect(
-      screen.getByRole("heading", { level: 1, name: /follow the interesting thing/i }),
+      screen.getByRole("heading", { level: 1, name: /see what.?s\s+inside/i }),
     ).toBeTruthy();
     expect(screen.queryByRole("region", { name: /latest/i })).toBeNull();
     expect(getRabbitHole).not.toHaveBeenCalled();
@@ -181,7 +181,7 @@ describe("LibraryPage — homepage", () => {
 
     await waitFor(() => expect(listRabbitHoles).toHaveBeenCalled());
     expect(
-      screen.getByRole("heading", { level: 1, name: /follow the interesting thing/i }),
+      screen.getByRole("heading", { level: 1, name: /see what.?s\s+inside/i }),
     ).toBeTruthy();
     expect(screen.queryByRole("region", { name: /latest/i })).toBeNull();
     expect(startHref()).toBe("/");

@@ -16,11 +16,11 @@ export function HomeHero({ startHref }: { startHref: string }) {
       </div>
 
       <div className="home-hero">
-        <p className="home-hero-eyebrow">Curiosity, with sources</p>
+        <p className="home-hero-eyebrow">Follow curiosity.</p>
         <h1 className="home-h1">
-          <span className="home-h1-line">Follow the</span>
+          <span className="home-h1-line">See what&rsquo;s</span>
           <span className="home-h1-line">
-            interesting thing<span className="home-hero-dot">.</span>
+            inside<span className="home-hero-dot">.</span>
           </span>
         </h1>
         <p className="home-hero-sub">
