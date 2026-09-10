@@ -140,10 +140,11 @@
 
 /* A compact editorial action. A solid deep brand-violet block (a muted,
    darkened --violet so warm ivory sits on it well past AA), warm ivory
-   text, a lighter-violet arrow. 2px corner, no border, outline, underline,
-   glow or shadow. Hover lifts the fill to full RabbitHole violet with
-   near-black text — the site's standard filled-control hover — and eases
-   the arrow right. Keyboard focus keeps the global :focus-visible outline. */
+   text and arrow alike (the arrow shares --text so it holds full contrast
+   on the violet). 2px corner, no border, outline, underline, glow or
+   shadow. Hover lifts the fill to full RabbitHole violet with near-black
+   text — the site's standard filled-control hover — and eases the arrow
+   right. Keyboard focus keeps the global :focus-visible outline. */
 .home-hero-btn {
   display: inline-flex;
   align-items: center;
@@ -161,7 +162,7 @@
 }
 
 .home-hero-btn-arrow {
-  color: var(--violet-light);
+  color: var(--text);
   transition: transform 160ms ease, color 160ms ease;
 }
 

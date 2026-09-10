@@ -25,7 +25,7 @@ export function HomeHero({ startHref }: { startHref: string }) {
         </h1>
         <p className="home-hero-sub">
           Short, well-sourced RabbitHoles about the things that get more
-          interesting the closer you look &mdash; and where they lead.
+          interesting the closer you look and where they lead.
         </p>
         <div className="home-hero-cta">
           <Link to={startHref} className="home-hero-btn">
