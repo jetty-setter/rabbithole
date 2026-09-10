@@ -1,6 +1,10 @@
 :root {
   --bg: #050505;
   --hero-black: #030105;
+  /* The editorial surface under the homepage hero: a barely-there lift off
+     pure black with a faint aubergine cast, so the LATEST index reads as
+     its own surface without a card, border or divider doing the work. */
+  --home-latest-bg: #0e0a15;
   --bg-2: #0d0d0e;
   --panel: #131316;
   --panel-2: #1a1a1e;
