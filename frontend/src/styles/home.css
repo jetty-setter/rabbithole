@@ -147,20 +147,22 @@
   display: flex;
   align-items: stretch;
   overflow: hidden;
-  /* Never wide enough to reach the rabbit; shrinks on narrow screens. */
-  width: 470px;
+  /* Trimmed ~8% from the first capsule pass -- it was starting to read as
+     a utility bar. Never wide enough to reach the rabbit; shrinks on
+     narrow screens. */
+  width: 430px;
   max-width: 100%;
   height: 52px;
-  /* A true charcoal, not the page's near-black -- enough lift to hold its
-     own against the hero without turning bright. */
-  background: #0d0c11;
+  /* A touch lighter than the first capsule pass -- it was blending into
+     the hero. Still a true charcoal, not a bright surface. */
+  background: #121016;
   /* Full capsule at this height (radius = height / 2), borrowing TUMBLE's
      rounded language -- but low-profile and dark rather than an oversized
      bright pill. */
   border-radius: 26px;
   box-shadow:
     /* a hairline edge, just enough definition to read as one object */
-    0 0 0 1px rgba(251, 245, 232, 0.07),
+    0 0 0 1px rgba(251, 245, 232, 0.1),
     /* restrained inset depth, not a deep recess */
     inset 0 1px 3px rgba(0, 0, 0, 0.5);
   transition: box-shadow 160ms ease, background 160ms ease;
@@ -169,9 +171,9 @@
 /* Focus: the edge warms toward violet and the depth reads a touch
    stronger -- no bright ring, no colour block. */
 .home-hero-search:focus-within {
-  background: #100e15;
+  background: #161319;
   box-shadow:
-    0 0 0 1px rgba(178, 156, 248, 0.4),
+    0 0 0 1px rgba(178, 156, 248, 0.45),
     inset 0 1px 4px rgba(0, 0, 0, 0.6);
 }
 
@@ -218,14 +220,16 @@
   font-size: 13px;
   letter-spacing: 0.11em;
   text-transform: uppercase;
-  color: var(--violet-soft);
+  color: var(--violet-light);
   white-space: nowrap;
   cursor: pointer;
   transition: color 140ms ease, background 140ms ease;
 }
 
 .home-hero-search-submit:hover {
-  color: var(--violet-light);
+  /* Brighter than any existing violet token -- a clean lavender-white,
+     still unmistakably violet, for the strongest state in the control. */
+  color: #d6cbfe;
   background: linear-gradient(
     90deg,
     transparent,
@@ -270,7 +274,7 @@
   /* The rabbit sits closer to the copy in this band -- trim the capsule so
      it keeps clear air. */
   .home-hero-search {
-    width: 420px;
+    width: 385px;
   }
 }
 
@@ -336,7 +340,7 @@
      tighter (radius follows height so it stays a true capsule). */
   .home-hero-search {
     width: 100%;
-    max-width: 480px;
+    max-width: 440px;
     height: 50px;
     border-radius: 25px;
   }
