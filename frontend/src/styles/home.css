@@ -118,10 +118,6 @@
   white-space: nowrap;
 }
 
-.home-hero-dot {
-  color: var(--violet-light);
-}
-
 .home-hero-sub {
   margin: 0 0 30px;
   max-width: 34ch;
