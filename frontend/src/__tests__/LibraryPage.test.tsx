@@ -59,7 +59,7 @@ describe("LibraryPage — homepage", () => {
     ).toBeTruthy();
     expect(
       within(region).getByText(
-        "For 72 seconds in 1977, a radio telescope in Ohio detected a signal so unusual that astronomer Jerry Ehman circled the printout and wrote one word beside it: Wow! It was never detected again.",
+        "For 72 seconds in 1977, a radio telescope in Ohio picked up a signal unlike anything astronomers expected. Jerry Ehman circled the printout and wrote one word beside it: Wow! It was never detected again.",
       ),
     ).toBeTruthy();
   });

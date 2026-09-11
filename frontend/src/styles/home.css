@@ -378,14 +378,16 @@
     to bottom,
     var(--hero-black) 0%,
     var(--home-latest-bg) 18%,
-    var(--home-latest-bg) 86%,
+    var(--home-latest-bg) 82%,
     var(--bg) 100%
   );
   /* Tight top padding so the index sits close under the hero fade: the
      cinematic dissolve stays, the dead black band goes. Still enough that
-     the copy does not look attached to the rabbit. Left inset matches
+     the copy does not look attached to the rabbit. Bottom padding is more
+     generous than the top so a single-feature page ends on a deliberate
+     beat rather than running straight into the footer. Left inset matches
      .home-hero-grid's. */
-  padding: clamp(24px, 3vh, 34px) 28px clamp(48px, 7vh, 80px)
+  padding: clamp(24px, 3vh, 34px) 28px clamp(64px, 9vh, 104px)
     clamp(56px, calc(7vw + 16px), 160px);
 }
 
@@ -402,19 +404,18 @@
   }
 }
 
-/* ── Latest — the featured RabbitHole ───────────────────────────────────
-   A wide editorial spread, not a card: an eyebrow, then a title/copy
-   column set beside a large quiet typographic mark, with generous negative
-   space between them instead of a bounded box. No background, border or
-   rule — the section tone alone carries it. This is scaled for a single
-   featured piece; a future multi-item state should keep this treatment for
-   the newest item and add a tighter list below it, not replace it. */
+/* ── Latest ──────────────────────────────────────────────────────────────
+   One eyebrow, then the lead feature at full editorial scale (.home-featured),
+   then — once more RabbitHoles are published — a tighter index of the rest
+   (.home-latest-index). The lead never repeats for later items: a
+   publication front page has one lead story and a quieter list under it,
+   not a stack of identical templates. */
 
-.home-featured {
+.home-latest {
   max-width: 1180px;
 }
 
-.home-featured-eyebrow {
+.home-latest-eyebrow {
   margin: 0 0 36px;
   font-family: var(--display);
   font-size: 12px;
@@ -424,18 +425,29 @@
   color: var(--violet-soft);
 }
 
+/* ── The lead feature ─────────────────────────────────────────────────
+   A wide editorial spread, not a card: a title/copy column set close
+   beside a large quiet typographic mark, with deliberate negative space
+   around the pair rather than one stretched across the full measure. No
+   background, border or rule on the article itself — the section tone
+   alone carries it. */
+
+.home-featured {
+  max-width: 920px;
+}
+
 .home-featured-grid {
   display: grid;
-  grid-template-columns: minmax(0, 30rem) minmax(0, 1fr);
-  column-gap: clamp(40px, 7vw, 100px);
+  grid-template-columns: minmax(0, 27rem) minmax(0, 22rem);
+  column-gap: clamp(32px, 5vw, 60px);
   align-items: center;
 }
 
 .home-featured-title {
-  margin: 0 0 22px;
+  margin: 0 0 20px;
   font-family: var(--display);
   font-weight: 800;
-  font-size: clamp(34px, 4.6vw, 60px);
+  font-size: clamp(34px, 4.6vw, 58px);
   line-height: 1.04;
   letter-spacing: -0.024em;
   color: var(--text);
@@ -443,8 +455,8 @@
 }
 
 .home-featured-hook {
-  margin: 0 0 30px;
-  max-width: 46ch;
+  margin: 0 0 26px;
+  max-width: 44ch;
   font-size: clamp(16px, 1.7vw, 18px);
   line-height: 1.6;
   color: var(--muted);
@@ -454,38 +466,62 @@
   display: inline-block;
   text-decoration: none;
   font-family: var(--sans);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.13em;
+  font-weight: 800;
+  font-size: 13.5px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--violet-soft);
+  color: var(--violet-light);
   transition: color 140ms ease;
 }
 
 .home-featured-action:hover,
 .home-featured-action:focus-visible {
-  color: var(--violet-light);
+  color: var(--text);
 }
 
 /* The visual side: the recorded signal-strength string from the original
-   printout, set at a scale that reads from across the page. Quiet tone so
-   it stays secondary to the hero and to the title's ivory. */
+   printout, set at a scale that still reads from across the page but sits
+   close to the text column instead of pinned to the far edge. Quiet tone
+   so it stays secondary to the hero and to the title's ivory. */
 .home-featured-visual {
   text-align: right;
 }
 
+.home-featured-plate {
+  position: relative;
+  display: inline-block;
+  padding: 20px 24px 16px;
+  background-color: #14101b;
+  box-shadow: 0 22px 48px -30px rgba(0, 0, 0, 0.65);
+}
+
+/* A static, monochrome grain — archival paper, not a designed effect.
+   Flat fill, no gradient, no glow. */
+.home-featured-plate::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
 .home-featured-code {
+  position: relative;
   margin: 0;
   font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   font-weight: 600;
-  font-size: clamp(64px, 9vw, 148px);
+  font-size: clamp(46px, 6.4vw, 92px);
   line-height: 1;
   letter-spacing: 0.01em;
   color: var(--muted);
 }
 
 .home-featured-caption {
-  margin: 18px 0 0;
+  margin: 16px 0 0;
+  max-width: 30ch;
+  margin-left: auto;
   font-family: var(--sans);
   font-size: 11px;
   font-weight: 600;
@@ -495,6 +531,88 @@
   opacity: 0.7;
 }
 
+/* ── The index — later published RabbitHoles ────────────────────────────
+   Tighter rows, always smaller than the lead. Optional real imagery
+   alternates sides item to item; text-only rows never force a placeholder
+   graphic. Separation comes from spacing and a barely-there tone shift
+   per row, never a rule or a boxed card. */
+
+.home-latest-index {
+  list-style: none;
+  margin: 72px 0 0;
+  padding: 0;
+}
+
+.home-latest-index-item + .home-latest-index-item {
+  margin-top: 4px;
+}
+
+.home-index-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  padding: 30px clamp(20px, 3vw, 36px);
+}
+
+.home-latest-index-item:nth-child(odd) .home-index-row {
+  background-color: rgba(255, 255, 255, 0.014);
+}
+
+.home-latest-index-item:nth-child(even) .home-index-row {
+  background-color: rgba(251, 245, 232, 0.022);
+}
+
+.home-index-row.has-image {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 220px);
+  column-gap: clamp(28px, 4vw, 48px);
+}
+
+.home-index-row.has-image.image-left .home-index-image {
+  order: -1;
+}
+
+.home-index-image img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.home-index-title {
+  margin: 0 0 8px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(19px, 2vw, 22px);
+  line-height: 1.18;
+  letter-spacing: -0.015em;
+  color: var(--text);
+}
+
+.home-index-hook {
+  margin: 0 0 12px;
+  max-width: 58ch;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.home-index-action {
+  display: inline-block;
+  text-decoration: none;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--violet-soft);
+  transition: color 140ms ease;
+}
+
+.home-index-action:hover,
+.home-index-action:focus-visible {
+  color: var(--violet-light);
+}
+
 /* Stacked layout: the hero copy sits at the mobile gutter, so the sections
    below drop their desktop left inset and share that gutter. The 100vw /
    calc(50% - 50vw) full-bleed self-adjusts to .page's padding at every
@@ -502,11 +620,11 @@
    action, then the visual mark below as support, never interrupting it. */
 @media (max-width: 900px) {
   .home-below {
-    padding: 28px var(--gutter-mobile) clamp(48px, 9vh, 76px);
+    padding: 28px var(--gutter-mobile) clamp(56px, 10vh, 88px);
   }
   .home-featured-grid {
     grid-template-columns: 1fr;
-    row-gap: 40px;
+    row-gap: 36px;
   }
   .home-featured-title {
     font-size: clamp(28px, 7.6vw, 36px);
@@ -514,14 +632,34 @@
   .home-featured-visual {
     text-align: left;
   }
+  .home-featured-plate {
+    padding: 16px 20px 13px;
+  }
   .home-featured-code {
-    font-size: clamp(48px, 17vw, 84px);
+    font-size: clamp(44px, 15vw, 76px);
+  }
+  .home-featured-caption {
+    margin-left: 0;
+  }
+  .home-latest-index {
+    margin-top: 52px;
+  }
+  .home-index-row {
+    padding: 22px var(--gutter-mobile);
+  }
+  .home-index-row.has-image {
+    grid-template-columns: 1fr;
+    row-gap: 16px;
+  }
+  .home-index-row.has-image.image-left .home-index-image {
+    order: 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .home-hero-search-submit,
-  .home-featured-action {
+  .home-featured-action,
+  .home-index-action {
     transition: none;
   }
 }
