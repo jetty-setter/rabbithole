@@ -134,52 +134,52 @@
   text-wrap: balance;
 }
 
-/* Hero search: one composed control styled as a recessed analog console
-   slot — a matte near-black face set *into* the dark left negative space,
-   not a form field floating on it. Depth comes from a soft top inset
-   shadow (the panel above casting into the opening) and a barely-there
-   lower inner lip catching the room's light; no outer border, no glow, no
-   bevel, no gradient sheen. Inside: the <input> fills the slot, and its
-   right end — a whisper lighter, no line between them — is the DIVE IN
-   commit zone. No circle, badge, divider, arrow, chevron, icon or pill. */
+/* Hero search: one composed control, capsule-shaped like TUMBLE but dark,
+   matte and quiet instead of a bright filled pill. A charcoal surface (a
+   step lighter than the hero-black behind it, so it reads as its own
+   object instead of dissolving into the photo) with a hairline edge and a
+   restrained inset shadow for a touch of embedded depth. Inside: the
+   <input> fills the capsule, and its right end — warmed a hair by a
+   dark-on-dark tonal fade, no line between them — is the DIVE IN commit
+   zone. No circle, badge, divider, arrow, chevron, icon or separate
+   button shape. */
 .home-hero-search {
   display: flex;
   align-items: stretch;
   overflow: hidden;
-  /* A little narrower and a little taller than a utility search bar, so
-     the proportion reads as a slot rather than a toolbar. Never wide
-     enough to reach the rabbit; shrinks on narrow screens. */
+  /* Never wide enough to reach the rabbit; shrinks on narrow screens. */
   width: 470px;
   max-width: 100%;
-  height: 54px;
-  /* Sits at the page's own near-black so it never reads as a lighter panel
-     laid on top; the depth is entirely in the shadows. */
-  background: #060507;
-  border-radius: 4px;
+  height: 52px;
+  /* A true charcoal, not the page's near-black -- enough lift to hold its
+     own against the hero without turning bright. */
+  background: #0d0c11;
+  /* Full capsule at this height (radius = height / 2), borrowing TUMBLE's
+     rounded language -- but low-profile and dark rather than an oversized
+     bright pill. */
+  border-radius: 26px;
   box-shadow:
-    /* crisp cut edge at the top of the opening */
-    inset 0 1px 1px rgba(0, 0, 0, 0.9),
-    /* soft shadow falling into the recess */
-    inset 0 7px 11px -5px rgba(0, 0, 0, 0.7),
-    /* faint lower inner lip catching the room's light */
-    inset 0 -1px 0 rgba(251, 245, 232, 0.055);
-  transition: box-shadow 160ms ease;
+    /* a hairline edge, just enough definition to read as one object */
+    0 0 0 1px rgba(251, 245, 232, 0.07),
+    /* restrained inset depth, not a deep recess */
+    inset 0 1px 3px rgba(0, 0, 0, 0.5);
+  transition: box-shadow 160ms ease, background 160ms ease;
 }
 
-/* Focus: the recess deepens a touch — it "wakes up" without a colour
-   change or a bright edge. */
+/* Focus: the edge warms toward violet and the depth reads a touch
+   stronger -- no bright ring, no colour block. */
 .home-hero-search:focus-within {
+  background: #100e15;
   box-shadow:
-    inset 0 1px 1px rgba(0, 0, 0, 0.95),
-    inset 0 8px 13px -5px rgba(0, 0, 0, 0.8),
-    inset 0 -1px 0 rgba(251, 245, 232, 0.08);
+    0 0 0 1px rgba(178, 156, 248, 0.4),
+    inset 0 1px 4px rgba(0, 0, 0, 0.6);
 }
 
 .home-hero-search-input {
   flex: 1 1 auto;
   min-width: 0;
   height: 100%;
-  padding: 0 10px 0 18px;
+  padding: 0 8px 0 24px;
   font-family: var(--sans);
   font-size: 15px;
   color: var(--text);
@@ -198,17 +198,18 @@
   appearance: none;
 }
 
-/* The commit zone: the same slot face, warmed a hair toward its right end
-   by a dark-on-dark tonal fade — no line, block, box or hard edge. Set
-   apart by RabbitHole violet + semibold weight + a generous right inset. */
+/* The commit zone: the same capsule face, warmed a hair toward its right
+   end by a dark-on-dark tonal fade — no line, block, box or hard edge.
+   Set apart by RabbitHole violet + semibold weight + a generous inset
+   that clears the capsule's curved end. */
 .home-hero-search-submit {
   flex: none;
   height: 100%;
-  padding: 0 20px 0 16px;
+  padding: 0 26px 0 16px;
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(251, 245, 232, 0.032) 65%
+    rgba(251, 245, 232, 0.04) 60%
   );
   border: none;
   border-radius: 0;
@@ -228,13 +229,13 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(251, 245, 232, 0.05) 65%
+    rgba(251, 245, 232, 0.06) 60%
   );
 }
 
-/* Keyboard focus: a restrained violet ring — the whole slot when the
+/* Keyboard focus: a restrained violet ring — the whole capsule when the
    field holds focus, just the commit zone when DIVE IN does. Pointer
-   focus stays clean (the recess-deepen handles it). */
+   focus stays clean (the edge/depth shift above handles it). */
 .home-hero-search :focus {
   outline: none;
 }
@@ -245,7 +246,7 @@
 .home-hero-search-submit:focus-visible {
   outline: 2px solid var(--violet);
   outline-offset: -3px;
-  border-radius: 4px;
+  border-radius: 18px;
 }
 
 /* ── Hero: compact desktop / tablet landscape (901–1080px) ─────────────── */
@@ -266,7 +267,7 @@
   .home-h1 {
     font-size: clamp(33px, 4vw, 46px);
   }
-  /* The rabbit sits closer to the copy in this band -- trim the slot so
+  /* The rabbit sits closer to the copy in this band -- trim the capsule so
      it keeps clear air. */
   .home-hero-search {
     width: 420px;
@@ -330,17 +331,24 @@
     margin-bottom: 22px;
     text-shadow: none;
   }
-  /* Phone / small tablet: the slot takes the column width, capped so it
-     doesn't stretch absurdly wide on tablets. The recess and commit zone
-     carry over unchanged. */
+  /* Phone / small tablet: the capsule takes the column width, capped so it
+     doesn't stretch absurdly wide on tablets, and sits a touch lower/
+     tighter (radius follows height so it stays a true capsule). */
   .home-hero-search {
     width: 100%;
     max-width: 480px;
-    height: 52px;
+    height: 50px;
+    border-radius: 25px;
+  }
+  .home-hero-search-input {
+    padding-left: 22px;
   }
   .home-hero-search-submit {
-    padding: 0 16px 0 12px;
+    padding: 0 22px 0 12px;
     font-size: 12px;
+  }
+  .home-hero-search-submit:focus-visible {
+    border-radius: 17px;
   }
 }
 
