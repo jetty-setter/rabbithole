@@ -433,13 +433,16 @@
    alone carries it. */
 
 .home-featured {
-  max-width: 920px;
+  max-width: 960px;
 }
 
 .home-featured-grid {
   display: grid;
-  grid-template-columns: minmax(0, 27rem) minmax(0, 22rem);
-  column-gap: clamp(32px, 5vw, 60px);
+  /* The visual column widened (22rem -> 28rem) so the larger 6EQUJ5 mark
+     has room to sit farther right and read as a real counterweight to the
+     title column, not a shrunken afterthought beside it. */
+  grid-template-columns: minmax(0, 27rem) minmax(0, 28rem);
+  column-gap: clamp(36px, 5.5vw, 68px);
   align-items: center;
 }
 
@@ -456,7 +459,7 @@
 
 .home-featured-hook {
   margin: 0 0 26px;
-  max-width: 44ch;
+  max-width: 40ch;
   font-size: clamp(16px, 1.7vw, 18px);
   line-height: 1.6;
   color: var(--muted);
@@ -470,7 +473,9 @@
   font-size: 13.5px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--violet-light);
+  /* A touch brighter than --violet-light so the action reads a little more
+     readily at rest -- still editorial text, no button/border/icon. */
+  color: #d3c7ff;
   transition: color 140ms ease;
 }
 
@@ -512,7 +517,10 @@
   margin: 0;
   font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   font-weight: 600;
-  font-size: clamp(46px, 6.4vw, 92px);
+  /* ~25% larger than the previous clamp(46px, 6.4vw, 92px) -- restores the
+     mark as a real editorial counterweight to the title without letting it
+     take over the section. */
+  font-size: clamp(58px, 8vw, 116px);
   line-height: 1;
   letter-spacing: 0.01em;
   color: var(--muted);
@@ -636,7 +644,7 @@
     padding: 16px 20px 13px;
   }
   .home-featured-code {
-    font-size: clamp(44px, 15vw, 76px);
+    font-size: clamp(48px, 16vw, 84px);
   }
   .home-featured-caption {
     margin-left: 0;
