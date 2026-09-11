@@ -9,10 +9,10 @@ import { useNavigate } from "react-router-dom";
  * rabbit + CRT stay dominant on the right. A restrained left-to-transparent
  * scrim is the only readability treatment and it fades out before the rabbit.
  *
- * The call to action is a real search: it submits into the existing
- * `/search?q=` route (same navigation the old nav Search used), so typing a
- * phrase and pressing Enter — or pressing the circular Dive in button — lands
- * on the transcript-search results. An empty query never submits.
+ * The call to action is a real search: one composed control — a charcoal
+ * field with a text-only DIVE IN submit inside its right end — that posts
+ * into the existing `/search?q=` route (same navigation the old nav Search
+ * used). Enter or DIVE IN submits; an empty query never does.
  */
 export function HomeHero() {
   const navigate = useNavigate();
