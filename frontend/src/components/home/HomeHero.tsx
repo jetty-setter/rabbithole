@@ -36,12 +36,10 @@ export function HomeHero() {
       </div>
 
       <div className="home-hero">
-        <p className="home-hero-eyebrow">Follow curiosity.</p>
+        <p className="home-hero-eyebrow">Follow curiosity</p>
         <h1 className="home-h1">
           <span className="home-h1-line">See what&rsquo;s</span>
-          <span className="home-h1-line">
-            inside<span className="home-hero-dot">.</span>
-          </span>
+          <span className="home-h1-line">inside</span>
         </h1>
         <p className="home-hero-sub">
           Some things only make sense when you&rsquo;ve gone too far.
