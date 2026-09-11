@@ -153,16 +153,16 @@
   width: 430px;
   max-width: 100%;
   height: 52px;
-  /* A touch lighter than the first capsule pass -- it was blending into
-     the hero. Still a true charcoal, not a bright surface. */
-  background: #121016;
+  /* One more small lift -- it was still reading too close to the hero's
+     darkest corner. Still a true charcoal, not a bright surface. */
+  background: #16131b;
   /* Full capsule at this height (radius = height / 2), borrowing TUMBLE's
      rounded language -- but low-profile and dark rather than an oversized
      bright pill. */
   border-radius: 26px;
   box-shadow:
     /* a hairline edge, just enough definition to read as one object */
-    0 0 0 1px rgba(251, 245, 232, 0.1),
+    0 0 0 1px rgba(251, 245, 232, 0.13),
     /* restrained inset depth, not a deep recess */
     inset 0 1px 3px rgba(0, 0, 0, 0.5);
   transition: box-shadow 160ms ease, background 160ms ease;
@@ -171,9 +171,9 @@
 /* Focus: the edge warms toward violet and the depth reads a touch
    stronger -- no bright ring, no colour block. */
 .home-hero-search:focus-within {
-  background: #161319;
+  background: #1a1620;
   box-shadow:
-    0 0 0 1px rgba(178, 156, 248, 0.45),
+    0 0 0 1px rgba(178, 156, 248, 0.52),
     inset 0 1px 4px rgba(0, 0, 0, 0.6);
 }
 
@@ -220,16 +220,17 @@
   font-size: 13px;
   letter-spacing: 0.11em;
   text-transform: uppercase;
-  color: var(--violet-light);
+  /* One notch brighter than --violet-light -- a clean lavender-white,
+     still unmistakably violet, so the action reads clearly at rest. */
+  color: #d6cbfe;
   white-space: nowrap;
   cursor: pointer;
   transition: color 140ms ease, background 140ms ease;
 }
 
 .home-hero-search-submit:hover {
-  /* Brighter than any existing violet token -- a clean lavender-white,
-     still unmistakably violet, for the strongest state in the control. */
-  color: #d6cbfe;
+  /* Brighter still for the strongest state in the control. */
+  color: #e2d9ff;
   background: linear-gradient(
     90deg,
     transparent,
