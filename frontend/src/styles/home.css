@@ -390,7 +390,7 @@
 }
 
 .home-below-inner {
-  max-width: 1140px;
+  max-width: 1180px;
   margin: 0;
 }
 
@@ -402,26 +402,20 @@
   }
 }
 
-/* ── Latest RabbitHoles — the editorial index ──────────────────────────
-   Sits straight under the hero. A contents list, not cards: heading, then
-   title + one-line teaser + a quiet "Read RabbitHole" affordance.
-   Hierarchy is type, weight and space only — no rules, bars or dividers.
+/* ── Latest — the featured RabbitHole ───────────────────────────────────
+   A wide editorial spread, not a card: an eyebrow, then a title/copy
+   column set beside a large quiet typographic mark, with generous negative
+   space between them instead of a bounded box. No background, border or
+   rule — the section tone alone carries it. This is scaled for a single
+   featured piece; a future multi-item state should keep this treatment for
+   the newest item and add a tighter list below it, not replace it. */
 
-   Default (2+ published): a narrow single-column list, the first entry a
-   size up. Solo (exactly one published): a wide two-column opener — see
-   .home-latest--solo — so a single RabbitHole still reads as a deliberate
-   feature rather than one lonely line. */
-
-.home-latest {
-  max-width: 660px;
+.home-featured {
+  max-width: 1180px;
 }
 
-.home-latest--solo {
-  max-width: 1040px;
-}
-
-.home-latest-h {
-  margin: 0 0 32px;
+.home-featured-eyebrow {
+  margin: 0 0 36px;
   font-family: var(--display);
   font-size: 12px;
   font-weight: 700;
@@ -430,147 +424,104 @@
   color: var(--violet-soft);
 }
 
-.home-latest-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.home-featured-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 30rem) minmax(0, 1fr);
+  column-gap: clamp(40px, 7vw, 100px);
+  align-items: center;
 }
 
-.home-latest-item + .home-latest-item {
-  margin-top: 40px;
-}
-
-.home-latest-link {
-  display: block;
-  text-decoration: none;
-  color: inherit;
-}
-
-.home-latest-title {
-  margin: 0;
+.home-featured-title {
+  margin: 0 0 22px;
   font-family: var(--display);
-  font-weight: 700;
-  font-size: clamp(21px, 2.6vw, 27px);
-  line-height: 1.16;
-  letter-spacing: -0.02em;
+  font-weight: 800;
+  font-size: clamp(34px, 4.6vw, 60px);
+  line-height: 1.04;
+  letter-spacing: -0.024em;
   color: var(--text);
   text-wrap: balance;
+}
+
+.home-featured-hook {
+  margin: 0 0 30px;
+  max-width: 46ch;
+  font-size: clamp(16px, 1.7vw, 18px);
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.home-featured-action {
+  display: inline-block;
+  text-decoration: none;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--violet-soft);
   transition: color 140ms ease;
 }
 
-.home-latest-item.is-lead .home-latest-title {
-  font-size: clamp(26px, 3.6vw, 38px);
-  line-height: 1.1;
-}
-
-.home-latest-link:hover .home-latest-title,
-.home-latest-link:focus-visible .home-latest-title {
-  color: var(--violet-soft);
-}
-
-.home-latest-hook {
-  margin: 10px 0 0;
-  max-width: 52ch;
-  font-size: clamp(15px, 1.6vw, 16.5px);
-  line-height: 1.55;
-  color: var(--muted);
-}
-
-.home-latest-item.is-lead .home-latest-hook {
-  max-width: 46ch;
-  font-size: clamp(16px, 1.9vw, 18px);
-  line-height: 1.5;
-  color: var(--text);
-}
-
-.home-latest-action {
-  display: inline-block;
-  margin-top: 14px;
-  font-family: var(--sans);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--violet-soft);
-}
-
-.home-latest-arrow {
-  display: inline-block;
-  transition: transform 150ms ease;
-}
-
-.home-latest-link:hover .home-latest-action,
-.home-latest-link:focus-visible .home-latest-action {
+.home-featured-action:hover,
+.home-featured-action:focus-visible {
   color: var(--violet-light);
 }
 
-.home-latest-link:hover .home-latest-arrow,
-.home-latest-link:focus-visible .home-latest-arrow {
-  transform: translateX(3px);
+/* The visual side: the recorded signal-strength string from the original
+   printout, set at a scale that reads from across the page. Quiet tone so
+   it stays secondary to the hero and to the title's ivory. */
+.home-featured-visual {
+  text-align: right;
 }
 
-/* ── Solo feature: one published RabbitHole ────────────────────────────
-   A magazine opener, not a card. The link becomes a two-column grid:
-   a dominant title on the left, the hook and read action on the right.
-   No background, border or box — it rides the section tone; the interest
-   is the scale jump and the column break. Collapses to one stacked
-   column at ≤900px (title first, then hook + action). */
-.home-latest--solo .home-latest-link {
-  display: grid;
-  grid-template-columns: minmax(0, 28rem) minmax(0, 21rem);
-  column-gap: clamp(28px, 3vw, 52px);
-  align-items: start;
-}
-
-.home-latest--solo .home-latest-title {
-  font-size: clamp(29px, 4vw, 46px);
-  line-height: 1.05;
-  letter-spacing: -0.026em;
-}
-
-.home-latest--solo .home-latest-text {
-  padding-top: 6px;
-  max-width: 40ch;
-}
-
-.home-latest--solo .home-latest-hook {
+.home-featured-code {
   margin: 0;
-  font-size: clamp(15px, 1.55vw, 17px);
-  line-height: 1.55;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-weight: 600;
+  font-size: clamp(64px, 9vw, 148px);
+  line-height: 1;
+  letter-spacing: 0.01em;
   color: var(--muted);
 }
 
-.home-latest--solo .home-latest-action {
-  margin-top: 22px;
-  font-size: 13.5px;
+.home-featured-caption {
+  margin: 18px 0 0;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0.7;
 }
 
 /* Stacked layout: the hero copy sits at the mobile gutter, so the sections
    below drop their desktop left inset and share that gutter. The 100vw /
    calc(50% - 50vw) full-bleed self-adjusts to .page's padding at every
-   width, so only the inner padding changes here. */
+   width, so only the inner padding changes here. Order is title, hook,
+   action, then the visual mark below as support, never interrupting it. */
 @media (max-width: 900px) {
   .home-below {
     padding: 28px var(--gutter-mobile) clamp(48px, 9vh, 76px);
   }
-  /* Solo feature stacks: title first, then hook + read action below it. */
-  .home-latest--solo .home-latest-link {
+  .home-featured-grid {
     grid-template-columns: 1fr;
-    row-gap: 14px;
+    row-gap: 40px;
   }
-  .home-latest--solo .home-latest-text {
-    padding-top: 0;
-    max-width: none;
+  .home-featured-title {
+    font-size: clamp(28px, 7.6vw, 36px);
   }
-  .home-latest--solo .home-latest-title {
-    font-size: clamp(26px, 7.4vw, 34px);
+  .home-featured-visual {
+    text-align: left;
+  }
+  .home-featured-code {
+    font-size: clamp(48px, 17vw, 84px);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .home-hero-search-submit,
-  .home-latest-title,
-  .home-latest-action,
-  .home-latest-arrow {
+  .home-featured-action {
     transition: none;
   }
 }
