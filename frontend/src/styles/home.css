@@ -134,66 +134,47 @@
   text-wrap: balance;
 }
 
-/* Hero search: a real <form> — an <input> and a submit <button> — styled
-   as one composed control, not two separate objects. The circular submit
-   overlaps the field's right edge by ~15-20% of its own diameter (the
-   field continues visually behind it, via reserved padding rather than a
-   z-index trick) so the two read as one interaction without the disc
-   reading as a giant knob. Near-black charcoal field, solid-violet disc,
-   warm-ivory text throughout. No arrow, chevron, icon, glow, shadow,
-   gradient, divider or pill. */
+/* Hero search: one composed editorial control. A near-black charcoal
+   field, and inside its right end a text-only DIVE IN submit — same
+   background, no second shape, no border of its own; set apart only by
+   RabbitHole violet and weight. Quiet and cinematic, capped well short of
+   the rabbit/CRT. No circle, arrow, chevron, icon, glow, shadow, gradient,
+   divider or pill. */
 .home-hero-search {
-  /* --dive-size/--dive-overlap drive both the disc and the field's own
-     reserved space for it -- the disc's right edge always lands flush
-     with this container's right edge (never past it, so this can never
-     be the source of horizontal overflow), and exactly --dive-overlap of
-     it sits over the field. Sized as a submit control, not a hero focal
-     point -- the rabbit, CRT and headline stay what the eye lands on. */
-  --dive-size: 58px;
-  --dive-overlap: 10px;
-  position: relative;
-  /* A touch wider than the headline column so it reads as its own line of
-     the composition, never so wide it reaches the rabbit. Slightly
-     lengthened from the field's original width to keep the control
-     balanced now that the disc reads smaller. Shrinks to the available
-     width on narrow screens. */
-  width: 480px;
+  display: flex;
+  align-items: stretch;
+  /* Roomy enough to read as its own line of the composition, never so wide
+     it reaches the rabbit. Shrinks to the available width on narrow
+     screens. */
+  width: 500px;
   max-width: 100%;
-}
-
-.home-hero-search-input {
-  display: block;
-  /* Leaves exactly the disc's non-overlapping width clear on the right,
-     inside this same container -- the field's own box already ends where
-     the disc's outer edge does. */
-  width: calc(100% - (var(--dive-size) - var(--dive-overlap)));
   height: 52px;
-  /* Right padding clears the overlapping sliver of the disc (plus a
-     little air) so typed text never runs under it. */
-  padding: 0 calc(var(--dive-overlap) + 16px) 0 18px;
-  font-family: var(--sans);
-  font-size: 15px;
-  color: var(--text);
-  /* Near-black charcoal, no violet cast -- recedes into the dark room so
-     it never competes with the artwork. */
   background: #101014;
   border: 1px solid rgba(251, 245, 232, 0.14);
   border-radius: 6px;
   transition: border-color 140ms ease;
 }
 
-.home-hero-search-input::placeholder {
-  color: var(--muted);
+.home-hero-search:focus-within {
+  border-color: rgba(178, 156, 248, 0.5);
 }
 
-/* Focus: a quiet violet edge for pointer focus; keyboard focus keeps the
-   global :focus-visible ring on top of it (only the non-keyboard outline
-   is suppressed). */
-.home-hero-search-input:focus {
-  border-color: rgba(178, 156, 248, 0.55);
+.home-hero-search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  padding: 0 10px 0 18px;
+  font-family: var(--sans);
+  font-size: 15px;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  border-radius: 0;
 }
-.home-hero-search-input:focus:not(:focus-visible) {
-  outline: none;
+
+.home-hero-search-input::placeholder {
+  color: var(--muted);
+  letter-spacing: 0.04em;
 }
 
 .home-hero-search-input::-webkit-search-cancel-button,
@@ -202,47 +183,45 @@
   appearance: none;
 }
 
-/* The submit: a true circle, label inside, no icon. A solid, deliberately
-   quieter violet fill -- darker and less saturated than Tumble's, so the
-   disc supports the hero instead of competing with it, while still
-   reading as clearly violet (not lavender, not aubergine, not burgundy).
-   The label is uppercase "DIVE / IN": editorial, a little severe.
-   Warm-ivory text clears AA comfortably on the deep-violet fill. */
+/* Text-only submit: no box, no border, same ground as the field. It is
+   the control's tail — differentiated by violet + semibold weight and a
+   generous right inset, never by a shape of its own. */
 .home-hero-search-submit {
-  position: absolute;
-  top: 50%;
-  right: 0;
-  width: var(--dive-size);
-  height: var(--dive-size);
-  display: grid;
-  place-items: center;
-  /* Enough horizontal inset that "DIVE IN" can't sit on one line -- it
-     breaks at the space to the intended two-line "DIVE / IN" stack, while
-     staying clear of the disc's curved edge at this smaller diameter. */
-  padding: 0 11px;
+  flex: none;
+  height: 100%;
+  padding: 0 20px 0 14px;
+  background: transparent;
   border: none;
-  border-radius: 50%;
-  background: var(--violet-deep);
-  color: var(--text);
+  border-radius: 0;
   font-family: var(--sans);
   font-weight: 600;
-  font-size: 9.5px;
-  line-height: 1.1;
-  letter-spacing: 0.05em;
+  font-size: 13px;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
-  text-align: center;
+  color: var(--violet-soft);
+  white-space: nowrap;
   cursor: pointer;
-  transition: background 140ms ease, transform 140ms ease;
-  transform: translateY(-50%);
+  transition: color 140ms ease;
 }
 
 .home-hero-search-submit:hover {
-  background: var(--violet);
-  transform: translateY(-50%) scale(1.02);
+  color: var(--violet-light);
 }
 
-.home-hero-search-submit:active {
-  transform: translateY(-50%) scale(0.98);
+/* Keyboard focus: a restrained violet ring. Focus in the field rings the
+   whole control; focus on DIVE IN rings just its tail. Pointer focus stays
+   clean. */
+.home-hero-search :focus {
+  outline: none;
+}
+.home-hero-search:has(.home-hero-search-input:focus-visible) {
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
+}
+.home-hero-search-submit:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: -3px;
+  border-radius: 5px;
 }
 
 /* ── Hero: compact desktop / tablet landscape (901–1080px) ─────────────── */
@@ -263,10 +242,10 @@
   .home-h1 {
     font-size: clamp(33px, 4vw, 46px);
   }
-  /* The rabbit sits closer to the copy in this band -- trim the field so
-     the disc keeps clear air. */
+  /* The rabbit sits closer to the copy in this band -- trim the control so
+     it keeps clear air. */
   .home-hero-search {
-    width: 434px;
+    width: 440px;
   }
 }
 
@@ -327,23 +306,16 @@
     margin-bottom: 22px;
     text-shadow: none;
   }
-  /* Phone / small tablet: the field takes the column width, capped so it
-     doesn't stretch absurdly wide on tablets; the disc shrinks a touch
-     further but stays a comfortable touch target, keeps the same overlap
-     proportions and never leaves the field's own box, so there's no
-     overflow risk at any phone width. */
+  /* Phone / small tablet: the control takes the column width, capped so it
+     doesn't stretch absurdly wide on tablets. DIVE IN keeps its inset. */
   .home-hero-search {
-    --dive-size: 52px;
-    --dive-overlap: 9px;
     width: 100%;
     max-width: 520px;
-  }
-  .home-hero-search-input {
     height: 50px;
   }
   .home-hero-search-submit {
-    padding: 0 9px;
-    font-size: 8.75px;
+    padding: 0 16px 0 12px;
+    font-size: 12px;
   }
 }
 
