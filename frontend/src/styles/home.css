@@ -134,29 +134,45 @@
   text-wrap: balance;
 }
 
-/* Hero search: one composed editorial control. A near-black charcoal
-   field, and inside its right end a text-only DIVE IN submit — same
-   background, no second shape, no border of its own; set apart only by
-   RabbitHole violet and weight. Quiet and cinematic, capped well short of
-   the rabbit/CRT. No circle, arrow, chevron, icon, glow, shadow, gradient,
-   divider or pill. */
+/* Hero search: one composed control styled as a recessed analog console
+   slot — a matte near-black face set *into* the dark left negative space,
+   not a form field floating on it. Depth comes from a soft top inset
+   shadow (the panel above casting into the opening) and a barely-there
+   lower inner lip catching the room's light; no outer border, no glow, no
+   bevel, no gradient sheen. Inside: the <input> fills the slot, and its
+   right end — a whisper lighter, no line between them — is the DIVE IN
+   commit zone. No circle, badge, divider, arrow, chevron, icon or pill. */
 .home-hero-search {
   display: flex;
   align-items: stretch;
-  /* Roomy enough to read as its own line of the composition, never so wide
-     it reaches the rabbit. Shrinks to the available width on narrow
-     screens. */
-  width: 500px;
+  overflow: hidden;
+  /* A little narrower and a little taller than a utility search bar, so
+     the proportion reads as a slot rather than a toolbar. Never wide
+     enough to reach the rabbit; shrinks on narrow screens. */
+  width: 470px;
   max-width: 100%;
-  height: 52px;
-  background: #101014;
-  border: 1px solid rgba(251, 245, 232, 0.14);
-  border-radius: 6px;
-  transition: border-color 140ms ease;
+  height: 54px;
+  /* Sits at the page's own near-black so it never reads as a lighter panel
+     laid on top; the depth is entirely in the shadows. */
+  background: #060507;
+  border-radius: 4px;
+  box-shadow:
+    /* crisp cut edge at the top of the opening */
+    inset 0 1px 1px rgba(0, 0, 0, 0.9),
+    /* soft shadow falling into the recess */
+    inset 0 7px 11px -5px rgba(0, 0, 0, 0.7),
+    /* faint lower inner lip catching the room's light */
+    inset 0 -1px 0 rgba(251, 245, 232, 0.055);
+  transition: box-shadow 160ms ease;
 }
 
+/* Focus: the recess deepens a touch — it "wakes up" without a colour
+   change or a bright edge. */
 .home-hero-search:focus-within {
-  border-color: rgba(178, 156, 248, 0.5);
+  box-shadow:
+    inset 0 1px 1px rgba(0, 0, 0, 0.95),
+    inset 0 8px 13px -5px rgba(0, 0, 0, 0.8),
+    inset 0 -1px 0 rgba(251, 245, 232, 0.08);
 }
 
 .home-hero-search-input {
@@ -174,7 +190,6 @@
 
 .home-hero-search-input::placeholder {
   color: var(--muted);
-  letter-spacing: 0.04em;
 }
 
 .home-hero-search-input::-webkit-search-cancel-button,
@@ -183,14 +198,18 @@
   appearance: none;
 }
 
-/* Text-only submit: no box, no border, same ground as the field. It is
-   the control's tail — differentiated by violet + semibold weight and a
-   generous right inset, never by a shape of its own. */
+/* The commit zone: the same slot face, warmed a hair toward its right end
+   by a dark-on-dark tonal fade — no line, block, box or hard edge. Set
+   apart by RabbitHole violet + semibold weight + a generous right inset. */
 .home-hero-search-submit {
   flex: none;
   height: 100%;
-  padding: 0 20px 0 14px;
-  background: transparent;
+  padding: 0 20px 0 16px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(251, 245, 232, 0.032) 65%
+  );
   border: none;
   border-radius: 0;
   font-family: var(--sans);
@@ -201,16 +220,21 @@
   color: var(--violet-soft);
   white-space: nowrap;
   cursor: pointer;
-  transition: color 140ms ease;
+  transition: color 140ms ease, background 140ms ease;
 }
 
 .home-hero-search-submit:hover {
   color: var(--violet-light);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(251, 245, 232, 0.05) 65%
+  );
 }
 
-/* Keyboard focus: a restrained violet ring. Focus in the field rings the
-   whole control; focus on DIVE IN rings just its tail. Pointer focus stays
-   clean. */
+/* Keyboard focus: a restrained violet ring — the whole slot when the
+   field holds focus, just the commit zone when DIVE IN does. Pointer
+   focus stays clean (the recess-deepen handles it). */
 .home-hero-search :focus {
   outline: none;
 }
@@ -221,7 +245,7 @@
 .home-hero-search-submit:focus-visible {
   outline: 2px solid var(--violet);
   outline-offset: -3px;
-  border-radius: 5px;
+  border-radius: 4px;
 }
 
 /* ── Hero: compact desktop / tablet landscape (901–1080px) ─────────────── */
@@ -242,10 +266,10 @@
   .home-h1 {
     font-size: clamp(33px, 4vw, 46px);
   }
-  /* The rabbit sits closer to the copy in this band -- trim the control so
+  /* The rabbit sits closer to the copy in this band -- trim the slot so
      it keeps clear air. */
   .home-hero-search {
-    width: 440px;
+    width: 420px;
   }
 }
 
@@ -306,12 +330,13 @@
     margin-bottom: 22px;
     text-shadow: none;
   }
-  /* Phone / small tablet: the control takes the column width, capped so it
-     doesn't stretch absurdly wide on tablets. DIVE IN keeps its inset. */
+  /* Phone / small tablet: the slot takes the column width, capped so it
+     doesn't stretch absurdly wide on tablets. The recess and commit zone
+     carry over unchanged. */
   .home-hero-search {
     width: 100%;
-    max-width: 520px;
-    height: 50px;
+    max-width: 480px;
+    height: 52px;
   }
   .home-hero-search-submit {
     padding: 0 16px 0 12px;
