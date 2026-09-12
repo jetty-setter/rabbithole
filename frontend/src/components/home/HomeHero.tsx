@@ -49,7 +49,7 @@ export function HomeHero() {
             ref={inputRef}
             type="search"
             className="home-hero-search-input"
-            placeholder="Dig deep..."
+            placeholder="Search..."
             aria-label="Search RabbitHole transcripts"
             value={query}
             onChange={(e) => setQuery(e.target.value)}

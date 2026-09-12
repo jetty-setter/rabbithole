@@ -130,15 +130,15 @@
   text-wrap: balance;
 }
 
-/* Hero search: one composed control, capsule-shaped like TUMBLE but dark,
-   matte and quiet instead of a bright filled pill. A charcoal surface (a
-   step lighter than the hero-black behind it, so it reads as its own
-   object instead of dissolving into the photo) with a hairline edge and a
-   restrained inset shadow for a touch of embedded depth. Inside: the
-   <input> fills the capsule, and its right end — warmed a hair by a
-   dark-on-dark tonal fade, no line between them — is the DIVE IN commit
-   zone. No circle, badge, divider, arrow, chevron, icon or separate
-   button shape. */
+/* Hero search: one composed control -- a softly rounded rectangle, not a
+   capsule or pill, so it reads as a functional search field rather than
+   a novelty shape. A charcoal surface (a step lighter than the hero-
+   black behind it, so it reads as its own object instead of dissolving
+   into the photo) with a hairline edge and a restrained inset shadow for
+   a touch of embedded depth. Inside: the <input> fills the field, and
+   its right end — warmed a hair by a dark-on-dark tonal fade, no line
+   between them — is the DIVE IN commit zone. No circle, badge, divider,
+   arrow, chevron, icon or separate button shape. */
 .home-hero-search {
   display: flex;
   align-items: stretch;
@@ -152,11 +152,9 @@
   /* One more small lift -- it was still reading too close to the hero's
      darkest corner. Still a true charcoal, not a bright surface. */
   background: #16131b;
-  /* The input side keeps the full capsule curve; the button side is
-     softened to the shared action-button radius (see .home-hero-search-
-     submit) so DIVE IN reads as the same button family as READ
-     RABBITHOLE rather than a quarter-pill end-cap. */
-  border-radius: 26px 8px 8px 26px;
+  /* A shared, modest radius across the whole field (matched by DIVE IN's
+     own right-corner radius below) -- soft, not a stadium/pill. */
+  border-radius: 14px;
   box-shadow:
     /* a hairline edge, just enough definition to read as one object */
     0 0 0 1px rgba(251, 245, 232, 0.13),
@@ -197,23 +195,22 @@
   appearance: none;
 }
 
-/* The commit zone: a real filled button integrated into the capsule's
-   right end. This is the RabbitHole action-button standard that
-   .home-featured-action (READ RABBITHOLE) shares exactly -- same fill,
-   radius, height-driven sizing, type and interaction states -- so the
-   two read as one button family, not two different styles that happen
-   to both be violet. Deeper, moodier violet than TUMBLE's -- DIVE IN is
-   a strong action but subordinate to the nav-level CTA. Warm-ivory text
-   clears AA on this fill (near-black does not -- checked both). No
-   icon, arrow, divider, glow or shadow -- the fill alone signals
-   "button". */
+/* The commit zone: a real filled button integrated into the field's
+   right end, its outer corners matching the field's own softened
+   radius so the two stay one shape. Deeper, moodier violet than
+   TUMBLE's -- DIVE IN is a strong action but subordinate to the nav-
+   level CTA. Warm-ivory text clears AA on this fill (near-black does
+   not -- checked both). No icon, arrow, divider, glow or shadow -- the
+   fill alone signals "button". Related to READ RABBITHOLE through the
+   same violet family and typography, but not forced into an identical
+   standalone button shape -- DIVE IN stays a search end-cap. */
 .home-hero-search-submit {
   flex: none;
   height: 100%;
   padding: 0 20px;
   background: var(--violet-deep);
   border: none;
-  border-radius: 0 8px 8px 0;
+  border-radius: 0 14px 14px 0;
   font-family: var(--sans);
   font-weight: 600;
   font-size: 13px;
@@ -329,21 +326,17 @@
     margin-bottom: 22px;
     text-shadow: none;
   }
-  /* Phone / small tablet: the capsule takes the column width, capped so it
+  /* Phone / small tablet: the field takes the column width, capped so it
      doesn't stretch absurdly wide on tablets, and sits a touch lower/
-     tighter. Button-side radius stays the shared 8px action-button value
-     at every width, so DIVE IN and READ RABBITHOLE never diverge. */
+     tighter. Radius is the same shared 14px value as desktop -- it never
+     needed a pill-specific mobile override once it stopped being a pill. */
   .home-hero-search {
     width: 100%;
     max-width: 440px;
     height: 50px;
-    border-radius: 25px 8px 8px 25px;
   }
   .home-hero-search-input {
     padding-left: 22px;
-  }
-  .home-hero-search-submit {
-    border-radius: 0 8px 8px 0;
   }
 }
 
@@ -471,18 +464,18 @@
   color: var(--muted);
 }
 
-/* The same RabbitHole action-button standard as DIVE IN (see
-   .home-hero-search-submit) -- identical fill, radius, height and type,
-   so the two read as one button family rather than two different
-   styles that happen to share a color. Width stays content-driven (no
-   fixed width), so READ RABBITHOLE is naturally narrower than DIVE IN
-   without being a smaller button. No icon, arrow, underline,
-   border-only treatment, glow or shadow. */
+/* A standalone RabbitHole action button -- same violet family, uppercase
+   type, weight and hover behavior as DIVE IN, and similarly soft
+   corners, but not forced into DIVE IN's exact geometry: it's a
+   secondary content action, not the search commit, so it stays a touch
+   smaller and quieter (~88% of DIVE IN's height, a little less
+   horizontal padding). Width stays content-driven (no fixed width). No
+   icon, arrow, underline, border-only treatment, glow or shadow. */
 .home-featured-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 52px;
+  height: 46px;
   text-decoration: none;
   font-family: var(--sans);
   font-weight: 600;
@@ -491,7 +484,7 @@
   text-transform: uppercase;
   background: var(--violet-deep);
   color: var(--text);
-  padding: 0 20px;
+  padding: 0 18px;
   border-radius: 8px;
   transition: background 140ms ease;
 }
@@ -637,10 +630,10 @@
   .home-featured-caption {
     margin-left: 0;
   }
-  /* Mirrors DIVE IN's height at this breakpoint (see .home-hero-search)
-     so the two buttons stay the same size relative to each other. */
+  /* Stays ~88% of DIVE IN's 50px height at this breakpoint (see
+     .home-hero-search), matching the desktop proportion. */
   .home-featured-action {
-    height: 50px;
+    height: 44px;
   }
   .home-latest-index {
     margin-top: 52px;
