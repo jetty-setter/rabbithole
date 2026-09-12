@@ -197,16 +197,17 @@
 }
 
 /* The commit zone: a real filled button integrated into the capsule's
-   right end -- solid RabbitHole violet, rounded to match the capsule's
-   own curve on its outer (right) corners only, so field and button still
-   read as one shape. Near-black text on the violet fill clears AA
-   comfortably (warm ivory on this violet does not -- checked both). No
-   icon, arrow, divider, glow or shadow -- the fill alone signals "button". */
+   right end, rounded to match the capsule's own curve on its outer
+   (right) corners only, so field and button still read as one shape.
+   Deeper, moodier violet than TUMBLE's -- DIVE IN is a strong action but
+   subordinate to the nav-level CTA. Warm-ivory text clears AA on this
+   fill (near-black does not -- checked both). No icon, arrow, divider,
+   glow or shadow -- the fill alone signals "button". */
 .home-hero-search-submit {
   flex: none;
   height: 100%;
   padding: 0 20px;
-  background: var(--violet);
+  background: var(--violet-deep);
   border: none;
   border-radius: 0 26px 26px 0;
   font-family: var(--sans);
@@ -214,15 +215,15 @@
   font-size: 13px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #050505;
+  color: var(--text);
   white-space: nowrap;
   cursor: pointer;
   transition: background 140ms ease;
 }
 
 .home-hero-search-submit:hover {
-  /* Brighter fill for the strongest state -- same step TUMBLE uses. */
-  background: var(--violet-light);
+  /* A restrained brighten within the same deep-violet family. */
+  background: var(--violet-deep-hover);
 }
 
 /* Keyboard focus: a restrained violet ring on the field; the button gets
@@ -467,11 +468,11 @@
   color: var(--muted);
 }
 
-/* A compact filled pill -- the same RabbitHole violet family as TUMBLE
-   and DIVE IN, so all three read as one interactive language, but
-   smaller and quieter than TUMBLE (less padding, smaller type) since
-   this is a secondary action, not the primary nav CTA. No icon, arrow,
-   underline, border-only treatment, glow or shadow. */
+/* A compact filled button -- the same deep-violet family as DIVE IN
+   (quieter than TUMBLE's brighter primary accent), softly rounded rather
+   than a full pill, and smaller/quieter than DIVE IN since this is a
+   secondary content action. No icon, arrow, underline, border-only
+   treatment, glow or shadow. */
 .home-featured-action {
   display: inline-flex;
   align-items: center;
@@ -481,16 +482,16 @@
   font-size: 11.5px;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  background: var(--violet);
-  color: #050505;
+  background: var(--violet-deep);
+  color: var(--text);
   padding: 7px 15px;
-  border-radius: 999px;
+  border-radius: 8px;
   transition: background 140ms ease;
 }
 
 .home-featured-action:hover,
 .home-featured-action:focus-visible {
-  background: var(--violet-light);
+  background: var(--violet-deep-hover);
 }
 
 /* The visual side: a crop of the real 1977 printout, not a designed

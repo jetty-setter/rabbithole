@@ -25,6 +25,11 @@
      (Tumble) does. Darkened and slightly desaturated, not just dimmed, so
      it stays violet rather than sliding toward aubergine or brown. */
   --violet-deep: #6d5aa8;
+  /* A restrained one-step brighten off --violet-deep for its own hover
+     state -- clearly still the deep, moody family (not a jump up to the
+     brighter --violet tier), while keeping warm-ivory text at ≥4.5:1 in
+     both rest and hover. */
+  --violet-deep-hover: #7660b3;
   /* Warm coral — the second, sparingly-used accent. Muted on purpose: it
      marks an epistemic state ("debunked") and warm editorial detail, never
      an error. Distinct from --danger, which stays reserved for real alerts. */
