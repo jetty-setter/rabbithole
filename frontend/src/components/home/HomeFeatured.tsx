@@ -32,7 +32,7 @@ const WOW_SIGNAL = {
   image: {
     src: "/Wow_Signal_Archive_Crop_Wide.webp",
     alt: 'Scan of the 1977 Wow! Signal computer printout with Jerry Ehman’s handwritten "Wow!" annotation and circled signal data.',
-    caption: "Big Ear Radio Observatory · August 15, 1977",
+    caption: "Big Ear Radio Observatory · Ohio State · August 15, 1977",
   },
 };
 

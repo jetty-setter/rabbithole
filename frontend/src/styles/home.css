@@ -212,13 +212,14 @@
   border: none;
   border-radius: 0;
   font-family: var(--sans);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 13px;
-  letter-spacing: 0.11em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  /* One notch brighter than --violet-light -- a clean lavender-white,
-     still unmistakably violet, so the action reads clearly at rest. */
-  color: #d6cbfe;
+  /* The interactive-action violet -- clearly more saturated and brighter
+     than the eyebrow's --violet-light, so this reads as something you
+     click rather than an editorial label. */
+  color: var(--violet-action);
   white-space: nowrap;
   cursor: pointer;
   transition: color 140ms ease, background 140ms ease;
@@ -226,7 +227,7 @@
 
 .home-hero-search-submit:hover {
   /* Brighter still for the strongest state in the control. */
-  color: #e2d9ff;
+  color: var(--violet-action-hover);
   background: linear-gradient(
     90deg,
     transparent,
@@ -481,21 +482,21 @@
   display: inline-block;
   text-decoration: none;
   font-family: var(--sans);
-  /* Medium/semibold, not bold -- visible and clearly an action, but still
-     editorial text rather than a shouted label. */
-  font-weight: 600;
+  /* A touch stronger than before -- visible authority as an action, but
+     still editorial text rather than a shouted label or a button. */
+  font-weight: 700;
   font-size: 13.5px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  /* A touch brighter than --violet-light so the action reads a little more
-     readily at rest -- still editorial text, no button/border/icon. */
-  color: #d3c7ff;
+  /* The same interactive-action violet as DIVE IN, so the two actions read
+     as one consistent "this is clickable" language across the page. */
+  color: var(--violet-action);
   transition: color 140ms ease;
 }
 
 .home-featured-action:hover,
 .home-featured-action:focus-visible {
-  color: var(--text);
+  color: var(--violet-action-hover);
 }
 
 /* The visual side: a crop of the real 1977 printout, not a designed
@@ -512,8 +513,13 @@
 }
 
 .home-featured-caption {
-  margin: 14px 0 0;
-  max-width: 30ch;
+  /* Brought in closer so it reads as tied to the document, not a floating
+     footnote. */
+  margin: 8px 0 0;
+  /* Wide enough that the full one-line credit fits at normal desktop
+     widths without wrapping; still bounded so it wraps gracefully if the
+     image column itself ever gets narrower than this. */
+  max-width: 64ch;
   margin-left: auto;
   font-family: var(--sans);
   font-size: 11px;
