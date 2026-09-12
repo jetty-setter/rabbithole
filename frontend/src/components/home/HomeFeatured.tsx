@@ -17,11 +17,23 @@ import { Link } from "react-router-dom";
  * This component renders only the lead feature (title, hook, action,
  * visual). The "Latest" eyebrow and any subsequent, tighter index rows for
  * further published RabbitHoles live in the wrapping <HomeLatest>.
+ *
+ * The visual is a crop of the real 1977 printout (Wow_Signal_Archive_Crop_
+ * Wide.webp, in public/) rather than a typeset recreation — an actual
+ * historical artifact reads as more honest here than a designed graphic.
+ * Source: Big Ear Radio Observatory, Ohio State University, August 15,
+ * 1977. Via Wikimedia Commons, listed there as public domain / ineligible
+ * for copyright (factual data + a handwritten annotation).
  */
 const WOW_SIGNAL = {
   slug: "the-wow-signal",
   title: "The Wow! Signal",
   hook: "For 72 seconds in 1977, a radio telescope in Ohio picked up a signal unlike anything astronomers expected. Jerry Ehman circled the printout and wrote one word beside it: Wow! It was never detected again.",
+  image: {
+    src: "/Wow_Signal_Archive_Crop_Wide.webp",
+    alt: 'Scan of the 1977 Wow! Signal computer printout with Jerry Ehman’s handwritten "Wow!" annotation and circled signal data.',
+    caption: "Big Ear Radio Observatory · August 15, 1977",
+  },
 };
 
 export function HomeFeatured() {
@@ -38,20 +50,14 @@ export function HomeFeatured() {
             Read RabbitHole
           </Link>
         </div>
-        {/* The recorded signal strength code from the original printout,
-            not a decorative graphic — this is the one piece of real
-            visual material a typographic-only treatment can use honestly.
-            The plate behind it is a flat, faint tone plus a static grain
-            texture (no gradient, no glow) meant to read as archival paper,
-            not a designed effect. */}
-        <div className="home-featured-visual" aria-hidden="true">
-          <div className="home-featured-plate">
-            <p className="home-featured-code">6EQUJ5</p>
-          </div>
-          <p className="home-featured-caption">
-            Big Ear Radio Observatory &middot; Ohio State &middot; August 15,
-            1977
-          </p>
+        <div className="home-featured-visual">
+          <img
+            src={WOW_SIGNAL.image.src}
+            alt={WOW_SIGNAL.image.alt}
+            className="home-featured-image"
+            loading="lazy"
+          />
+          <p className="home-featured-caption">{WOW_SIGNAL.image.caption}</p>
         </div>
       </div>
     </article>
