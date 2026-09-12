@@ -427,21 +427,21 @@
 
 /* ── The lead feature ─────────────────────────────────────────────────
    A wide editorial spread, not a card: a title/copy column set close
-   beside a large quiet typographic mark, with deliberate negative space
+   beside the real archival printout crop, with deliberate negative space
    around the pair rather than one stretched across the full measure. No
    background, border or rule on the article itself — the section tone
    alone carries it. */
 
 .home-featured {
-  max-width: 960px;
+  max-width: 1000px;
 }
 
 .home-featured-grid {
   display: grid;
-  /* The visual column widened (22rem -> 28rem) so the larger 6EQUJ5 mark
-     has room to sit farther right and read as a real counterweight to the
-     title column, not a shrunken afterthought beside it. */
-  grid-template-columns: minmax(0, 27rem) minmax(0, 28rem);
+  /* Image column sized so the printout renders at roughly 45-52% of the
+     feature's own width on large desktop -- present enough to counter-
+     weight the title without overpowering it. */
+  grid-template-columns: minmax(0, 27rem) minmax(0, 30rem);
   column-gap: clamp(36px, 5.5vw, 68px);
   align-items: center;
 }
@@ -469,9 +469,11 @@
   display: inline-block;
   text-decoration: none;
   font-family: var(--sans);
-  font-weight: 800;
+  /* Medium/semibold, not bold -- visible and clearly an action, but still
+     editorial text rather than a shouted label. */
+  font-weight: 600;
   font-size: 13.5px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   /* A touch brighter than --violet-light so the action reads a little more
      readily at rest -- still editorial text, no button/border/icon. */
@@ -484,50 +486,21 @@
   color: var(--text);
 }
 
-/* The visual side: the recorded signal-strength string from the original
-   printout, set at a scale that still reads from across the page but sits
-   close to the text column instead of pinned to the far edge. Quiet tone
-   so it stays secondary to the hero and to the title's ivory. */
-.home-featured-visual {
-  text-align: right;
-}
-
-.home-featured-plate {
-  position: relative;
-  display: inline-block;
-  padding: 20px 24px 16px;
-  background-color: #14101b;
-  box-shadow: 0 22px 48px -30px rgba(0, 0, 0, 0.65);
-}
-
-/* A static, monochrome grain — archival paper, not a designed effect.
-   Flat fill, no gradient, no glow. */
-.home-featured-plate::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0.05;
-  mix-blend-mode: overlay;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-.home-featured-code {
-  position: relative;
-  margin: 0;
-  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-  font-weight: 600;
-  /* ~25% larger than the previous clamp(46px, 6.4vw, 92px) -- restores the
-     mark as a real editorial counterweight to the title without letting it
-     take over the section. */
-  font-size: clamp(58px, 8vw, 116px);
-  line-height: 1;
-  letter-spacing: 0.01em;
-  color: var(--muted);
+/* The visual side: a crop of the real 1977 printout, not a designed
+   recreation. Shown at its native proportions -- nothing cropped further,
+   nothing distorted -- so the handwritten "Wow!" and the circled signal
+   stay intact at every width. No card, border, shadow or frame; the only
+   concession to sitting on a near-black section is a hair off full
+   brightness/contrast so the paper doesn't read as a lit rectangle. */
+.home-featured-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: brightness(0.94) contrast(0.97);
 }
 
 .home-featured-caption {
-  margin: 16px 0 0;
+  margin: 14px 0 0;
   max-width: 30ch;
   margin-left: auto;
   font-family: var(--sans);
@@ -636,15 +609,6 @@
   }
   .home-featured-title {
     font-size: clamp(28px, 7.6vw, 36px);
-  }
-  .home-featured-visual {
-    text-align: left;
-  }
-  .home-featured-plate {
-    padding: 16px 20px 13px;
-  }
-  .home-featured-code {
-    font-size: clamp(48px, 16vw, 84px);
   }
   .home-featured-caption {
     margin-left: 0;
