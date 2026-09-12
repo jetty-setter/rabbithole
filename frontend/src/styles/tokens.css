@@ -25,6 +25,13 @@
      (Tumble) does. Darkened and slightly desaturated, not just dimmed, so
      it stays violet rather than sliding toward aubergine or brown. */
   --violet-deep: #6d5aa8;
+  /* The interactive-action step: clearly more saturated and brighter than
+     --violet-light, so DIVE IN / READ RABBITHOLE read as things you click
+     rather than editorial labels. Editorial eyebrows (FOLLOW CURIOSITY,
+     LATEST) stay on --violet-light / --violet-soft; only real actions use
+     this and its hover step. */
+  --violet-action: #b388ff;
+  --violet-action-hover: #c4a6ff;
   /* Warm coral — the second, sparingly-used accent. Muted on purpose: it
      marks an epistemic state ("debunked") and warm editorial detail, never
      an error. Distinct from --danger, which stays reserved for real alerts. */
