@@ -467,15 +467,15 @@
 /* A standalone RabbitHole action button -- same violet family, uppercase
    type, weight and hover behavior as DIVE IN, and similarly soft
    corners, but not forced into DIVE IN's exact geometry: it's a
-   secondary content action, not the search commit, so it stays a touch
-   smaller and quieter (~88% of DIVE IN's height, a little less
-   horizontal padding). Width stays content-driven (no fixed width). No
-   icon, arrow, underline, border-only treatment, glow or shadow. */
+   secondary content action, not the search commit, so it stays smaller
+   and quieter (~81% of DIVE IN's height, a bit less horizontal padding).
+   Width stays content-driven (no fixed width). No icon, arrow,
+   underline, border-only treatment, glow or shadow. */
 .home-featured-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 46px;
+  height: 42px;
   text-decoration: none;
   font-family: var(--sans);
   font-weight: 600;
@@ -484,7 +484,7 @@
   text-transform: uppercase;
   background: var(--violet-deep);
   color: var(--text);
-  padding: 0 18px;
+  padding: 0 16px;
   border-radius: 8px;
   transition: background 140ms ease;
 }
@@ -630,10 +630,10 @@
   .home-featured-caption {
     margin-left: 0;
   }
-  /* Stays ~88% of DIVE IN's 50px height at this breakpoint (see
+  /* Stays ~80% of DIVE IN's 50px height at this breakpoint (see
      .home-hero-search), matching the desktop proportion. */
   .home-featured-action {
-    height: 44px;
+    height: 40px;
   }
   .home-latest-index {
     margin-top: 52px;
