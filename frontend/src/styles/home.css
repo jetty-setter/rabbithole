@@ -177,7 +177,7 @@
   flex: 1 1 auto;
   min-width: 0;
   height: 100%;
-  padding: 0 8px 0 24px;
+  padding: 0 12px 0 24px;
   font-family: var(--sans);
   font-size: 15px;
   color: var(--text);
@@ -196,48 +196,40 @@
   appearance: none;
 }
 
-/* The commit zone: the same capsule face, warmed a hair toward its right
-   end by a dark-on-dark tonal fade — no line, block, box or hard edge.
-   Set apart by RabbitHole violet + semibold weight + a generous inset
-   that clears the capsule's curved end. */
+/* The commit zone: a real filled button integrated into the capsule's
+   right end -- solid RabbitHole violet, rounded to match the capsule's
+   own curve on its outer (right) corners only, so field and button still
+   read as one shape. Near-black text on the violet fill clears AA
+   comfortably (warm ivory on this violet does not -- checked both). No
+   icon, arrow, divider, glow or shadow -- the fill alone signals "button". */
 .home-hero-search-submit {
   flex: none;
   height: 100%;
-  padding: 0 26px 0 16px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(251, 245, 232, 0.04) 60%
-  );
+  padding: 0 20px;
+  background: var(--violet);
   border: none;
-  border-radius: 0;
+  border-radius: 0 26px 26px 0;
   font-family: var(--sans);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 13px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  /* The interactive-action violet -- clearly more saturated and brighter
-     than the eyebrow's --violet-light, so this reads as something you
-     click rather than an editorial label. */
-  color: var(--violet-action);
+  color: #050505;
   white-space: nowrap;
   cursor: pointer;
-  transition: color 140ms ease, background 140ms ease;
+  transition: background 140ms ease;
 }
 
 .home-hero-search-submit:hover {
-  /* Brighter still for the strongest state in the control. */
-  color: var(--violet-action-hover);
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(251, 245, 232, 0.06) 60%
-  );
+  /* Brighter fill for the strongest state -- same step TUMBLE uses. */
+  background: var(--violet-light);
 }
 
-/* Keyboard focus: a restrained violet ring — the whole capsule when the
-   field holds focus, just the commit zone when DIVE IN does. Pointer
-   focus stays clean (the edge/depth shift above handles it). */
+/* Keyboard focus: a restrained violet ring on the field; the button gets
+   a near-black inset ring instead (a violet ring would vanish against its
+   own violet fill), which the outline's own corner-following keeps
+   matched to the button's curve. Pointer focus stays clean (the edge/
+   depth shift above handles it). */
 .home-hero-search :focus {
   outline: none;
 }
@@ -246,9 +238,8 @@
   outline-offset: 2px;
 }
 .home-hero-search-submit:focus-visible {
-  outline: 2px solid var(--violet);
-  outline-offset: -3px;
-  border-radius: 18px;
+  outline: 2px solid #050505;
+  outline-offset: -4px;
 }
 
 /* ── Hero: compact desktop / tablet landscape (901–1080px) ─────────────── */
@@ -346,11 +337,9 @@
     padding-left: 22px;
   }
   .home-hero-search-submit {
-    padding: 0 22px 0 12px;
+    padding: 0 18px;
     font-size: 12px;
-  }
-  .home-hero-search-submit:focus-visible {
-    border-radius: 17px;
+    border-radius: 0 25px 25px 0;
   }
 }
 
@@ -478,25 +467,30 @@
   color: var(--muted);
 }
 
+/* A compact filled pill -- the same RabbitHole violet family as TUMBLE
+   and DIVE IN, so all three read as one interactive language, but
+   smaller and quieter than TUMBLE (less padding, smaller type) since
+   this is a secondary action, not the primary nav CTA. No icon, arrow,
+   underline, border-only treatment, glow or shadow. */
 .home-featured-action {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   text-decoration: none;
   font-family: var(--sans);
-  /* A touch stronger than before -- visible authority as an action, but
-     still editorial text rather than a shouted label or a button. */
   font-weight: 700;
-  font-size: 13.5px;
-  letter-spacing: 0.12em;
+  font-size: 11.5px;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
-  /* The same interactive-action violet as DIVE IN, so the two actions read
-     as one consistent "this is clickable" language across the page. */
-  color: var(--violet-action);
-  transition: color 140ms ease;
+  background: var(--violet);
+  color: #050505;
+  padding: 7px 15px;
+  border-radius: 999px;
+  transition: background 140ms ease;
 }
 
 .home-featured-action:hover,
 .home-featured-action:focus-visible {
-  color: var(--violet-action-hover);
+  background: var(--violet-light);
 }
 
 /* The visual side: a crop of the real 1977 printout, not a designed
