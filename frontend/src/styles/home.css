@@ -433,17 +433,29 @@
    alone carries it. */
 
 .home-featured {
-  max-width: 1000px;
+  max-width: 1130px;
 }
 
 .home-featured-grid {
   display: grid;
-  /* Image column sized so the printout renders at roughly 45-52% of the
-     feature's own width on large desktop -- present enough to counter-
-     weight the title without overpowering it. */
-  grid-template-columns: minmax(0, 27rem) minmax(0, 30rem);
+  /* Image column sized ~23% larger than the previous pass (30rem -> 37rem)
+     so the archival printout reads as a true visual counterweight to the
+     title rather than a supporting insert. Gap unchanged here -- the
+     rightward shift is added only at wide desktop widths below, so the
+     text column keeps its established width at 1024px and narrower. */
+  grid-template-columns: minmax(0, 27rem) minmax(0, 37rem);
   column-gap: clamp(36px, 5.5vw, 68px);
   align-items: center;
+}
+
+/* ── Large desktop: shift the (now bigger) image a bit farther right ──
+   Only above ~1200px, so the text column's width at 1024px and the
+   tablet reflow are untouched -- the image simply has more room to grow
+   into at genuinely wide viewports. */
+@media (min-width: 1200px) {
+  .home-featured-grid {
+    column-gap: 96px;
+  }
 }
 
 .home-featured-title {
