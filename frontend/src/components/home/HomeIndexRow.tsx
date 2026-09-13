@@ -12,6 +12,7 @@ export interface IndexItem {
   slug: string;
   title: string;
   hook: string;
+  metadata?: string;
   imageUrl?: string;
 }
 
@@ -29,6 +30,7 @@ export function HomeIndexRow({
     >
       <div className="home-index-text">
         <h3 className="home-index-title">{item.title}</h3>
+        {item.metadata && <p className="home-index-meta">{item.metadata}</p>}
         <p className="home-index-hook">{item.hook}</p>
         <Link to={`/rabbitholes/${item.slug}`} className="home-index-action">
           Read RabbitHole

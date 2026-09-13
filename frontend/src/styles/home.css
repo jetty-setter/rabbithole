@@ -535,9 +535,23 @@
    graphic. Separation comes from spacing and a barely-there tone shift
    per row, never a rule or a boxed card. */
 
+/* Quiet section label for the tier below the lead feature -- same eyebrow
+   treatment as "Latest" so it reads as part of the same label family, not
+   a competing headline. Its own top margin is what actually separates this
+   tier from the Wow! Signal feature above (rhythm, not a rule). */
+.home-more-eyebrow {
+  margin: 88px 0 36px;
+  font-family: var(--display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--violet-soft);
+}
+
 .home-latest-index {
   list-style: none;
-  margin: 72px 0 0;
+  margin: 0;
   padding: 0;
 }
 
@@ -586,29 +600,55 @@
   color: var(--text);
 }
 
+/* Optional small credit line, same treatment as .home-featured-caption so
+   it reads as the same kind of detail, just quieter and higher up. */
+.home-index-meta {
+  margin: 0 0 8px;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0.7;
+}
+
 .home-index-hook {
-  margin: 0 0 12px;
+  margin: 0 0 16px;
   max-width: 58ch;
   font-size: 14.5px;
   line-height: 1.55;
   color: var(--muted);
 }
 
+/* Same secondary action style as .home-featured-action (identical size --
+   these rows never exceed the Wow! Signal action), written as its own
+   selector so the lead feature's rule stays untouched. */
 .home-index-action {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
   text-decoration: none;
   font-family: var(--sans);
-  font-weight: 700;
-  font-size: 11.5px;
-  letter-spacing: 0.12em;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--violet-soft);
-  transition: color 140ms ease;
+  background: var(--violet-deep);
+  color: var(--text);
+  padding: 0 16px;
+  border-radius: 8px;
+  transition: background 140ms ease;
 }
 
-.home-index-action:hover,
+.home-index-action:hover {
+  background: var(--violet-deep-hover);
+}
+
 .home-index-action:focus-visible {
-  color: var(--violet-light);
+  outline: 2px solid #050505;
+  outline-offset: -4px;
 }
 
 /* Stacked layout: the hero copy sits at the mobile gutter, so the sections
@@ -635,11 +675,14 @@
   .home-featured-action {
     height: 40px;
   }
-  .home-latest-index {
-    margin-top: 52px;
+  .home-more-eyebrow {
+    margin: 56px 0 28px;
   }
   .home-index-row {
     padding: 22px var(--gutter-mobile);
+  }
+  .home-index-action {
+    height: 40px;
   }
   .home-index-row.has-image {
     grid-template-columns: 1fr;

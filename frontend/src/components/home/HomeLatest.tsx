@@ -18,13 +18,16 @@ export function HomeLatest({ items = [] }: { items?: IndexItem[] }) {
       <p className="home-latest-eyebrow">Latest</p>
       <HomeFeatured />
       {items.length > 0 && (
-        <ul className="home-latest-index">
-          {items.map((item, i) => (
-            <li key={item.slug} className="home-latest-index-item">
-              <HomeIndexRow item={item} imageSide={i % 2 === 0 ? "left" : "right"} />
-            </li>
-          ))}
-        </ul>
+        <>
+          <p className="home-more-eyebrow">More RabbitHoles</p>
+          <ul className="home-latest-index">
+            {items.map((item, i) => (
+              <li key={item.slug} className="home-latest-index-item">
+                <HomeIndexRow item={item} imageSide={i % 2 === 0 ? "left" : "right"} />
+              </li>
+            ))}
+          </ul>
+        </>
       )}
     </section>
   );
