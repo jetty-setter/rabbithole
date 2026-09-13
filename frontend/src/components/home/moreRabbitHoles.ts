@@ -8,23 +8,32 @@ import type { IndexItem } from "./HomeIndexRow";
  * record's intended address, so "Read RabbitHole" starts working the
  * moment something is published there; nothing here has to change.
  *
- * Both are text-only (no `imageUrl`): this environment's network egress
- * policy blocks Wikimedia Commons and other general web hosts, so a real,
- * rights-cleared image could not be sourced and verified this pass. Add
- * `imageUrl` once a genuine archival image with documented usage rights is
- * available — HomeIndexRow already renders it when present.
+ * Both images are real archival assets (prepared and provided directly for
+ * this homepage tier, not generated) rather than placeholders:
+ *  - Voynich: a crop of an illustrated page from the Voynich Manuscript
+ *    (Beinecke Rare Book & Manuscript Library, Yale) showing its unknown
+ *    script beside a botanical drawing of a plant with no known real-world
+ *    match.
+ *  - Dancing Plague: a period engraving depicting the 1518 Strasbourg
+ *    dancing mania in a village square.
  */
 export const MORE_RABBITHOLES: IndexItem[] = [
   {
     slug: "the-voynich-manuscript",
     title: "The Voynich Manuscript",
-    hook: "For more than a century, scholars have tried to decipher a medieval manuscript filled with an unknown script, strange diagrams, and plants that may not exist.",
+    hook: "Nobody has convincingly read it.",
     metadata: "15th century · Unknown author",
+    imageUrl: "/Voynich_Manuscript_Archive_Crop.webp",
+    imageAlt:
+      "A page from the Voynich Manuscript, showing lines of unidentified handwritten script beside a watercolor drawing of an unidentified plant.",
   },
   {
     slug: "the-dancing-plague-of-1518",
     title: "The Dancing Plague of 1518",
-    hook: "In the summer of 1518, people in Strasbourg began dancing and did not stop. Within weeks, the unexplained outbreak had drawn in hundreds.",
+    hook: "Hundreds danced. No one agrees why.",
     metadata: "Strasbourg · 1518",
+    imageUrl: "/engraved_dancing_plague_in_a_village_square.webp",
+    imageAlt:
+      "A period engraving of townspeople dancing together in a village square during the 1518 Strasbourg dancing plague.",
   },
 ];

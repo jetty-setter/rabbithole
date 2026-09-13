@@ -556,14 +556,14 @@
 }
 
 .home-latest-index-item + .home-latest-index-item {
-  margin-top: 4px;
+  margin-top: 10px;
 }
 
 .home-index-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  padding: 30px clamp(20px, 3vw, 36px);
+  padding: 44px clamp(20px, 3vw, 36px);
 }
 
 .home-latest-index-item:nth-child(odd) .home-index-row {
@@ -574,20 +574,45 @@
   background-color: rgba(251, 245, 232, 0.022);
 }
 
+/* The image is the point of these rows now -- a real archival artifact at
+   real scale (~45% of the row), not a thumbnail beside a text slab. Column
+   proportions stay fixed to which side the image is on (not just which
+   grid track it lands in), so it reads at the same weight whether it's
+   leading or trailing. */
 .home-index-row.has-image {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 220px);
-  column-gap: clamp(28px, 4vw, 48px);
+  column-gap: clamp(36px, 5vw, 64px);
+}
+
+.home-index-row.has-image.image-left {
+  grid-template-columns: minmax(0, 45%) minmax(0, 1fr);
 }
 
 .home-index-row.has-image.image-left .home-index-image {
   order: -1;
+  /* Let the artifact bleed to the row's own left edge instead of sitting
+     inset behind the same padding as the text -- "an artifact stumbled
+     across," not content boxed to match its neighbour. */
+  margin-left: clamp(-36px, -3vw, -20px);
 }
 
+.home-index-row.has-image.image-right {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 45%);
+}
+
+.home-index-row.has-image.image-right .home-index-image {
+  margin-right: clamp(-36px, -3vw, -20px);
+}
+
+/* Native proportions, not a forced crop -- both images already arrive as
+   deliberate editorial crops, so nothing here re-crops them further. The
+   same restrained brightness/contrast step as the Wow! Signal printout
+   (no tint, no overlay) keeps old paper and old ink from reading as a lit
+   rectangle against the near-black section. */
 .home-index-image img {
   display: block;
   width: 100%;
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
+  height: auto;
+  filter: brightness(0.95) contrast(0.98);
 }
 
 .home-index-title {
@@ -679,17 +704,28 @@
     margin: 56px 0 28px;
   }
   .home-index-row {
-    padding: 22px var(--gutter-mobile);
+    padding: 26px var(--gutter-mobile);
   }
   .home-index-action {
     height: 40px;
   }
-  .home-index-row.has-image {
+  /* Split layout drops out; the image leads every row regardless of its
+     desktop side, ahead of metadata / title / hook / action, with no
+     bleed (there's no second column left to bleed past). Selectors here
+     repeat the .image-left/.image-right qualifier so they match the
+     desktop rules' specificity -- a media query adds no specificity of
+     its own, so a lower-specificity override here would otherwise lose
+     to the desktop column/margin rules even inside this query. */
+  .home-index-row.has-image.image-left,
+  .home-index-row.has-image.image-right {
     grid-template-columns: 1fr;
-    row-gap: 16px;
+    row-gap: 18px;
   }
-  .home-index-row.has-image.image-left .home-index-image {
-    order: 0;
+  .home-index-row.has-image.image-left .home-index-image,
+  .home-index-row.has-image.image-right .home-index-image {
+    order: -1;
+    margin-left: 0;
+    margin-right: 0;
   }
 }
 
