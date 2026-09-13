@@ -23,7 +23,10 @@ export function HomeLatest({ items = [] }: { items?: IndexItem[] }) {
           <ul className="home-latest-index">
             {items.map((item, i) => (
               <li key={item.slug} className="home-latest-index-item">
-                <HomeIndexRow item={item} imageSide={i % 2 === 0 ? "left" : "right"} />
+                <HomeIndexRow
+                  item={item}
+                  imageSide={item.imageSide ?? (i % 2 === 0 ? "left" : "right")}
+                />
               </li>
             ))}
           </ul>

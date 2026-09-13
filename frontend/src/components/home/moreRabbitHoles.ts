@@ -16,6 +16,13 @@ import type { IndexItem } from "./HomeIndexRow";
  *    match.
  *  - Dancing Plague: a period engraving depicting the 1518 Strasbourg
  *    dancing mania in a village square.
+ *
+ * The homepage is curated, not a feed: the intended total is 1 lead
+ * feature + 3 of these large rows. There's room for one more here once a
+ * third story has real content and rights-cleared (or intentionally
+ * text-only) imagery -- don't add one speculatively. `imageSide` on
+ * IndexItem can pin a new item's side explicitly if simple left/right
+ * alternation isn't the right call for it.
  */
 export const MORE_RABBITHOLES: IndexItem[] = [
   {
