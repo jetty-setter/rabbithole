@@ -18,11 +18,11 @@ import type { IndexItem } from "./HomeIndexRow";
  *    dancing mania in a village square.
  *
  * The homepage is curated, not a feed: the intended total is 1 lead
- * feature + 3 of these large rows. There's room for one more here once a
+ * feature + 3 of these compact rows. There's room for one more here once a
  * third story has real content and rights-cleared (or intentionally
- * text-only) imagery -- don't add one speculatively. `imageSide` on
- * IndexItem can pin a new item's side explicitly if simple left/right
- * alternation isn't the right call for it.
+ * text-only) imagery -- don't add one speculatively. Every row uses the
+ * same image-left/text-right direction (see HomeIndexRow) -- no alternation
+ * to configure per item.
  */
 export const MORE_RABBITHOLES: IndexItem[] = [
   {
