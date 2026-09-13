@@ -68,9 +68,44 @@ describe("LibraryPage — homepage", () => {
     renderHome();
 
     const region = screen.getByRole("region", { name: /^latest$/i });
-    const action = within(region).getByRole("link", { name: /read rabbithole/i });
+    const heading = within(region).getByRole("heading", {
+      name: /the wow! signal/i,
+    });
+    const article = heading.closest("article")!;
+    const action = within(article).getByRole("link", {
+      name: /read rabbithole/i,
+    });
     expect(action.textContent).toBe("Read RabbitHole");
     expect(action.getAttribute("href")).toBe("/rabbitholes/the-wow-signal");
+  });
+
+  it("Latest: More RabbitHoles lists the prototype index items under their own eyebrow", () => {
+    renderHome();
+
+    const region = screen.getByRole("region", { name: /^latest$/i });
+    expect(within(region).getByText(/^more rabbitholes$/i)).toBeTruthy();
+
+    const voynichHeading = within(region).getByRole("heading", {
+      name: /the voynich manuscript/i,
+    });
+    const voynichLink = within(voynichHeading.closest("article")!).getByRole(
+      "link",
+      { name: /read rabbithole/i },
+    );
+    expect(voynichLink.getAttribute("href")).toBe(
+      "/rabbitholes/the-voynich-manuscript",
+    );
+
+    const plagueHeading = within(region).getByRole("heading", {
+      name: /the dancing plague of 1518/i,
+    });
+    const plagueLink = within(plagueHeading.closest("article")!).getByRole(
+      "link",
+      { name: /read rabbithole/i },
+    );
+    expect(plagueLink.getAttribute("href")).toBe(
+      "/rabbitholes/the-dancing-plague-of-1518",
+    );
   });
 
   it("hero search: a query + Dive in routes into /search, carrying the query", async () => {
