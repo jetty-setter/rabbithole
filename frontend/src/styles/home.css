@@ -558,11 +558,17 @@
 
 /* Vertical rhythm alone now separates the two rows -- no background fill
    left to help, so the row's own padding plus this inter-item margin is
-   the entire gap. */
+   the entire gap (~58px combined at desktop: 22px row padding + 14px
+   margin + 22px row padding -- enough to read as two distinct stories
+   without opening a dead zone between them). */
 .home-latest-index-item + .home-latest-index-item {
-  margin-top: 6px;
+  margin-top: 14px;
 }
 
+/* Row height is entirely content-driven -- no min-height, no vh unit, no
+   fixed height here or on any child. The image (native aspect ratio, see
+   .home-index-image img below) is the tallest thing in the row, so it
+   alone sets the row's height; padding is the only added space. */
 .home-index-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -575,7 +581,10 @@
    module reads as clearly subordinate to the Wow! Signal feature above.
    Column proportions stay fixed to which side the image is on (not just
    which grid track it lands in), so it reads at the same weight whether
-   it's leading or trailing. */
+   it's leading or trailing. `align-items: center` on the row centers the
+   (shorter) text block against the full image height on both sides --
+   deliberately not nudged off-center, so text reads as attached to the
+   image rather than floating near one edge of it. */
 .home-index-row.has-image {
   column-gap: clamp(28px, 4vw, 48px);
 }
@@ -592,10 +601,8 @@
   margin-left: clamp(-36px, -3vw, -20px);
 }
 
-/* Narrower gap and a small asymmetric nudge (image left, text up) than
-   .image-left gets -- this pairing's text and image otherwise sit dead
-   center of each other with too much empty middle. Editorial tension, not
-   perfect centering: the two still don't align on either axis. */
+/* Narrower gap than .image-left gets -- this pairing's text and image
+   otherwise sit far enough apart to read as two unrelated halves. */
 .home-index-row.has-image.image-right {
   grid-template-columns: minmax(0, 1fr) minmax(0, 34%);
   column-gap: clamp(20px, 3vw, 36px);
@@ -603,11 +610,6 @@
 
 .home-index-row.has-image.image-right .home-index-image {
   margin-right: clamp(-36px, -3vw, -20px);
-  margin-left: -10px;
-}
-
-.home-index-row.has-image.image-right .home-index-text {
-  margin-top: -9px;
 }
 
 /* Native proportions, not a forced crop -- both images already arrive as
@@ -736,12 +738,6 @@
     order: -1;
     margin-left: 0;
     margin-right: 0;
-  }
-  /* .image-right's desktop-only asymmetric nudge (image pulled left, text
-     pulled up) is meaningless once the row stacks to one column -- cancel
-     both so stacked text sits at its natural position. */
-  .home-index-row.has-image.image-right .home-index-text {
-    margin-top: 0;
   }
 }
 
