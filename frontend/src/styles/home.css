@@ -556,31 +556,32 @@
   padding: 0;
 }
 
-/* Vertical rhythm alone now separates the two rows (~12% tighter than the
-   first pass) -- no background fill left to help, so the row's own
-   padding plus this inter-item margin is the entire gap. */
+/* Vertical rhythm alone now separates the two rows -- no background fill
+   left to help, so the row's own padding plus this inter-item margin is
+   the entire gap. */
 .home-latest-index-item + .home-latest-index-item {
-  margin-top: 10px;
+  margin-top: 6px;
 }
 
 .home-index-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  padding: 38px clamp(20px, 3vw, 36px);
+  padding: 22px clamp(20px, 3vw, 36px);
 }
 
-/* The image is the point of these rows now -- a real archival artifact at
-   real scale (~45% of the row), not a thumbnail beside a text slab. Column
-   proportions stay fixed to which side the image is on (not just which
-   grid track it lands in), so it reads at the same weight whether it's
-   leading or trailing. */
+/* Compact editorial teasers, not secondary hero spreads -- the image
+   stays a real archival artifact, just sized (~34% of the row) so the
+   module reads as clearly subordinate to the Wow! Signal feature above.
+   Column proportions stay fixed to which side the image is on (not just
+   which grid track it lands in), so it reads at the same weight whether
+   it's leading or trailing. */
 .home-index-row.has-image {
-  column-gap: clamp(36px, 5vw, 64px);
+  column-gap: clamp(28px, 4vw, 48px);
 }
 
 .home-index-row.has-image.image-left {
-  grid-template-columns: minmax(0, 45%) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 34%) minmax(0, 1fr);
 }
 
 .home-index-row.has-image.image-left .home-index-image {
@@ -596,17 +597,17 @@
    center of each other with too much empty middle. Editorial tension, not
    perfect centering: the two still don't align on either axis. */
 .home-index-row.has-image.image-right {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 45%);
-  column-gap: clamp(24px, 3.5vw, 44px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 34%);
+  column-gap: clamp(20px, 3vw, 36px);
 }
 
 .home-index-row.has-image.image-right .home-index-image {
   margin-right: clamp(-36px, -3vw, -20px);
-  margin-left: -16px;
+  margin-left: -10px;
 }
 
 .home-index-row.has-image.image-right .home-index-text {
-  margin-top: -14px;
+  margin-top: -9px;
 }
 
 /* Native proportions, not a forced crop -- both images already arrive as
@@ -621,20 +622,22 @@
   filter: brightness(0.95) contrast(0.98);
 }
 
+/* Visibly smaller and lighter in the hierarchy than .home-featured-title
+   -- these are compact teasers, not a second lead. */
 .home-index-title {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   font-family: var(--display);
   font-weight: 700;
-  font-size: clamp(19px, 2vw, 22px);
-  line-height: 1.18;
-  letter-spacing: -0.015em;
+  font-size: clamp(16px, 1.6vw, 18px);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
   color: var(--text);
 }
 
 /* Optional small credit line, same treatment as .home-featured-caption so
    it reads as the same kind of detail, just quieter and higher up. */
 .home-index-meta {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   font-family: var(--sans);
   font-size: 11px;
   font-weight: 600;
@@ -645,21 +648,22 @@
 }
 
 .home-index-hook {
-  margin: 0 0 16px;
+  margin: 0 0 12px;
   max-width: 58ch;
   font-size: 14.5px;
   line-height: 1.55;
   color: var(--muted);
 }
 
-/* Same secondary action style as .home-featured-action (identical size --
-   these rows never exceed the Wow! Signal action), written as its own
-   selector so the lead feature's rule stays untouched. */
+/* The same secondary action style as .home-featured-action -- family,
+   fill, hover/focus and type are identical -- just a minimal size step
+   down (38px/36px vs. 42px/40px) so the button stays proportional to
+   these now-smaller rows instead of overpowering them. */
 .home-index-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 42px;
+  height: 38px;
   text-decoration: none;
   font-family: var(--sans);
   font-weight: 600;
@@ -668,7 +672,7 @@
   text-transform: uppercase;
   background: var(--violet-deep);
   color: var(--text);
-  padding: 0 16px;
+  padding: 0 14px;
   border-radius: 8px;
   transition: background 140ms ease;
 }
@@ -710,10 +714,10 @@
     margin: 56px 0 28px;
   }
   .home-index-row {
-    padding: 22px var(--gutter-mobile);
+    padding: 16px var(--gutter-mobile);
   }
   .home-index-action {
-    height: 40px;
+    height: 36px;
   }
   /* Split layout drops out; the image leads every row regardless of its
      desktop side, ahead of metadata / title / hook / action, with no
@@ -725,7 +729,7 @@
   .home-index-row.has-image.image-left,
   .home-index-row.has-image.image-right {
     grid-template-columns: 1fr;
-    row-gap: 18px;
+    row-gap: 14px;
   }
   .home-index-row.has-image.image-left .home-index-image,
   .home-index-row.has-image.image-right .home-index-image {
