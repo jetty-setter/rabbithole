@@ -530,17 +530,23 @@
 }
 
 /* ── The index — later published RabbitHoles ────────────────────────────
-   Tighter rows, always smaller than the lead. Optional real imagery
-   alternates sides item to item; text-only rows never force a placeholder
-   graphic. Separation comes from imagery, spacing and alternating
-   composition alone -- no per-row background fill (that read as two dark
-   boxes stacked on the page), no rule, no boxed card. */
+   A curated discovery list, not stacked mini landing pages: every row
+   uses the same compact image-left/text-right direction (no alternation,
+   no zig-zag) inside a wrapper narrower than the section around it, so
+   the list reads as one grouped, connected thing rather than separate
+   spreads floating in the page. Separation between rows comes from
+   spacing alone -- no per-row background fill, no rule, no boxed card. */
 
 /* Quiet section label for the tier below the lead feature -- same eyebrow
    treatment as "Latest" so it reads as part of the same label family, not
    a competing headline. Its own top margin is what actually separates this
-   tier from the Wow! Signal feature above (rhythm, not a rule). */
+   tier from the Wow! Signal feature above (rhythm, not a rule). Shares the
+   list's own narrower wrapper (see .home-latest-index) so the label sits
+   flush with the rows under it -- left-aligned, not centered, so it stays
+   on the same editorial spine as "Latest" and the Wow! Signal feature
+   above it rather than shifting right on its own. */
 .home-more-eyebrow {
+  max-width: 1060px;
   margin: 88px 0 36px;
   font-family: var(--display);
   font-size: 12px;
@@ -550,84 +556,46 @@
   color: var(--violet-soft);
 }
 
+/* Narrower than the section's own (already spine-aligned) 1180px box --
+   the list reads as one contained, curated group instead of stretching to
+   the section's full width -- but still left-aligned to that same spine. */
 .home-latest-index {
   list-style: none;
+  max-width: 1060px;
   margin: 0;
   padding: 0;
 }
 
-/* Vertical rhythm alone now separates the two rows -- no background fill
-   left to help, so the row's own padding plus this inter-item margin is
-   the entire gap (~58px combined at desktop: 22px row padding + 14px
-   margin + 22px row padding -- enough to read as two distinct stories
-   without opening a dead zone between them). */
+/* Compact vertical rhythm -- rows are short now, so a modest margin alone
+   (no row padding contributing to it, see .home-index-row below) is
+   enough to read as separate, connected stories rather than a dead zone. */
 .home-latest-index-item + .home-latest-index-item {
-  margin-top: 14px;
+  margin-top: 40px;
 }
 
-/* Row height is entirely content-driven -- no min-height, no vh unit, no
-   fixed height here or on any child. The image (native aspect ratio, see
-   .home-index-image img below) is the tallest thing in the row, so it
-   alone sets the row's height; padding is the only added space. */
+/* One compact horizontal row: image fixed-width on the left, text
+   immediately beside it, both natural-height -- a plain flex row rather
+   than a grid, so there's no stretched track for text to go missing
+   inside of. Row height is entirely content-driven (no min-height, no vh
+   unit, no padding here) -- the image is the tallest thing in the row, so
+   it alone sets the row's height. The row is exactly as wide as its
+   content (image + gap + text), left-aligned within the list -- it does
+   not stretch to fill the wrapper. */
 .home-index-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  display: flex;
   align-items: center;
-  padding: 22px clamp(20px, 3vw, 36px);
+  gap: clamp(40px, 4vw, 56px);
 }
 
-/* Compact editorial teasers, not secondary hero spreads -- the image
-   stays a real archival artifact, just sized (~34% of the row) so the
-   module reads as clearly subordinate to the Wow! Signal feature above.
-   Column proportions stay fixed to which side the image is on (not just
-   which grid track it lands in), so it reads at the same weight whether
-   it's leading or trailing. `align-items: center` on the row centers the
-   (shorter) text block against the full image height on both sides --
-   deliberately not nudged off-center, so text reads as attached to the
-   image rather than floating near one edge of it.
-
-   The text column is still the wide remainder of the row (1fr, ~66%),
-   but .home-index-text no longer stretches to fill it: a grid item's
-   default `justify-self: stretch` was sizing the text block to the full
-   track width, so its actual (short) content -- title, one-line hook,
-   button -- sat flush against whichever edge text naturally left-aligns
-   to, which was the *image-adjacent* edge for .image-left (looked fine
-   by coincidence) but the *far* edge for .image-right, leaving a huge
-   empty gap between the visible text and the image. Each variant below
-   now shrinks the text box to its content and explicitly anchors it to
-   the image-adjacent side of its track, so the real on-screen distance
-   between the last character/button and the image is just the column
-   gap, on both rows. */
-.home-index-row.has-image {
-  column-gap: clamp(48px, 5vw, 72px);
-}
-
-.home-index-row.has-image.image-left {
-  grid-template-columns: minmax(0, 34%) minmax(0, 1fr);
-}
-
-.home-index-row.has-image.image-left .home-index-image {
-  order: -1;
-  /* Let the artifact bleed to the row's own left edge instead of sitting
-     inset behind the same padding as the text -- "an artifact stumbled
-     across," not content boxed to match its neighbour. */
-  margin-left: clamp(-36px, -3vw, -20px);
-}
-
-.home-index-row.has-image.image-left .home-index-text {
-  justify-self: start;
-}
-
-.home-index-row.has-image.image-right {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 34%);
-}
-
-.home-index-row.has-image.image-right .home-index-image {
-  margin-right: clamp(-36px, -3vw, -20px);
-}
-
-.home-index-row.has-image.image-right .home-index-text {
-  justify-self: end;
+/* A consistent, deliberately modest scale across every row (not the lead
+   feature's ~34-45% of a wide column) -- substantial enough to read as a
+   real archival artifact, not a thumbnail, but never competing with the
+   Wow! Signal image above. Fixed width, not a fraction of the row, so
+   every row's image reads at the same size regardless of its own aspect
+   ratio or how much text sits beside it. */
+.home-index-image {
+  flex: none;
+  width: clamp(280px, 22vw, 340px);
 }
 
 /* Native proportions, not a forced crop -- both images already arrive as
@@ -640,6 +608,14 @@
   width: 100%;
   height: auto;
   filter: brightness(0.95) contrast(0.98);
+}
+
+/* Grouped tightly against the image -- sized to a comfortable measure,
+   not stretched to fill whatever space happens to be left in the row. */
+.home-index-text {
+  flex: 0 1 460px;
+  min-width: 0;
+  max-width: 500px;
 }
 
 /* Visibly smaller and lighter in the hierarchy than .home-featured-title
@@ -731,38 +707,39 @@
     height: 40px;
   }
   .home-more-eyebrow {
+    max-width: none;
     margin: 56px 0 28px;
   }
+  .home-latest-index {
+    max-width: none;
+    margin: 0;
+  }
+  /* Compact stacked spacing -- less than the desktop 40px now that there's
+     no horizontal grouping doing part of the separating work. */
+  .home-latest-index-item + .home-latest-index-item {
+    margin-top: 28px;
+  }
+  /* Image leads every row (already first in DOM order), stacked above the
+     text rather than beside it. */
   .home-index-row {
-    padding: 16px var(--gutter-mobile);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .home-index-image {
+    width: 100%;
+  }
+  /* `flex-basis` targets the main axis, which is now vertical (row is
+     column-direction here) -- the desktop `flex: 0 1 460px` would
+     otherwise become a fixed 460px *height*, not width. `flex: 0 1 auto`
+     restores natural content height; `align-items: stretch` above already
+     makes the block full width. */
+  .home-index-text {
+    flex: 0 1 auto;
+    max-width: none;
   }
   .home-index-action {
     height: 36px;
-  }
-  /* Split layout drops out; the image leads every row regardless of its
-     desktop side, ahead of metadata / title / hook / action, with no
-     bleed (there's no second column left to bleed past). Selectors here
-     repeat the .image-left/.image-right qualifier so they match the
-     desktop rules' specificity -- a media query adds no specificity of
-     its own, so a lower-specificity override here would otherwise lose
-     to the desktop column/margin rules even inside this query. */
-  .home-index-row.has-image.image-left,
-  .home-index-row.has-image.image-right {
-    grid-template-columns: 1fr;
-    row-gap: 14px;
-  }
-  .home-index-row.has-image.image-left .home-index-image,
-  .home-index-row.has-image.image-right .home-index-image {
-    order: -1;
-    margin-left: 0;
-    margin-right: 0;
-  }
-  /* The desktop-only shrink-and-anchor (justify-self: start/end) is
-     meaningless once the row stacks to one column -- restore the normal
-     full-width stacked block. */
-  .home-index-row.has-image.image-left .home-index-text,
-  .home-index-row.has-image.image-right .home-index-text {
-    justify-self: stretch;
   }
 }
 

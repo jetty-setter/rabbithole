@@ -54,14 +54,29 @@ describe("HomeLatest — future multi-item scaffolding", () => {
     expect(list.querySelectorAll("img")).toHaveLength(1);
   });
 
-  it("alternates image side across index items", () => {
+  it("every row uses the same image-left/text-right direction, never alternating", () => {
     renderLatest([
       { slug: "a", title: "Item A", hook: "Hook A.", imageUrl: "/a.jpg" },
       { slug: "b", title: "Item B", hook: "Hook B.", imageUrl: "/b.jpg" },
     ]);
 
-    const rows = document.querySelectorAll(".home-index-row");
-    expect(rows[0].classList.contains("image-left")).toBe(true);
-    expect(rows[1].classList.contains("image-right")).toBe(true);
+    const rows = document.querySelectorAll(".home-index-row.has-image");
+    expect(rows).toHaveLength(2);
+    for (const row of rows) {
+      // No side-specific modifier class -- image-left/text-right is the
+      // only layout, expressed via DOM order (image first) rather than a
+      // class the row could vary.
+      expect(row.classList.contains("image-left")).toBe(false);
+      expect(row.classList.contains("image-right")).toBe(false);
+      const children = Array.from(row.children);
+      const imageIndex = children.findIndex((c) =>
+        c.classList.contains("home-index-image"),
+      );
+      const textIndex = children.findIndex((c) =>
+        c.classList.contains("home-index-text"),
+      );
+      expect(imageIndex).toBeGreaterThanOrEqual(0);
+      expect(imageIndex).toBeLessThan(textIndex);
+    }
   });
 });
