@@ -16,6 +16,11 @@ export interface IndexItem {
   metadata?: string;
   imageUrl?: string;
   imageAlt?: string;
+  /** Overrides <HomeLatest>'s default left/right alternation for this one
+   * item -- lets a future story break the strict alternating pattern (e.g.
+   * two image-left rows in a row) instead of being forced into whichever
+   * side its position happens to land on. */
+  imageSide?: "left" | "right";
 }
 
 export function HomeIndexRow({

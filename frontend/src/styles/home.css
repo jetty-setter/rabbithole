@@ -532,8 +532,9 @@
 /* ── The index — later published RabbitHoles ────────────────────────────
    Tighter rows, always smaller than the lead. Optional real imagery
    alternates sides item to item; text-only rows never force a placeholder
-   graphic. Separation comes from spacing and a barely-there tone shift
-   per row, never a rule or a boxed card. */
+   graphic. Separation comes from imagery, spacing and alternating
+   composition alone -- no per-row background fill (that read as two dark
+   boxes stacked on the page), no rule, no boxed card. */
 
 /* Quiet section label for the tier below the lead feature -- same eyebrow
    treatment as "Latest" so it reads as part of the same label family, not
@@ -555,6 +556,9 @@
   padding: 0;
 }
 
+/* Vertical rhythm alone now separates the two rows (~12% tighter than the
+   first pass) -- no background fill left to help, so the row's own
+   padding plus this inter-item margin is the entire gap. */
 .home-latest-index-item + .home-latest-index-item {
   margin-top: 10px;
 }
@@ -563,15 +567,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  padding: 44px clamp(20px, 3vw, 36px);
-}
-
-.home-latest-index-item:nth-child(odd) .home-index-row {
-  background-color: rgba(255, 255, 255, 0.014);
-}
-
-.home-latest-index-item:nth-child(even) .home-index-row {
-  background-color: rgba(251, 245, 232, 0.022);
+  padding: 38px clamp(20px, 3vw, 36px);
 }
 
 /* The image is the point of these rows now -- a real archival artifact at
@@ -595,12 +591,22 @@
   margin-left: clamp(-36px, -3vw, -20px);
 }
 
+/* Narrower gap and a small asymmetric nudge (image left, text up) than
+   .image-left gets -- this pairing's text and image otherwise sit dead
+   center of each other with too much empty middle. Editorial tension, not
+   perfect centering: the two still don't align on either axis. */
 .home-index-row.has-image.image-right {
   grid-template-columns: minmax(0, 1fr) minmax(0, 45%);
+  column-gap: clamp(24px, 3.5vw, 44px);
 }
 
 .home-index-row.has-image.image-right .home-index-image {
   margin-right: clamp(-36px, -3vw, -20px);
+  margin-left: -16px;
+}
+
+.home-index-row.has-image.image-right .home-index-text {
+  margin-top: -14px;
 }
 
 /* Native proportions, not a forced crop -- both images already arrive as
@@ -704,7 +710,7 @@
     margin: 56px 0 28px;
   }
   .home-index-row {
-    padding: 26px var(--gutter-mobile);
+    padding: 22px var(--gutter-mobile);
   }
   .home-index-action {
     height: 40px;
@@ -726,6 +732,12 @@
     order: -1;
     margin-left: 0;
     margin-right: 0;
+  }
+  /* .image-right's desktop-only asymmetric nudge (image pulled left, text
+     pulled up) is meaningless once the row stacks to one column -- cancel
+     both so stacked text sits at its natural position. */
+  .home-index-row.has-image.image-right .home-index-text {
+    margin-top: 0;
   }
 }
 
