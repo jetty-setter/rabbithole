@@ -584,9 +584,22 @@
    it's leading or trailing. `align-items: center` on the row centers the
    (shorter) text block against the full image height on both sides --
    deliberately not nudged off-center, so text reads as attached to the
-   image rather than floating near one edge of it. */
+   image rather than floating near one edge of it.
+
+   The text column is still the wide remainder of the row (1fr, ~66%),
+   but .home-index-text no longer stretches to fill it: a grid item's
+   default `justify-self: stretch` was sizing the text block to the full
+   track width, so its actual (short) content -- title, one-line hook,
+   button -- sat flush against whichever edge text naturally left-aligns
+   to, which was the *image-adjacent* edge for .image-left (looked fine
+   by coincidence) but the *far* edge for .image-right, leaving a huge
+   empty gap between the visible text and the image. Each variant below
+   now shrinks the text box to its content and explicitly anchors it to
+   the image-adjacent side of its track, so the real on-screen distance
+   between the last character/button and the image is just the column
+   gap, on both rows. */
 .home-index-row.has-image {
-  column-gap: clamp(28px, 4vw, 48px);
+  column-gap: clamp(48px, 5vw, 72px);
 }
 
 .home-index-row.has-image.image-left {
@@ -601,15 +614,20 @@
   margin-left: clamp(-36px, -3vw, -20px);
 }
 
-/* Narrower gap than .image-left gets -- this pairing's text and image
-   otherwise sit far enough apart to read as two unrelated halves. */
+.home-index-row.has-image.image-left .home-index-text {
+  justify-self: start;
+}
+
 .home-index-row.has-image.image-right {
   grid-template-columns: minmax(0, 1fr) minmax(0, 34%);
-  column-gap: clamp(20px, 3vw, 36px);
 }
 
 .home-index-row.has-image.image-right .home-index-image {
   margin-right: clamp(-36px, -3vw, -20px);
+}
+
+.home-index-row.has-image.image-right .home-index-text {
+  justify-self: end;
 }
 
 /* Native proportions, not a forced crop -- both images already arrive as
@@ -738,6 +756,13 @@
     order: -1;
     margin-left: 0;
     margin-right: 0;
+  }
+  /* The desktop-only shrink-and-anchor (justify-self: start/end) is
+     meaningless once the row stacks to one column -- restore the normal
+     full-width stacked block. */
+  .home-index-row.has-image.image-left .home-index-text,
+  .home-index-row.has-image.image-right .home-index-text {
+    justify-self: stretch;
   }
 }
 
