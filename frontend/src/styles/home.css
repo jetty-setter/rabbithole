@@ -541,11 +541,11 @@
    treatment as "Latest" so it reads as part of the same label family, not
    a competing headline. Its own top margin is what actually separates this
    tier from the Wow! Signal feature above (rhythm, not a rule). Shares the
-   list's own narrower, centered wrapper (see .home-latest-index) so the
-   label's left edge lines up exactly with the image column in every row
-   below it. */
+   list's own wrapper width (see .home-latest-index) -- 826px, exactly the
+   row's own content width (350px image + 56px gap + 420px text) -- so the
+   label's left edge lines up exactly with the image column below it. */
 .home-more-eyebrow {
-  max-width: 1060px;
+  max-width: 826px;
   margin: 88px auto 36px;
   font-family: var(--display);
   font-size: 12px;
@@ -555,15 +555,17 @@
   color: var(--violet-soft);
 }
 
-/* Narrower than the section's own 1180px box and centered within it --
-   the previous pass left it flush with the hero/Wow! Signal's left inset,
-   which read as stuck to the left edge with the whole right side of the
-   viewport empty. Centering here keeps the compact row width untouched
-   (nothing stretches) while placing the group in the middle of the
-   available space instead of pinned to one side of it. */
+/* The previous pass centered a wrapper wider than the row's actual
+   content (1060px against ~806px of real content), which was still false
+   centering: the wrapper sat in the middle of the section, but the
+   content inside it stayed pinned to the wrapper's own left edge, so the
+   empty space to its right was several hundred pixels more than the
+   space to its left. Sizing the wrapper to the row's exact content width
+   instead means there's no leftover track for the content to be
+   left-aligned within -- centering the wrapper *is* centering the row. */
 .home-latest-index {
   list-style: none;
-  max-width: 1060px;
+  max-width: 826px;
   margin: 0 auto;
   padding: 0;
 }
@@ -589,7 +591,7 @@
 .home-index-row {
   display: flex;
   align-items: center;
-  gap: clamp(16px, 2vw, 32px);
+  gap: 56px;
 }
 
 /* A consistent, deliberately modest scale across every row (not the lead
@@ -601,10 +603,14 @@
    than either image's native proportions -- Voynich ~1.46:1, Dancing
    Plague ~1.33:1) keeps every row's image the same, shorter, more
    editorial-preview height rather than each row varying with whatever
-   the source image happened to be shaped like. */
+   the source image happened to be shaped like. A fixed (not fluid) width
+   -- together with the row's fixed gap and .home-index-text's fixed
+   basis below -- keeps the row's total content width constant across
+   desktop/tablet, which is what lets .home-latest-index's wrapper match
+   it exactly (see above) instead of drifting at different breakpoints. */
 .home-index-image {
   flex: none;
-  width: clamp(280px, 22vw, 340px);
+  width: 350px;
   aspect-ratio: 3 / 2;
 }
 
@@ -627,9 +633,9 @@
 /* Grouped tightly against the image -- sized to a comfortable measure,
    not stretched to fill whatever space happens to be left in the row. */
 .home-index-text {
-  flex: 0 1 460px;
+  flex: 0 1 420px;
   min-width: 0;
-  max-width: 500px;
+  max-width: 420px;
 }
 
 /* Visibly smaller and lighter in the hierarchy than .home-featured-title
