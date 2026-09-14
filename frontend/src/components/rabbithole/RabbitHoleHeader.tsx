@@ -5,7 +5,13 @@ import { RabbitHoleMedia } from "./RabbitHoleMedia";
  *  Version. Designed to be (most of) the first viewport: you enter this
  *  RabbitHole before you're invited anywhere else. Media sits between the
  *  hook and the short version when present — early enough to carry real
- *  visual weight, not so early it competes with the title for attention. */
+ *  visual weight, not so early it competes with the title for attention.
+ *  When a real image is present, wide desktop breaks the opening into an
+ *  asymmetric two-column composition (text left, image right) via CSS grid
+ *  areas — the DOM order (hook, then media, then short version) is
+ *  unchanged, only the visual placement shifts. Without media it simply
+ *  stacks as a single editorial column, still at the article's full title
+ *  scale. */
 export function RabbitHoleHeader({ rh }: { rh: RabbitHole }) {
   const published = monthYear(rh.published_at);
   const updated = monthYear(rh.updated_at);
@@ -15,9 +21,10 @@ export function RabbitHoleHeader({ rh }: { rh: RabbitHole }) {
       : published
         ? `Published ${published}`
         : "";
+  const hasMedia = rh.media.some((m) => m.kind === "image" && m.url);
 
   return (
-    <header className="rh-head">
+    <header className={`rh-head${hasMedia ? " rh-head--media" : ""}`}>
       <p className="rh-eyebrow">RabbitHole</p>
 
       <h1 className="rh-title">{rh.title}</h1>

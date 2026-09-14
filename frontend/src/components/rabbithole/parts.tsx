@@ -29,13 +29,12 @@ export function Limitation({ text }: { text: string }) {
   );
 }
 
-/** A hung section heading. On desktop it sits in the left margin; on mobile
- *  it stacks above its content. `id` gives inline citations / the sources
- *  jump a stable anchor. */
+/** A quiet section label. Hierarchy comes from the generous space around it
+ *  and from what follows, not from a rule or a tick mark. `id` gives inline
+ *  citations / the sources jump a stable anchor. */
 export function SectionHeading({ children, id }: { children: React.ReactNode; id?: string }) {
   return (
     <h2 className="rh-section-h" id={id}>
-      <span className="rh-section-h-tick" aria-hidden="true" />
       {children}
     </h2>
   );
