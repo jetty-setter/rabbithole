@@ -1,41 +1,24 @@
 /* ── RabbitHole reader page (/rabbitholes/:slug) ──────────────────────────
-   An independent-magazine reading page on near-black. Hierarchy comes from
-   type scale, spacing and composition — never from hairline dividers, tick
-   marks or connector lines. The page canvas (how wide the article sits) is
-   deliberately wider than the prose measure (how wide a paragraph reads) —
-   individual sections use the full canvas or pull back to a narrower
-   column depending on what they're doing, so the page changes shape as you
-   move through it instead of running one fixed-width strip top to bottom. */
+   A longform editorial page on near-black, built around ONE reading spine:
+   the page canvas can be a little wider than the prose (~1160px vs. a
+   ~700px column), but almost every section shares that same column so the
+   article reads as one continuous piece, not a sequence of unrelated
+   layout demos. Only the opening (title beside the real archival image)
+   breaks the spine — everything after it returns to it. Hierarchy comes
+   from type and spacing; no hairline dividers, tick marks or connector
+   lines anywhere. */
 
 .rh-page {
-  max-width: 1360px;
+  max-width: 1160px;
   margin: 0 auto;
-  padding-top: 44px;
+  padding-top: 40px;
   position: relative;
-}
-
-/* One faint violet bloom behind the title, then nothing — the page reads
-   as atmosphere, not a hero image. */
-.rh-page::before {
-  content: "";
-  position: absolute;
-  top: -80px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(1400px, 96vw);
-  height: 620px;
-  background: radial-gradient(
-    46% 66% at 28% 0%,
-    rgba(154, 130, 242, 0.13),
-    transparent 68%
-  );
-  pointer-events: none;
-  z-index: 0;
+  /* the shared reading measure most sections return to */
+  --rh-measure: 700px;
 }
 
 .rh {
   position: relative;
-  z-index: 1;
 }
 
 .rh p {
@@ -52,22 +35,21 @@
   font-family: var(--sans);
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--violet-light);
-  margin: 0 0 22px;
+  margin: 0 0 18px;
 }
 
-/* A feature title, not a blog-post title: it should hold the page the way
-   a magazine cover line does. Scales well past the old 44px cap on wide
-   desktop but stays legible for longer future titles via clamp + balance —
-   no fixed character cap forcing an early wrap. */
+/* A significant feature title -- more than a blog-post heading, well short
+   of homepage hero copy. Balances across up to a couple of lines so a
+   longer future RabbitHole title still sits comfortably. */
 .rh-title {
   font-family: var(--display);
   font-weight: 700;
-  font-size: clamp(32px, 4vw + 14px, 80px);
-  line-height: 1.03;
-  letter-spacing: -0.022em;
+  font-size: clamp(30px, 2.6vw + 18px, 62px);
+  line-height: 1.08;
+  letter-spacing: -0.018em;
   color: var(--text);
   margin: 0;
   text-wrap: balance;
@@ -75,11 +57,11 @@
 
 .rh-subtitle {
   font-family: var(--sans);
-  font-size: clamp(15px, 1.5vw, 18px);
+  font-size: clamp(15px, 1.2vw, 17px);
   line-height: 1.5;
   color: var(--muted);
-  margin: 18px 0 0;
-  max-width: 56ch;
+  margin: 14px 0 0;
+  max-width: 52ch;
 }
 
 .rh-meta {
@@ -87,7 +69,7 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 9px;
-  margin-top: 22px;
+  margin-top: 18px;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -116,43 +98,42 @@
   border-bottom-color: var(--violet-soft);
 }
 
-/* Hook — the opening of the RabbitHole. No rule beside it; size and space
-   alone carry it. */
+/* Hook — the opening of the RabbitHole. No rule beside it; size and a
+   controlled measure carry it. */
 .rh-hook {
-  margin: 40px 0 0;
-  max-width: 56ch;
+  margin: 30px 0 0;
+  max-width: 540px;
 }
 
 .rh-hook p {
   font-family: var(--sans);
-  font-size: clamp(18px, 1.5vw + 12px, 24px);
-  line-height: 1.5;
+  font-size: clamp(18px, 0.6vw + 15px, 21px);
+  line-height: 1.52;
   color: var(--text);
   font-weight: 400;
-  letter-spacing: -0.004em;
+  letter-spacing: -0.003em;
 }
 
 /* ── Media — real archival/source imagery ───────────────────────────────
    A generic, reusable slot for real source imagery (a manuscript crop, an
    engraving, a photograph) -- not built for any one story. No card, no
-   border, no shadow, no frame; the image is the only visual weight and a
-   quiet caption underneath is the only chrome. On wide desktop, when it
-   sits in the article opening (see .rh-head--media) it breaks past the
-   prose measure into its own column beside the title/hook. Renders
-   nothing when a RabbitHole has no media (see RabbitHoleMedia.tsx). */
+   border, no shadow, no frame, no filter -- the real artifact is shown as
+   itself. On wide desktop, when it sits in the article opening (see
+   .rh-head--media) it sits beside the title/hook as a genuine second
+   column, roughly balanced with the text side. Renders nothing when a
+   RabbitHole has no media (see RabbitHoleMedia.tsx). */
 .rh-media-group {
-  margin-top: 40px;
+  margin-top: 32px;
 }
 
 .rh-media + .rh-media {
-  margin-top: 40px;
+  margin-top: 32px;
 }
 
 .rh-media-image {
   display: block;
   width: 100%;
   height: auto;
-  filter: brightness(0.95) contrast(0.98);
 }
 
 .rh-media-caption {
@@ -160,10 +141,10 @@
   flex-wrap: wrap;
   align-items: baseline;
   column-gap: 8px;
-  margin: 14px 0 0;
+  margin: 12px 0 0;
   max-width: 64ch;
   font-family: var(--sans);
-  font-size: 13.5px;
+  font-size: 13px;
   line-height: 1.55;
   color: var(--muted);
 }
@@ -177,51 +158,46 @@
   opacity: 0.7;
 }
 
-/* The short version — an editorial deck/thesis paragraph, the payoff to
-   the Hook. Held to a comfortable measure but nudged off the left edge on
-   wide desktop so it reads as its own deliberate moment rather than a
-   continuation of the column above it. */
+/* The short version — the payoff to the Hook, and the moment the article's
+   main reading column begins. Sits in that same column, not offset --
+   only a touch larger than body copy so it still reads as a deliberate
+   beat, not a random indent. */
 .rh-short {
-  margin-top: 56px;
-  max-width: 640px;
+  margin-top: 40px;
+  max-width: var(--rh-measure);
 }
 
 .rh-short-label {
   font-family: var(--sans);
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);
-  margin: 0 0 14px;
+  margin: 0 0 12px;
 }
 
 .rh-short-text {
-  font-family: var(--display);
-  font-weight: 500;
-  font-size: clamp(17px, 0.9vw + 13px, 22px);
-  line-height: 1.5;
-  letter-spacing: -0.003em;
+  font-family: var(--sans);
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1.58;
+  letter-spacing: -0.002em;
   color: var(--text);
 }
 
-@media (min-width: 1100px) {
-  .rh-short {
-    margin-left: clamp(0px, 12vw, 160px);
-  }
-}
-
-/* ── wide desktop: asymmetric opening ───────────────────────────────────
-   When real media is present, break the opening into two zones: the title
-   stack on the left, the archival image breaking out to the right. Same
-   DOM order as always (title/subtitle/meta, hook, media, short version) —
-   only placement changes, via named grid areas so the media element can
-   span several rows without reordering markup. */
-@media (min-width: 1160px) {
+/* ── wide desktop: the one asymmetric composition ───────────────────────
+   The single place the page departs from its reading spine: when real
+   media is present, the title/hook and the archival image sit side by
+   side, close to a 50/50 split. DOM order never changes (title/meta,
+   hook, media, short version) -- only placement, via named grid areas, so
+   the short version can drop straight back into the article's normal
+   column beneath both. */
+@media (min-width: 1024px) {
   .rh-head--media {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(340px, 30vw);
-    column-gap: clamp(48px, 5vw, 96px);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
+    column-gap: clamp(48px, 5vw, 64px);
     grid-template-areas:
       "eyebrow  eyebrow"
       "title    media"
@@ -246,36 +222,34 @@
   }
   .rh-head--media .rh-hook {
     grid-area: hook;
-    align-self: end;
+    max-width: none;
   }
   .rh-head--media .rh-media-group {
     grid-area: media;
     margin-top: 0;
-    align-self: start;
   }
   .rh-head--media .rh-short {
     grid-area: short;
-    margin-left: 0;
+    margin-top: 56px;
   }
 }
 
 /* ── section blocks ───────────────────────────────────────────────────── */
-
-/* Space is the only divider between sections — no border-top, no rule.
-   The gap itself scales with viewport so the page breathes more on a
-   1920px screen than on a phone. */
+/* Space is the only divider between sections -- no border-top, no rule.
+   Kept deliberately modest so the article flows rather than reading as a
+   sequence of separate slides. */
 .rh-block {
-  margin-top: clamp(72px, 8vw, 132px);
+  margin-top: clamp(48px, 5vw, 72px);
 }
 
 .rh-section-h {
   font-family: var(--sans);
   font-weight: 700;
-  font-size: clamp(12px, 0.6vw + 10px, 14px);
-  letter-spacing: 0.16em;
+  font-size: 13px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--violet-soft);
-  margin: 0 0 34px;
+  margin: 0 0 24px;
 }
 
 /* ── inline citations ─────────────────────────────────────────────────── */
@@ -351,7 +325,7 @@
 /* ── the limitation line ("The limit — …") ────────────────────────────── */
 
 .rh-limit {
-  margin-top: 14px;
+  margin-top: 12px;
   font-size: 13.5px;
   line-height: 1.6;
   color: var(--muted);
@@ -369,75 +343,71 @@
 }
 
 /* ── What we know ─────────────────────────────────────────────────────── */
-/* An editorial fact grid, not seven rows behind seven hairlines: each fact
-   is its own cell, anchored by a large muted index number sitting above
-   the text rather than beside it in a bordered row. Two columns on wide
-   desktop, one below. */
+/* A restrained two-column list, bounded well short of the full canvas so
+   it still reads as part of the article rather than a standalone grid.
+   One column below ~1000px. */
 
 .rh-wwk-list {
   list-style: none;
   margin: 0;
   padding: 0;
+  max-width: 920px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: clamp(40px, 5vw, 88px);
-  row-gap: clamp(32px, 4vw, 52px);
+  column-gap: 48px;
+  row-gap: 28px;
 }
 
 .rh-wwk-item {
   min-width: 0;
+  display: grid;
+  grid-template-columns: 1.6rem 1fr;
+  column-gap: 12px;
 }
 
 .rh-wwk-index {
-  display: block;
   font-family: var(--display);
-  font-size: clamp(22px, 1.6vw, 30px);
+  font-size: 19px;
   font-weight: 700;
-  letter-spacing: -0.01em;
   color: var(--violet);
-  opacity: 0.85;
-  margin-bottom: 12px;
+  padding-top: 1px;
 }
 
 .rh-wwk-text {
-  font-size: clamp(15.5px, 0.35vw + 14px, 17px);
+  font-size: 15.5px;
   line-height: 1.58;
   color: var(--text);
-  max-width: 48ch;
 }
 
-@media (max-width: 780px) {
+@media (max-width: 1000px) {
   .rh-wwk-list {
     grid-template-columns: 1fr;
   }
 }
 
 /* ── What's contested or still open ───────────────────────────────────── */
-/* Kept to a narrower, focused measure than the fact grid or the timeline —
-   this is close reading, not a wide composition. Claims become real
-   editorial blocks (a type-led state label, a sizeable claim, then body
-   copy) with space, not a border, separating one from the next. */
+/* This is close reading -- claims run single column, one after another, in
+   the article's normal measure. A type-led state label, a claim, then
+   body copy, then space before the next one. No grid, no side-by-side
+   competing explanations. */
 
 .rh-contested-intro {
   font-size: 15.5px;
   line-height: 1.6;
   color: var(--muted);
-  max-width: 620px;
-  margin-bottom: 40px;
+  max-width: var(--rh-measure);
+  margin-bottom: 32px;
 }
 
 .rh-contested-list {
   list-style: none;
   margin: 0;
   padding: 0;
-  max-width: 1040px;
-  display: grid;
-  grid-template-columns: 1fr;
-  row-gap: 48px;
+  max-width: var(--rh-measure);
 }
 
-.rh-contested-item {
-  max-width: 620px;
+.rh-contested-item + .rh-contested-item {
+  margin-top: 36px;
 }
 
 .rh-contested-claim-row {
@@ -445,19 +415,19 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 4px 0;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .rh-contested-claim {
   font-family: var(--display);
   font-weight: 600;
-  font-size: clamp(19px, 1vw + 14px, 23px);
-  line-height: 1.28;
-  letter-spacing: -0.008em;
+  font-size: 19px;
+  line-height: 1.32;
+  letter-spacing: -0.006em;
   color: var(--text);
   order: 2;
   width: 100%;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .rh-contested-claim-row .rh-chip {
@@ -468,21 +438,14 @@
   font-size: 15px;
   line-height: 1.6;
   color: var(--muted);
-  max-width: 60ch;
 }
 
-@media (min-width: 1200px) {
-  .rh-contested-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 64px;
-  }
-}
-
-/* Open questions read as a deliberate pause, not a footnote — no rule
-   beside them, bigger and given room to breathe, wide desktop letting two
-   sit side by side. */
+/* Open questions read as one deliberate pause, not a footnote and not a
+   full-width design moment -- a modest two-column list on very wide
+   desktop, one column everywhere narrower. */
 .rh-open-qs {
-  margin-top: 56px;
+  margin-top: 40px;
+  max-width: 900px;
 }
 
 .rh-open-qs-h {
@@ -492,7 +455,7 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--violet-soft);
-  margin: 0 0 22px;
+  margin: 0 0 18px;
 }
 
 .rh-open-qs-list {
@@ -501,100 +464,80 @@
   list-style: none;
   display: grid;
   grid-template-columns: 1fr;
-  column-gap: 72px;
-  row-gap: 26px;
+  column-gap: 56px;
+  row-gap: 20px;
   color: var(--text);
   font-family: var(--display);
   font-weight: 500;
-  font-size: clamp(18px, 0.8vw + 14px, 22px);
-  line-height: 1.42;
-  letter-spacing: -0.004em;
-  max-width: 1200px;
+  font-size: 17px;
+  line-height: 1.45;
+  letter-spacing: -0.003em;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 1300px) {
   .rh-open-qs-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 /* ── Timeline ─────────────────────────────────────────────────────────── */
-/* No line, no dots — time is carried by the dates themselves. A loose,
-   staggered grid on wide desktop; a single column, still without a
-   connecting rule, everywhere narrower. */
+/* A plain chronological list, not a design grid -- no line, no dots, no
+   staggering. A fixed date column beside the event text, in the article's
+   own reading column. Date above event on narrow screens. */
 
 .rh-tl {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  grid-template-columns: 1fr;
-  column-gap: clamp(40px, 5vw, 80px);
-  row-gap: clamp(30px, 3.5vw, 48px);
+  max-width: var(--rh-measure);
 }
 
 .rh-tl-row {
-  min-width: 0;
+  display: grid;
+  grid-template-columns: 132px 1fr;
+  column-gap: 20px;
+}
+
+.rh-tl-row + .rh-tl-row {
+  margin-top: 22px;
 }
 
 .rh-tl-date {
-  display: block;
   font-family: var(--display);
-  font-size: clamp(19px, 1vw + 13px, 25px);
+  font-size: 14px;
   font-weight: 700;
-  letter-spacing: -0.005em;
+  letter-spacing: 0.01em;
   color: var(--violet-soft);
   font-variant-numeric: tabular-nums;
-  margin-bottom: 9px;
+  padding-top: 2px;
 }
 
 .rh-tl-event {
-  display: block;
   font-size: 15px;
   line-height: 1.55;
   color: var(--text);
-  max-width: 42ch;
 }
 
-@media (min-width: 780px) {
-  .rh-tl {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  /* A gentle stagger — every second item nudged down — so the grid reads
-     as a loose chronology rather than a rigid table. */
-  .rh-tl-row:nth-child(even) {
-    margin-top: clamp(24px, 3vw, 40px);
-  }
-}
-
-@media (min-width: 1300px) {
-  .rh-tl {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .rh-tl-row:nth-child(even) {
-    margin-top: 0;
-  }
-  .rh-tl-row:nth-child(3n + 2) {
-    margin-top: clamp(24px, 2.4vw, 36px);
-  }
-  .rh-tl-row:nth-child(3n) {
-    margin-top: clamp(48px, 4.8vw, 72px);
+@media (max-width: 560px) {
+  .rh-tl-row {
+    grid-template-columns: 1fr;
+    row-gap: 6px;
   }
 }
 
 /* ── Keep digging ─────────────────────────────────────────────────────── */
-/* No spine, no nodes. Each destination is a substantial editorial link,
-   laid out side by side on wide desktop rather than down a connected
-   list — this is the moment the RabbitHole opens back outward. */
+/* No spine, no nodes -- and no marketing-grid feel either. A bounded
+   editorial list, two columns at most on large desktop. */
 
 .rh-keep-list {
   list-style: none;
   margin: 0;
   padding: 0;
+  max-width: 920px;
   display: grid;
   grid-template-columns: 1fr;
-  column-gap: clamp(40px, 4.5vw, 72px);
-  row-gap: 40px;
+  column-gap: 56px;
+  row-gap: 30px;
 }
 
 .rh-keep-item {
@@ -614,7 +557,7 @@ a.rh-keep-inner:focus-visible .rh-keep-title {
 
 a.rh-keep-inner:hover .rh-keep-arrow,
 a.rh-keep-inner:focus-visible .rh-keep-arrow {
-  transform: translateX(4px);
+  transform: translateX(3px);
   opacity: 1;
 }
 
@@ -622,11 +565,11 @@ a.rh-keep-inner:focus-visible .rh-keep-arrow {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 6px 10px;
+  gap: 5px 9px;
   font-family: var(--display);
   font-weight: 600;
-  font-size: clamp(18px, 1vw + 13px, 21px);
-  letter-spacing: -0.006em;
+  font-size: 17px;
+  letter-spacing: -0.004em;
   color: var(--text);
   transition: color 120ms ease;
 }
@@ -660,21 +603,15 @@ a.rh-keep-inner:focus-visible .rh-keep-arrow {
 }
 
 .rh-keep-why {
-  margin-top: 8px;
+  margin-top: 6px;
   font-size: 14px;
   line-height: 1.55;
   color: var(--muted);
 }
 
-@media (min-width: 780px) {
+@media (min-width: 720px) {
   .rh-keep-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1200px) {
-  .rh-keep-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -687,14 +624,14 @@ a.rh-keep-inner:focus-visible .rh-keep-arrow {
   list-style: none;
   margin: 0;
   padding: 0;
-  max-width: 760px;
+  max-width: var(--rh-measure);
 }
 
 .rh-src {
   display: grid;
   grid-template-columns: 1.9rem 1fr;
   column-gap: 14px;
-  padding: 12px 10px;
+  padding: 11px 10px;
   margin: 0 -10px;
   border-radius: 6px;
   transition: background 400ms ease;
@@ -773,10 +710,10 @@ a.rh-src-title:focus-visible {
 
 @media (max-width: 560px) {
   .rh-page {
-    padding-top: 24px;
+    padding-top: 22px;
   }
   .rh-hook {
-    margin-top: 32px;
+    margin-top: 26px;
   }
   .rh-cite {
     /* comfortable tap target without disturbing the line box */
