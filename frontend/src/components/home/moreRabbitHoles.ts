@@ -22,11 +22,13 @@ import type { IndexItem } from "./HomeIndexRow";
  *  - Tunguska: an original black-and-white photograph of the Siberian
  *    forest flattened by the 1908 event.
  *
- * The homepage is curated, not a feed: this tier is a fixed 2x2 grid (see
- * the .home-latest-index CSS), not a growing list. Order here is DOM/
- * reading order, which the grid auto-places left-to-right, top-to-bottom
- * -- Voynich and Dancing Plague form row 1, Lake Nyos and Tunguska row 2.
- * Every module uses the same image-above-text composition (see
+ * The homepage is curated, not a feed: this tier is a fixed two-column
+ * magazine index (see the .home-latest-index CSS), not a growing list.
+ * Order here is DOM/reading order, which the grid auto-places left-to-
+ * right, top-to-bottom -- Voynich and Dancing Plague form row 1, Lake
+ * Nyos and Tunguska row 2, so the left column reads Voynich-then-Lake-
+ * Nyos and the right column reads Dancing-Plague-then-Tunguska. Every
+ * story uses the same horizontal image-left/text-right composition (see
  * HomeIndexRow) -- no alternation to configure per item.
  */
 export const MORE_RABBITHOLES: IndexItem[] = [
@@ -55,7 +57,7 @@ export const MORE_RABBITHOLES: IndexItem[] = [
     metadata: "Cameroon · August 21, 1986",
     imageUrl: "/RabbitHole_Lake_Nyos_USGS_Crop_v2.webp",
     imageAlt:
-      "Lake Nyos in Cameroon, showing the lake surrounded by green volcanic hills and exposed rock along the shoreline.",
+      "Lake Nyos in Cameroon, surrounded by green volcanic hills with exposed rock along the shoreline.",
   },
   {
     slug: "the-tunguska-event",
