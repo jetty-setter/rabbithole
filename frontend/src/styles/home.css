@@ -757,6 +757,97 @@
   outline-offset: 3px;
 }
 
+/* ── Wide desktop: one editorial spread, not two stacked sections ───────
+   Below this tier .home-latest-shell is inert (a plain wrapper; the lead
+   feature and the index just stack, same as before these zone divs
+   existed -- see 1200-1599px, which keeps the existing two-column story
+   grid from the previous pass unchanged). From here up, when there's
+   actually a rail to show (.has-rail -- see HomeLatest.tsx), Wow! Signal
+   and More RabbitHoles become two side-by-side zones of one composition:
+   a wide magazine spread rather than a lead section with a second
+   section underneath it. Everything below is scoped under
+   `.home-latest-shell.has-rail` specifically so it can't affect the
+   1200-1599px stacked tier or the empty-items state, and so it wins over
+   the plain `.home-index-*`/`.home-featured-grid` rules on specificity
+   alone regardless of source order. */
+@media (min-width: 1500px) {
+  .home-latest-shell.has-rail {
+    display: grid;
+    /* ~64%/36% -- close to the suggested 1.6fr/0.9fr, nudged toward the
+       lead so Wow! Signal's own internal grid (see the compaction below)
+       doesn't have to compress much to fit. minmax(400px, 1fr) keeps the
+       rail from ever getting squeezed thinner than a real reading
+       column. */
+    grid-template-columns: minmax(0, 1.7fr) minmax(400px, 1fr);
+    column-gap: 80px;
+    align-items: start;
+    width: min(calc(100% - 96px), 1600px);
+    margin-inline: auto;
+  }
+
+  /* Compact Wow! Signal's own internal grid for its new, narrower zone --
+     smaller image/text tracks and a tighter gap than the standalone
+     >=1200px rule above (higher specificity here wins regardless of
+     source order). Still the same crop, same proportionate relationship
+     between title and image, same everything else -- this only rebalances
+     the two column widths so the feature fits its zone without the
+     browser silently compressing it below its intended shape. */
+  .home-latest-shell.has-rail .home-featured-grid {
+    grid-template-columns: minmax(0, 22rem) minmax(0, 28rem);
+    column-gap: clamp(24px, 3vw, 40px);
+  }
+
+  /* The rail's own eyebrow starts at the same vertical level as LATEST
+     opposite it (see .home-latest-eyebrow) instead of the 88px drop the
+     standalone/stacked tiers use to separate it from the feature above --
+     the two labels read as headings for parallel zones, not a section
+     and a subsection. */
+  .home-latest-shell.has-rail .home-more-eyebrow {
+    margin: 0 0 36px;
+  }
+
+  /* The eyebrow and index fill the rail column itself now, rather than
+     self-centering with their own max-width inside it (which would
+     double-inset them -- once from the shell's own column sizing, again
+     from their standalone width formula meant for when the index has the
+     whole section to itself). */
+  .home-latest-shell.has-rail .home-more-eyebrow,
+  .home-latest-shell.has-rail .home-latest-index {
+    width: 100%;
+  }
+
+  /* One column, not two -- the rail is a stacked index (Voynich, Dancing
+     Plague, Lake Nyos, Tunguska in reading order), not a repeat of the
+     1200-1599px tier's 2x2 grid. Tighter row-gap than that tier too: a
+     narrow rail reads as a curated list only if several stories are
+     visible without much scrolling. */
+  .home-latest-shell.has-rail .home-latest-index {
+    grid-template-columns: 1fr;
+    row-gap: 32px;
+  }
+
+  /* Each story keeps the same horizontal image-beside-text composition
+     (image, then metadata/title/hook/action) -- just at rail scale: a
+     150-180px image is proportionate to a ~400-550px column the way
+     220-260px was proportionate to the wider standalone story. */
+  .home-latest-shell.has-rail .home-index-row {
+    grid-template-columns: minmax(150px, 180px) minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .home-latest-shell.has-rail .home-index-title {
+    font-size: clamp(18px, 1vw, 21px);
+  }
+
+  .home-latest-shell.has-rail .home-index-hook {
+    font-size: 13.5px;
+  }
+
+  .home-latest-shell.has-rail .home-index-meta {
+    font-size: 9.5px;
+  }
+}
+
 /* Stacked layout: the hero copy sits at the mobile gutter, so the sections
    below drop their desktop left inset and share that gutter. The 100vw /
    calc(50% - 50vw) full-bleed self-adjusts to .page's padding at every
