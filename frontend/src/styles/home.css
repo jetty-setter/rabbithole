@@ -773,13 +773,12 @@
 @media (min-width: 1500px) {
   .home-latest-shell.has-rail {
     display: grid;
-    /* ~64%/36% -- close to the suggested 1.6fr/0.9fr, nudged toward the
-       lead so Wow! Signal's own internal grid (see the compaction below)
-       doesn't have to compress much to fit. minmax(400px, 1fr) keeps the
-       rail from ever getting squeezed thinner than a real reading
-       column. */
-    grid-template-columns: minmax(0, 1.7fr) minmax(400px, 1fr);
-    column-gap: 80px;
+    /* 60%/40% -- less lopsided than the first pass's 64%/36%, which read
+       as a small sidebar beside an oversized lead. minmax(400px, 1fr)
+       still keeps the rail from ever getting squeezed thinner than a
+       real reading column. */
+    grid-template-columns: minmax(0, 1.5fr) minmax(400px, 1fr);
+    column-gap: 64px;
     align-items: start;
     width: min(calc(100% - 96px), 1600px);
     margin-inline: auto;
@@ -788,12 +787,15 @@
   /* Compact Wow! Signal's own internal grid for its new, narrower zone --
      smaller image/text tracks and a tighter gap than the standalone
      >=1200px rule above (higher specificity here wins regardless of
-     source order). Still the same crop, same proportionate relationship
-     between title and image, same everything else -- this only rebalances
-     the two column widths so the feature fits its zone without the
-     browser silently compressing it below its intended shape. */
+     source order). Still the same crop, same everything else -- this
+     rebalances the two column widths so the printout reads as the
+     visual half of the story (image ~60% / text ~40%, up from an even
+     ~56%/44%) rather than a medium supporting illustration, and fits the
+     feature into its zone without the browser silently compressing it
+     below its intended shape. Text column (22rem) is essentially
+     unchanged from the previous pass; only the image column grew. */
   .home-latest-shell.has-rail .home-featured-grid {
-    grid-template-columns: minmax(0, 22rem) minmax(0, 28rem);
+    grid-template-columns: minmax(0, 22rem) minmax(0, 33rem);
     column-gap: clamp(24px, 3vw, 40px);
   }
 
@@ -818,29 +820,31 @@
 
   /* One column, not two -- the rail is a stacked index (Voynich, Dancing
      Plague, Lake Nyos, Tunguska in reading order), not a repeat of the
-     1200-1599px tier's 2x2 grid. Tighter row-gap than that tier too: a
-     narrow rail reads as a curated list only if several stories are
-     visible without much scrolling. */
+     1200-1599px tier's 2x2 grid. Denser row-gap than the first pass (26px,
+     down from 32px) so four stories read as one curated index rather than
+     four isolated blocks -- the wider rail and bigger images below need
+     the tighter rhythm to still feel dense. */
   .home-latest-shell.has-rail .home-latest-index {
     grid-template-columns: 1fr;
-    row-gap: 32px;
+    row-gap: 26px;
   }
 
   /* Each story keeps the same horizontal image-beside-text composition
-     (image, then metadata/title/hook/action) -- just at rail scale: a
-     150-180px image is proportionate to a ~400-550px column the way
-     220-260px was proportionate to the wider standalone story. */
+     (image, then metadata/title/hook/action) -- just at rail scale.
+     155-170px (capped at 180px) reads as a genuine editorial preview
+     rather than a sidebar icon, proportionate to the rail's own wider
+     ~490-615px column. */
   .home-latest-shell.has-rail .home-index-row {
-    grid-template-columns: minmax(150px, 180px) minmax(0, 1fr);
+    grid-template-columns: minmax(155px, 170px) minmax(0, 1fr);
     gap: 16px;
   }
 
   .home-latest-shell.has-rail .home-index-title {
-    font-size: clamp(18px, 1vw, 21px);
+    font-size: clamp(19px, 1vw, 21px);
   }
 
   .home-latest-shell.has-rail .home-index-hook {
-    font-size: 13.5px;
+    font-size: 14px;
   }
 
   .home-latest-shell.has-rail .home-index-meta {
