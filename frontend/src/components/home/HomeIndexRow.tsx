@@ -4,8 +4,8 @@ import { Link } from "react-router-dom";
  * A published RabbitHole beyond the lead feature. Deliberately smaller and
  * quieter than <HomeFeatured> — a publication front page has one lead
  * story and a tighter, denser index under it, not a repeated stack of
- * identical cards. Every row uses the same image-left/text-right direction
- * (a curated discovery list, not alternating mini landing pages). Imagery
+ * identical cards. Every module uses the same image-above-text composition
+ * (a curated discovery grid, not alternating mini landing pages). Imagery
  * is optional: only supply `imageUrl` where a real, rights-cleared image
  * exists. Without one the row is text-only rather than forcing a
  * placeholder graphic. Supply `imageAlt` for a real image so it's exposed

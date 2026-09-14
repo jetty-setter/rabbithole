@@ -530,22 +530,22 @@
 }
 
 /* ── The index — later published RabbitHoles ────────────────────────────
-   A curated discovery list, not stacked mini landing pages: every row
-   uses the same compact image-left/text-right direction (no alternation,
-   no zig-zag) inside a wrapper narrower than the section around it, so
-   the list reads as one grouped, connected thing rather than separate
-   spreads floating in the page. Separation between rows comes from
-   spacing alone -- no per-row background fill, no rule, no boxed card. */
+   A compact 2x2 editorial discovery grid, not stacked mini landing pages:
+   four short modules (image above text) live directly on the section
+   background -- no card fill, border, shadow or rounded panel around any
+   of them. Image, type and spacing alone carry the structure. The grid
+   sits in a wrapper narrower than the section around it and centered
+   within it, so it reads as one grouped, connected thing rather than
+   separate spreads floating in the page. */
 
 /* Quiet section label for the tier below the lead feature -- same eyebrow
    treatment as "Latest" so it reads as part of the same label family, not
    a competing headline. Its own top margin is what actually separates this
-   tier from the Wow! Signal feature above (rhythm, not a rule). Shares the
-   list's own narrower, centered wrapper (see .home-latest-index) so the
-   label's left edge lines up exactly with the image column in every row
-   below it. */
+   tier from the Wow! Signal feature above (rhythm, not a rule). One label
+   for the whole grid, sharing the grid's own max-width and centering (see
+   .home-latest-index) so their left edges always line up. */
 .home-more-eyebrow {
-  max-width: 1060px;
+  max-width: 1080px;
   margin: 88px auto 36px;
   font-family: var(--display);
   font-size: 12px;
@@ -555,57 +555,50 @@
   color: var(--violet-soft);
 }
 
-/* Narrower than the section's own 1180px box and centered within it --
-   the previous pass left it flush with the hero/Wow! Signal's left inset,
-   which read as stuck to the left edge with the whole right side of the
-   viewport empty. Centering here keeps the compact row width untouched
-   (nothing stretches) while placing the group in the middle of the
-   available space instead of pinned to one side of it. */
+/* Two equal columns, four modules in strict DOM order (Voynich, Dancing
+   Plague, Lake Nyos, Tunguska) -- the grid auto-places them left-to-right,
+   top-to-bottom, so row 1 is Voynich/Dancing Plague and row 2 is Lake
+   Nyos/Tunguska without any manual placement. Narrower than the section's
+   own 1180px box and centered within it, same as the previous single-
+   column pass -- the group sits in the middle of the available space
+   instead of pinned to one side of it. */
 .home-latest-index {
   list-style: none;
-  max-width: 1060px;
+  max-width: 1080px;
   margin: 0 auto;
   padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: clamp(44px, 4vw, 56px);
+  row-gap: clamp(42px, 4vw, 54px);
 }
 
-/* Compact vertical rhythm -- rows are short now, so a modest margin alone
-   (no row padding contributing to it, see .home-index-row below) is
-   enough to read as separate, connected stories rather than a dead zone. */
-.home-latest-index-item + .home-latest-index-item {
-  margin-top: 35px;
-}
-
-/* One compact horizontal row: image fixed-width on the left, text
-   immediately beside it, both natural-height -- a plain flex row rather
-   than a grid, so there's no stretched track for text to go missing
-   inside of. Row height is entirely content-driven (no min-height, no vh
-   unit, no padding here) -- the image is the tallest thing in the row, so
-   it alone sets the row's height. Content stays left-justified within the
-   row (the default) rather than centered within it -- the image's left
-   edge needs to land exactly at the row's own left edge so it lines up
-   with "More RabbitHoles" above, which sits at that same wrapper edge.
-   Centering happens once, at the wrapper level (.home-latest-index), not
-   again per row. */
+/* One compact vertical module: image above text, both natural-height --
+   plain flex column rather than a grid, so there's no stretched track for
+   text to go missing inside of. Each module's height is entirely content-
+   driven; modules are not forced to match height across the row, so a
+   longer-wrapping title never adds dead space to its neighbour. */
 .home-index-row {
   display: flex;
-  align-items: center;
-  gap: clamp(16px, 2vw, 32px);
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
 }
 
-/* A consistent, deliberately modest scale across every row (not the lead
-   feature's ~34-45% of a wide column) -- substantial enough to read as a
-   real archival artifact, not a thumbnail, but never competing with the
-   Wow! Signal image above. Fixed width, not a fraction of the row, so
-   every row's image reads at the same size regardless of its own aspect
-   ratio or how much text sits beside it. A shared 3:2 aspect ratio (wider
-   than either image's native proportions -- Voynich ~1.46:1, Dancing
-   Plague ~1.33:1) keeps every row's image the same, shorter, more
-   editorial-preview height rather than each row varying with whatever
-   the source image happened to be shaped like. */
+/* Every module's image takes the full width of its own grid column. A
+   shared 3:2 aspect ratio (wider than the archival images' native
+   proportions -- Voynich ~1.46:1, Dancing Plague ~1.33:1 -- and matching
+   the Lake Nyos/Tunguska crops, which already arrive at exactly 3:2) keeps
+   all four the same shape regardless of source image. */
 .home-index-image {
-  flex: none;
-  width: clamp(280px, 22vw, 340px);
+  width: 100%;
   aspect-ratio: 3 / 2;
+  /* Flex items default to `min-height: auto`, which lets the automatic
+     minimum-size algorithm fall back to the image's own intrinsic aspect
+     ratio and push this box taller than 3:2 for any source image whose
+     native ratio isn't already 3:2 (Voynich, Dancing Plague). Overriding
+     to 0 makes the explicit aspect-ratio above win for every image. */
+  min-height: 0;
 }
 
 /* object-fit: cover (not a forced re-crop of the source -- both images
@@ -624,12 +617,12 @@
   filter: brightness(0.95) contrast(0.98);
 }
 
-/* Grouped tightly against the image -- sized to a comfortable measure,
-   not stretched to fill whatever space happens to be left in the row. */
+/* Fills the module's own column width (set by the grid, not by this
+   rule) -- there's no adjacent element for it to be sized against
+   anymore, so it stays a plain block rather than a constrained flex
+   measure. */
 .home-index-text {
-  flex: 0 1 460px;
   min-width: 0;
-  max-width: 500px;
 }
 
 /* Visibly smaller and lighter in the hierarchy than .home-featured-title
@@ -724,33 +717,16 @@
     max-width: none;
     margin: 56px 0 28px;
   }
+  /* Two columns become one -- each module is already image-above-text
+     (see .home-index-row above), so collapsing the grid is the only
+     change needed to stack all four in DOM order (Voynich, Dancing
+     Plague, Lake Nyos, Tunguska). Reduced row-gap now that there's no
+     horizontal grouping doing part of the separating work. */
   .home-latest-index {
     max-width: none;
     margin: 0;
-  }
-  /* Compact stacked spacing -- less than the desktop 40px now that there's
-     no horizontal grouping doing part of the separating work. */
-  .home-latest-index-item + .home-latest-index-item {
-    margin-top: 28px;
-  }
-  /* Image leads every row (already first in DOM order), stacked above the
-     text rather than beside it. */
-  .home-index-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 14px;
-  }
-  .home-index-image {
-    width: 100%;
-  }
-  /* `flex-basis` targets the main axis, which is now vertical (row is
-     column-direction here) -- the desktop `flex: 0 1 460px` would
-     otherwise become a fixed 460px *height*, not width. `flex: 0 1 auto`
-     restores natural content height; `align-items: stretch` above already
-     makes the block full width. */
-  .home-index-text {
-    flex: 0 1 auto;
-    max-width: none;
+    grid-template-columns: 1fr;
+    row-gap: 28px;
   }
   .home-index-action {
     height: 36px;
