@@ -115,7 +115,12 @@ class Source(BaseModel):
 
 
 class MediaReference(BaseModel):
-    """Reserved extension point. No V1 rendering or validation."""
+    """Real archival/source imagery attached to a RabbitHole -- generic
+    across articles (a manuscript crop, an engraving, a photograph), not
+    tied to any one story. Rendered publicly (see DetailMediaReference in
+    rabbithole_render.to_detail), but still not part of the publish gate
+    in rabbithole_validation -- a RabbitHole can publish with no media at
+    all, same as before this existed."""
 
     id: str
     kind: str  # video | audio | image | document | archival
@@ -286,6 +291,22 @@ class RenderedCitation(BaseModel):
     number: int
 
 
+class DetailMediaReference(BaseModel):
+    """Public-safe projection of a stored MediaReference. Drops `id` and
+    `ref_type`/raw `ref` (internal storage concerns) in favor of a single
+    resolved `url` -- V1 only resolves ref_type == "url"; other ref_types
+    render with url=None until a resolver for them exists. `source`, when
+    present, is the same {source_id, number} shape every other citation
+    uses, not a raw source id."""
+
+    kind: str
+    role: str
+    caption: str | None = None
+    credit: str | None = None
+    url: str | None = None
+    source: RenderedCitation | None = None
+
+
 class DetailWhatWeKnow(BaseModel):
     text: str
     state: str | None = None  # only present when not Established
@@ -365,6 +386,7 @@ class RabbitHoleDetail(BaseModel):
     timeline: list[DetailTimelineEntry] | None = None
     keep_digging: list[DetailConnection] = []
     sources: list[DetailSource] = []
+    media: list[DetailMediaReference] = []
     author_display: str | None = None
     published_at: str | None = None
     updated_at: str | None = None

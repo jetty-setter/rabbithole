@@ -207,6 +207,56 @@ describe("RabbitHolePage — optional sections", () => {
     expect(document.querySelector(".rh-timeline")).toBeNull();
     expect(screen.queryByRole("heading", { name: /timeline/i })).toBeNull();
   });
+
+  it("renders no media block when the API returns an empty media list", async () => {
+    getRabbitHole.mockResolvedValue({ ...QWERTY, media: [] });
+    renderPage();
+    await screen.findByRole("heading", { name: /what we know/i });
+    expect(document.querySelector(".rh-media-group")).toBeNull();
+  });
+
+  it("renders a real image between the hook and the short version, with caption/credit/citation", async () => {
+    getRabbitHole.mockResolvedValue({
+      ...QWERTY,
+      media: [
+        {
+          kind: "image",
+          role: "primary-source",
+          caption: "A real archival crop.",
+          credit: "Some Archive · 1900",
+          url: "/some-real-image.webp",
+          source: { source_id: "s1", number: 1 },
+        },
+      ],
+    });
+    renderPage();
+    await screen.findByRole("heading", { name: /what we know/i });
+
+    const img = screen.getByAltText("A real archival crop.");
+    expect(img.getAttribute("src")).toBe("/some-real-image.webp");
+    expect(screen.getByText("A real archival crop.")).toBeTruthy();
+    expect(screen.getByText("Some Archive · 1900")).toBeTruthy();
+    const mediaGroup = document.querySelector<HTMLElement>(".rh-media-group")!;
+    expect(within(mediaGroup).getByRole("link", { name: /jump to source 1/i })).toBeTruthy();
+
+    // between the hook and the short version, per the editorial rhythm
+    const all = [...document.querySelectorAll("*")];
+    const hookIdx = all.indexOf(document.querySelector(".rh-hook")!);
+    const mediaIdx = all.indexOf(document.querySelector(".rh-media-group")!);
+    const shortIdx = all.indexOf(document.querySelector(".rh-short")!);
+    expect(hookIdx).toBeLessThan(mediaIdx);
+    expect(mediaIdx).toBeLessThan(shortIdx);
+  });
+
+  it("skips a media item with no resolvable url rather than rendering a broken image", async () => {
+    getRabbitHole.mockResolvedValue({
+      ...QWERTY,
+      media: [{ kind: "video", role: "evidence" }],
+    });
+    renderPage();
+    await screen.findByRole("heading", { name: /what we know/i });
+    expect(document.querySelector(".rh-media-group")).toBeNull();
+  });
 });
 
 describe("RabbitHolePage — states", () => {

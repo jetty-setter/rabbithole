@@ -27,6 +27,32 @@ def _cites(ids: list[str] | None, numbers: dict[str, int]) -> list[dict]:
     return [{"source_id": i, "number": numbers[i]} for i in (ids or []) if i in numbers]
 
 
+def _render_media(media: list[dict], numbers: dict[str, int]) -> list[dict]:
+    """Public-safe projection -- drops `id` and raw `ref_type`/`ref` in favor
+    of a single resolved `url` (V1 only resolves ref_type == "url"; other
+    kinds render with url=None rather than erroring, so adding a new
+    ref_type later doesn't require touching every existing record). Order
+    is whatever order the items are stored in -- MediaReference has no
+    `order` field of its own (unlike sources/facts/timeline), so authoring
+    order is the display order."""
+    out: list[dict] = []
+    for m in media:
+        src = m.get("source_id")
+        out.append(
+            {
+                "kind": m["kind"],
+                "role": m.get("role", "evidence"),
+                "caption": m.get("caption"),
+                "credit": m.get("credit"),
+                "url": m.get("ref") if m.get("ref_type") == "url" else None,
+                "source": {"source_id": src, "number": numbers[src]}
+                if src and src in numbers
+                else None,
+            }
+        )
+    return out
+
+
 def _render_citation(source: dict) -> str:
     if source.get("citation_override"):
         return str(source["citation_override"])
@@ -184,6 +210,7 @@ def to_detail(rh: dict, outbound_conns: list[dict], dest_cards: dict[str, dict])
         timeline=detail_tl,
         keep_digging=render_keep_digging(outbound_conns, dest_cards),
         sources=detail_sources,
+        media=_render_media(rh.get("media", []), numbers),
         author_display=rh.get("author_display"),
         published_at=rh.get("published_at"),
         updated_at=rh.get("updated_at"),

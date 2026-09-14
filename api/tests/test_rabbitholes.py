@@ -259,6 +259,55 @@ def test_citation_resolution_and_reorder_stability(client, targets, rabbitholes_
     assert detail["what_we_know"][0]["citations"] == [{"source_id": "s2", "number": beta_num}]
 
 
+def test_media_renders_publicly_with_resolved_source_and_citation(client, targets):
+    rid = _draft(client, slug="media-case")
+    patch = _publishable_patch()
+    patch["sources"] = [{"type": "primary", "title": "Alpha", "url": "https://a"}]
+    patch["media"] = [
+        {
+            "id": "m1",
+            "kind": "image",
+            "role": "primary-source",
+            "caption": "A real archival crop.",
+            "credit": "Some Archive · 1900",
+            "ref_type": "url",
+            "ref": "/some-real-image.webp",
+            "source_id": "s1",
+        },
+        {
+            "id": "m2",
+            "kind": "video",
+            "role": "evidence",
+            "ref_type": "video_id",
+            "ref": "not-yet-resolvable",
+        },
+    ]
+    client.patch(f"/rabbitholes/{rid}", json=patch, headers=ADMIN)
+    client.put(f"/rabbitholes/{rid}/connections", json=targets, headers=ADMIN)
+    assert client.post(f"/rabbitholes/{rid}:publish", headers=ADMIN).status_code == 200
+
+    detail = client.get("/rabbitholes/media-case").json()
+    assert detail["media"][0] == {
+        "kind": "image",
+        "role": "primary-source",
+        "caption": "A real archival crop.",
+        "credit": "Some Archive · 1900",
+        "url": "/some-real-image.webp",
+        "source": {"source_id": "s1", "number": 1},
+    }
+    # An unresolvable ref_type renders with no url rather than erroring or
+    # falling back to the raw storage ref -- nothing to display, not a bug.
+    # (routes.py dumps with exclude_none=True, same as every other Detail*
+    # model, so a None field is omitted rather than sent as null.)
+    assert detail["media"][1].get("url") is None
+    assert detail["media"][1].get("source") is None
+    # Internal storage keys (id, ref_type, raw ref) never reach the public
+    # response -- only the resolved public-safe shape above.
+    raw = client.get("/rabbitholes/media-case").text
+    for leak in ('"id": "m1"', '"id": "m2"', "ref_type", "video_id", "not-yet-resolvable"):
+        assert leak not in raw, leak
+
+
 def test_unknown_source_id_rejected_on_update(client):
     rid = _draft(client, slug="badsrc")
     r = client.patch(
