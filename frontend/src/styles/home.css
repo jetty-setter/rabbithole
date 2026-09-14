@@ -545,16 +545,26 @@
    card fill, border, shadow or rounded panel anywhere -- image, type and
    spacing alone carry the structure. The whole composition centers within
    a wide-but-bounded measure so it reads as a substantial part of the
-   same page as Wow! Signal, not a narrow island with a void beside it. */
+   same page as Wow! Signal, not a narrow island with a void beside it.
+
+   Width is tiered, not one flat max-width, because a single number can't
+   both "use real room at 1920px" and "not blow out at 1280px" -- below
+   1280px it just fills the available editorial column (no extra inset,
+   there's little enough room there already); from 1280-1599px it settles
+   around 1320px with a 72px breathing inset; from 1600px up it widens
+   toward 1480px with a 96px inset. See the two min-width media queries
+   below. margin-inline stays `auto` throughout (set once, here), so it
+   re-centers automatically as width changes at each tier -- no need to
+   repeat it in the enhancement queries. */
 
 /* Quiet section label for the tier below the lead feature -- same eyebrow
    treatment as "Latest" so it reads as part of the same label family, not
    a competing headline. Its own top margin is what actually separates this
    tier from the Wow! Signal feature above (rhythm, not a rule). Shares the
-   index's own max-width and centering (see .home-latest-index) so their
-   left edges always line up. */
+   index's own width and centering at every tier (see .home-latest-index
+   and the media queries below) so their left edges always line up. */
 .home-more-eyebrow {
-  max-width: 1280px;
+  width: min(100%, 1320px);
   margin: 88px auto 36px;
   font-family: var(--display);
   font-size: 12px;
@@ -570,51 +580,94 @@
    Dancing Plague, row 2 is Lake Nyos / Tunguska, so column 1 reads
    Voynich-then-Lake-Nyos top to bottom and column 2 reads Dancing-Plague-
    then-Tunguska -- with no manual placement needed. Capped well short of
-   its now-generous ancestor (.home-latest) and centered within it, so at
-   wide viewports it sits as a substantial, centered composition rather
-   than pinned flush left with empty space beside it. */
+   its now-generous ancestor (.home-latest, 1800px) and centered within
+   it, so at wide viewports it sits as a substantial, centered composition
+   rather than pinned flush left with empty space beside it. */
 .home-latest-index {
   list-style: none;
-  max-width: 1280px;
+  width: min(100%, 1320px);
   margin: 0 auto;
   padding: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: clamp(44px, 5vw, 64px);
+  column-gap: 32px;
   row-gap: clamp(40px, 4vw, 52px);
 }
 
-/* One compact horizontal story: image on the left, text beside it --
-   back to a row (not the taller image-above-text stack of the previous
-   pass), which is what keeps each story compact and dense inside a
-   two-column grid instead of repeating four tall, near-identical blocks.
-   Centered cross-axis alignment gives the pair a composed, considered
-   feel; the text itself still wraps and sits naturally, not vertically
-   centered line-by-line. */
-.home-index-row {
-  display: flex;
-  align-items: center;
-  gap: clamp(20px, 2.2vw, 28px);
+/* From 1280px, there's enough room to widen the section itself (a 72px
+   inset, capped at 1320px -- see the shared comment above) and open up
+   the gap between the two main columns. */
+@media (min-width: 1280px) {
+  .home-more-eyebrow,
+  .home-latest-index {
+    width: min(calc(100% - 72px), 1320px);
+  }
+  .home-latest-index {
+    column-gap: 56px;
+  }
 }
 
-/* Roughly 44% of the story's own width -- around 230-270px at large
-   desktop -- deliberately far short of the story's full column so the
-   image reads as an accent beside real type, not the dominant element.
-   Percentage-based (not viewport units) so it scales with its own column
-   rather than the raw viewport, staying proportionate at every width down
-   to the tablet band below. A shared 3:2 aspect ratio (wider than the
-   archival images' native proportions -- Voynich ~1.46:1, Dancing Plague
-   ~1.33:1 -- and matching the Lake Nyos/Tunguska crops, which already
-   arrive at exactly 3:2) keeps all four the same shape regardless of
-   source image. */
+/* Ultra-wide: this is what actually closes the empty-right-half gap at
+   1920px+ -- the section widens to ~1480px with a 96px inset instead of
+   staying capped at the 1280-1599px tier's narrower 1320px, and the main
+   column gap opens further to read as two substantial, separated
+   columns rather than a still-cramped pair. */
+@media (min-width: 1600px) {
+  .home-more-eyebrow,
+  .home-latest-index {
+    width: min(calc(100% - 96px), 1480px);
+  }
+  .home-latest-index {
+    column-gap: 72px;
+  }
+  .home-index-row {
+    gap: 28px;
+  }
+}
+
+/* One compact horizontal story: image beside text, as a real two-track
+   CSS grid rather than flexbox. That distinction matters -- a flex
+   `flex-basis: 44%` grows the image with whatever space the row happens
+   to have, which is exactly how it ended up far too large (and the whole
+   section too narrow to give it real room) in the previous pass. A fixed
+   `minmax()` grid track instead pins the image to a real, bounded pixel
+   range regardless of how wide its column gets; the `1fr` text track
+   absorbs everything else. Centered cross-axis alignment gives the pair
+   a composed, considered feel; the text itself still wraps and sits
+   naturally, not vertically centered line-by-line. */
+.home-index-row {
+  display: grid;
+  grid-template-columns: minmax(190px, 220px) minmax(0, 1fr);
+  align-items: center;
+  gap: 20px;
+}
+
+/* Once a story has real room (see the 1280px width tier above), widen
+   the image track's own range too -- 220-260px lands in the requested
+   ~230-270px target regardless of exactly how much space the 1fr text
+   track leaves it. */
+@media (min-width: 1280px) {
+  .home-index-row {
+    grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+    gap: 24px;
+  }
+}
+
+/* A grid item stretches to fill its own track by default, so the image
+   needs no explicit width here -- the minmax() range on .home-index-row's
+   grid-template-columns above is what actually sizes it. A shared 3:2
+   aspect ratio (wider than the archival images' native proportions --
+   Voynich ~1.46:1, Dancing Plague ~1.33:1 -- and matching the Lake Nyos/
+   Tunguska crops, which already arrive at exactly 3:2) keeps all four the
+   same shape regardless of source image. */
 .home-index-image {
-  flex: 0 0 44%;
   aspect-ratio: 3 / 2;
-  /* Flex items default to `min-height: auto`, which lets the automatic
-     minimum-size algorithm fall back to the image's own intrinsic aspect
-     ratio and push this box taller than 3:2 for any source image whose
-     native ratio isn't already 3:2 (Voynich, Dancing Plague). Overriding
-     to 0 makes the explicit aspect-ratio above win for every image. */
+  /* Grid items default to `min-height: auto`, same as flex items -- it
+     lets the automatic minimum-size algorithm fall back to the image's
+     own intrinsic aspect ratio and push this box taller than 3:2 for any
+     source image whose native ratio isn't already 3:2 (Voynich, Dancing
+     Plague). Overriding to 0 makes the explicit aspect-ratio above win
+     for every image. */
   min-height: 0;
 }
 
@@ -634,9 +687,9 @@
   filter: brightness(0.95) contrast(0.98);
 }
 
-/* Takes the remaining ~56% of the story row. */
+/* Fills the grid's remaining 1fr text track -- no explicit width needed,
+   same stretch-by-default behaviour as the image track above. */
 .home-index-text {
-  flex: 1 1 auto;
   min-width: 0;
 }
 
@@ -648,7 +701,7 @@
   margin: 0 0 7px;
   font-family: var(--display);
   font-weight: 700;
-  font-size: clamp(20px, 1.9vw, 25px);
+  font-size: clamp(22px, 1.7vw, 25px);
   line-height: 1.14;
   letter-spacing: -0.012em;
   color: var(--text);
@@ -670,7 +723,7 @@
 .home-index-hook {
   margin: 0 0 14px;
   max-width: 42ch;
-  font-size: clamp(14px, 1.1vw, 16px);
+  font-size: clamp(14px, 0.9vw, 15px);
   line-height: 1.55;
   color: var(--muted);
 }
@@ -704,25 +757,6 @@
   outline-offset: 3px;
 }
 
-/* ── Tablet: two columns stay, but with less room to work with ──────────
-   Matches the hero's own compact-desktop band so the whole page shifts
-   its left inset together. Two horizontal stories per column is still
-   comfortable here (a ~171px image plus a ~280px text column at 1024px),
-   just with tighter gaps and a slightly smaller title than the wide-
-   desktop clamp settles on. */
-@media (min-width: 901px) and (max-width: 1080px) {
-  .home-latest-index {
-    column-gap: 32px;
-    row-gap: 32px;
-  }
-  .home-index-image {
-    flex-basis: 38%;
-  }
-  .home-index-title {
-    font-size: 19px;
-  }
-}
-
 /* Stacked layout: the hero copy sits at the mobile gutter, so the sections
    below drop their desktop left inset and share that gutter. The 100vw /
    calc(50% - 50vw) full-bleed self-adjusts to .page's padding at every
@@ -748,7 +782,7 @@
     height: 40px;
   }
   .home-more-eyebrow {
-    max-width: none;
+    width: auto;
     margin: 56px 0 28px;
   }
   /* Two columns become one -- all four stories stack in DOM/reading order
@@ -756,29 +790,19 @@
      that there's no horizontal grouping doing part of the separating
      work. */
   .home-latest-index {
-    max-width: none;
+    width: auto;
     margin: 0;
     grid-template-columns: 1fr;
     row-gap: 28px;
   }
-  /* Each story flips from a horizontal row back to image-above-text --
-     a phone-width column has no room for a side-by-side ~44% image next
-     to real body copy. */
+  /* Each story flips from the desktop two-track grid (image beside text)
+     back to a single-column stack -- a phone-width column has no room
+     for a side-by-side ~220px image next to real body copy. Still a
+     grid, just collapsed to one track, so `gap` keeps working the same
+     way for the vertical space between image and text. */
   .home-index-row {
-    flex-direction: column;
-    align-items: stretch;
+    grid-template-columns: 1fr;
     gap: 14px;
-  }
-  .home-index-image {
-    /* `flex-basis` targets the main axis, which is now vertical (row is
-       column-direction here) -- the desktop `flex: 0 0 44%` would
-       otherwise become a fixed 44%-of-row *height*, not width. Explicit
-       width + auto basis restores a full-width image at natural height. */
-    flex: 0 0 auto;
-    width: 100%;
-  }
-  .home-index-text {
-    flex: 0 1 auto;
   }
   .home-index-title {
     font-size: clamp(19px, 5.5vw, 22px);
