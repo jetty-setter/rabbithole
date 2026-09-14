@@ -5,8 +5,10 @@ import { SectionHeading } from "./parts";
 
 /** "Here is where this idea leads" — not "related articles". The one-sentence
  *  reason is the point; the internal relationship type is never shown. A
- *  destination that isn't published yet renders as a real, styled node marked
- *  "coming soon" — never a dead link. */
+ *  destination that isn't published yet renders as a real, muted entry
+ *  marked "coming soon" — never a dead link. No connector line or node:
+ *  each destination is its own substantial editorial link, wide desktop
+ *  laying them out side by side rather than down a spine. */
 export function KeepDigging({ connections }: { connections: RhConnection[] }) {
   const sorted = [...connections].sort((a, b) => a.order - b.order);
 
@@ -21,6 +23,7 @@ export function KeepDigging({ connections }: { connections: RhConnection[] }) {
             <>
               <span className="rh-keep-title">
                 {title}
+                <span className="rh-keep-arrow" aria-hidden="true">→</span>
                 {soon && <span className="rh-keep-soon">coming soon</span>}
               </span>
               <p className="rh-keep-why">{c.why_care}</p>
@@ -28,7 +31,6 @@ export function KeepDigging({ connections }: { connections: RhConnection[] }) {
           );
           return (
             <li className={`rh-keep-item${soon ? " is-soon" : ""}`} key={i}>
-              <span className="rh-keep-node" aria-hidden="true" />
               {soon ? (
                 <div className="rh-keep-inner" aria-disabled="true">
                   {inner}
