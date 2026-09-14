@@ -764,6 +764,23 @@ export interface RhConnection {
   coming_soon?: { title: string } | null;
 }
 
+/** Real archival/source imagery attached to a RabbitHole -- generic across
+ *  articles (a manuscript crop, an engraving, a photograph), not tied to any
+ *  one story. `url` is only present when the API could resolve a renderable
+ *  source (V1 resolves plain URLs; other kinds may arrive with no `url` yet
+ *  — render nothing for those rather than guessing). `source`, when present,
+ *  is the same citation shape used everywhere else in the reader. */
+export type MediaRole = "primary-source" | "evidence" | "illustration";
+
+export interface RhMedia {
+  kind: string;
+  role: MediaRole | string;
+  caption?: string | null;
+  credit?: string | null;
+  url?: string | null;
+  source?: RhCitation | null;
+}
+
 export interface RhSource {
   number: number;
   type: string;
@@ -792,6 +809,7 @@ export interface RabbitHole {
   timeline?: RhTimelineEntry[] | null;
   keep_digging: RhConnection[];
   sources: RhSource[];
+  media: RhMedia[];
   author_display?: string | null;
   published_at?: string | null;
   updated_at?: string | null;

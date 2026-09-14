@@ -1,8 +1,11 @@
 import { monthYear, type RabbitHole } from "../../api";
+import { RabbitHoleMedia } from "./RabbitHoleMedia";
 
-/** Title area + trust metadata + Hook + The Short Version.
- *  Designed to be (most of) the first viewport: you enter this RabbitHole
- *  before you're invited anywhere else. */
+/** Title area + trust metadata + Hook + (optional real imagery) + The Short
+ *  Version. Designed to be (most of) the first viewport: you enter this
+ *  RabbitHole before you're invited anywhere else. Media sits between the
+ *  hook and the short version when present — early enough to carry real
+ *  visual weight, not so early it competes with the title for attention. */
 export function RabbitHoleHeader({ rh }: { rh: RabbitHole }) {
   const published = monthYear(rh.published_at);
   const updated = monthYear(rh.updated_at);
@@ -43,6 +46,8 @@ export function RabbitHoleHeader({ rh }: { rh: RabbitHole }) {
           <p>{rh.hook}</p>
         </div>
       )}
+
+      <RabbitHoleMedia items={rh.media} />
 
       {rh.short_version && (
         <section className="rh-short" aria-labelledby="rh-h-short">
