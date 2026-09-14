@@ -378,8 +378,14 @@
     clamp(56px, calc(7vw + 16px), 160px);
 }
 
+/* Wide enough that it never actually constrains anything at realistic
+   desktop viewports (.home-below's own padding does that job) -- it
+   exists so .home-latest-index below has genuine room to center itself
+   with visible margins at very wide viewports, rather than being capped
+   to a narrow box well before the true available width. Wow! Signal is
+   unaffected either way: it has its own smaller max-width. */
 .home-below-inner {
-  max-width: 1180px;
+  max-width: 1800px;
   margin: 0;
 }
 
@@ -398,8 +404,12 @@
    publication front page has one lead story and a quieter list under it,
    not a stack of identical templates. */
 
+/* Matches .home-below-inner's own generous cap -- see its comment. Wow!
+   Signal (.home-featured, max-width 1130px, left-aligned, no margin:auto)
+   renders at its own fixed size regardless of how wide this ancestor is;
+   widening it only gives .home-latest-index room to center properly. */
 .home-latest {
-  max-width: 1180px;
+  max-width: 1800px;
 }
 
 .home-latest-eyebrow {
@@ -530,22 +540,21 @@
 }
 
 /* ── The index — later published RabbitHoles ────────────────────────────
-   A compact 2x2 editorial discovery grid, not stacked mini landing pages:
-   four short modules (image above text) live directly on the section
-   background -- no card fill, border, shadow or rounded panel around any
-   of them. Image, type and spacing alone carry the structure. The grid
-   sits in a wrapper narrower than the section around it and centered
-   within it, so it reads as one grouped, connected thing rather than
-   separate spreads floating in the page. */
+   A curated magazine index, not a card wall: two editorial columns, each
+   holding two compact horizontal stories (image left, text right). No
+   card fill, border, shadow or rounded panel anywhere -- image, type and
+   spacing alone carry the structure. The whole composition centers within
+   a wide-but-bounded measure so it reads as a substantial part of the
+   same page as Wow! Signal, not a narrow island with a void beside it. */
 
 /* Quiet section label for the tier below the lead feature -- same eyebrow
    treatment as "Latest" so it reads as part of the same label family, not
    a competing headline. Its own top margin is what actually separates this
-   tier from the Wow! Signal feature above (rhythm, not a rule). One label
-   for the whole grid, sharing the grid's own max-width and centering (see
-   .home-latest-index) so their left edges always line up. */
+   tier from the Wow! Signal feature above (rhythm, not a rule). Shares the
+   index's own max-width and centering (see .home-latest-index) so their
+   left edges always line up. */
 .home-more-eyebrow {
-  max-width: 1080px;
+  max-width: 1280px;
   margin: 88px auto 36px;
   font-family: var(--display);
   font-size: 12px;
@@ -555,43 +564,51 @@
   color: var(--violet-soft);
 }
 
-/* Two equal columns, four modules in strict DOM order (Voynich, Dancing
-   Plague, Lake Nyos, Tunguska) -- the grid auto-places them left-to-right,
-   top-to-bottom, so row 1 is Voynich/Dancing Plague and row 2 is Lake
-   Nyos/Tunguska without any manual placement. Narrower than the section's
-   own 1180px box and centered within it, same as the previous single-
-   column pass -- the group sits in the middle of the available space
-   instead of pinned to one side of it. */
+/* Two equal columns. DOM order is reading order (Voynich, Dancing Plague,
+   Lake Nyos, Tunguska), and the grid's default row-major auto-placement
+   puts that straight into the intended composition -- row 1 is Voynich /
+   Dancing Plague, row 2 is Lake Nyos / Tunguska, so column 1 reads
+   Voynich-then-Lake-Nyos top to bottom and column 2 reads Dancing-Plague-
+   then-Tunguska -- with no manual placement needed. Capped well short of
+   its now-generous ancestor (.home-latest) and centered within it, so at
+   wide viewports it sits as a substantial, centered composition rather
+   than pinned flush left with empty space beside it. */
 .home-latest-index {
   list-style: none;
-  max-width: 1080px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: clamp(44px, 4vw, 56px);
-  row-gap: clamp(42px, 4vw, 54px);
+  column-gap: clamp(44px, 5vw, 64px);
+  row-gap: clamp(40px, 4vw, 52px);
 }
 
-/* One compact vertical module: image above text, both natural-height --
-   plain flex column rather than a grid, so there's no stretched track for
-   text to go missing inside of. Each module's height is entirely content-
-   driven; modules are not forced to match height across the row, so a
-   longer-wrapping title never adds dead space to its neighbour. */
+/* One compact horizontal story: image on the left, text beside it --
+   back to a row (not the taller image-above-text stack of the previous
+   pass), which is what keeps each story compact and dense inside a
+   two-column grid instead of repeating four tall, near-identical blocks.
+   Centered cross-axis alignment gives the pair a composed, considered
+   feel; the text itself still wraps and sits naturally, not vertically
+   centered line-by-line. */
 .home-index-row {
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 16px;
+  align-items: center;
+  gap: clamp(20px, 2.2vw, 28px);
 }
 
-/* Every module's image takes the full width of its own grid column. A
-   shared 3:2 aspect ratio (wider than the archival images' native
-   proportions -- Voynich ~1.46:1, Dancing Plague ~1.33:1 -- and matching
-   the Lake Nyos/Tunguska crops, which already arrive at exactly 3:2) keeps
-   all four the same shape regardless of source image. */
+/* Roughly 44% of the story's own width -- around 230-270px at large
+   desktop -- deliberately far short of the story's full column so the
+   image reads as an accent beside real type, not the dominant element.
+   Percentage-based (not viewport units) so it scales with its own column
+   rather than the raw viewport, staying proportionate at every width down
+   to the tablet band below. A shared 3:2 aspect ratio (wider than the
+   archival images' native proportions -- Voynich ~1.46:1, Dancing Plague
+   ~1.33:1 -- and matching the Lake Nyos/Tunguska crops, which already
+   arrive at exactly 3:2) keeps all four the same shape regardless of
+   source image. */
 .home-index-image {
-  width: 100%;
+  flex: 0 0 44%;
   aspect-ratio: 3 / 2;
   /* Flex items default to `min-height: auto`, which lets the automatic
      minimum-size algorithm fall back to the image's own intrinsic aspect
@@ -601,14 +618,14 @@
   min-height: 0;
 }
 
-/* object-fit: cover (not a forced re-crop of the source -- both images
-   are already deliberate editorial crops; this only trims a little off
-   the top/bottom to reach the shared 3:2 frame, centered so the subject
-   stays intact) rather than a plain img, since height is now driven by
-   the container's aspect-ratio, not the image's own. The same restrained
-   brightness/contrast step as the Wow! Signal printout (no tint, no
-   overlay) keeps old paper and old ink from reading as a lit rectangle
-   against the near-black section. */
+/* object-fit: cover (not a forced re-crop of the source -- all four
+   images are already deliberate editorial crops; this only trims a
+   little off the top/bottom to reach the shared 3:2 frame, centered so
+   the subject stays intact) rather than a plain img, since height is now
+   driven by the container's aspect-ratio, not the image's own. The same
+   restrained brightness/contrast step as the Wow! Signal printout (no
+   tint, no overlay) keeps old paper and old ink from reading as a lit
+   rectangle against the near-black section. */
 .home-index-image img {
   display: block;
   width: 100%;
@@ -617,30 +634,30 @@
   filter: brightness(0.95) contrast(0.98);
 }
 
-/* Fills the module's own column width (set by the grid, not by this
-   rule) -- there's no adjacent element for it to be sized against
-   anymore, so it stays a plain block rather than a constrained flex
-   measure. */
+/* Takes the remaining ~56% of the story row. */
 .home-index-text {
+  flex: 1 1 auto;
   min-width: 0;
 }
 
-/* Visibly smaller and lighter in the hierarchy than .home-featured-title
-   -- these are compact teasers, not a second lead. */
+/* Given real presence -- this is the title readers actually scan in this
+   section, not a thumbnail caption, so it needs to read clearly at a
+   glance. Still well short of .home-featured-title's 34-58px: Wow! Signal
+   stays the obvious lead. */
 .home-index-title {
-  margin: 0 0 6px;
+  margin: 0 0 7px;
   font-family: var(--display);
   font-weight: 700;
-  font-size: clamp(16px, 1.6vw, 18px);
-  line-height: 1.2;
-  letter-spacing: -0.01em;
+  font-size: clamp(20px, 1.9vw, 25px);
+  line-height: 1.14;
+  letter-spacing: -0.012em;
   color: var(--text);
 }
 
 /* Optional small credit line, same treatment as .home-featured-caption so
    it reads as the same kind of detail, just quieter and higher up. */
 .home-index-meta {
-  margin: 0 0 6px;
+  margin: 0 0 7px;
   font-family: var(--sans);
   font-size: 11px;
   font-weight: 600;
@@ -651,42 +668,59 @@
 }
 
 .home-index-hook {
-  margin: 0 0 12px;
-  max-width: 58ch;
-  font-size: 14.5px;
+  margin: 0 0 14px;
+  max-width: 42ch;
+  font-size: clamp(14px, 1.1vw, 16px);
   line-height: 1.55;
   color: var(--muted);
 }
 
-/* The same secondary action style as .home-featured-action -- family,
-   fill, hover/focus and type are identical -- just a minimal size step
-   down (38px/36px vs. 42px/40px) so the button stays proportional to
-   these now-smaller rows instead of overpowering them. */
+/* A quiet text action, not a fourth-repeated filled button -- four solid
+   violet blocks in a compact index read as excess UI and compete with
+   Wow! Signal's own filled "Read RabbitHole" (.home-featured-action),
+   which stays the section's one strong call to action. This scope is
+   intentionally narrow: .home-index-action only ever renders inside this
+   index (see HomeIndexRow), so restyling it here can't affect any button
+   used elsewhere. */
 .home-index-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 38px;
+  display: inline-block;
   text-decoration: none;
   font-family: var(--sans);
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  background: var(--violet-deep);
-  color: var(--text);
-  padding: 0 14px;
-  border-radius: 8px;
-  transition: background 140ms ease;
+  color: var(--violet);
+  transition: color 140ms ease;
 }
 
 .home-index-action:hover {
-  background: var(--violet-deep-hover);
+  color: var(--violet-light);
+  text-decoration: underline;
 }
 
 .home-index-action:focus-visible {
-  outline: 2px solid #050505;
-  outline-offset: -4px;
+  outline: 2px solid var(--violet);
+  outline-offset: 3px;
+}
+
+/* ── Tablet: two columns stay, but with less room to work with ──────────
+   Matches the hero's own compact-desktop band so the whole page shifts
+   its left inset together. Two horizontal stories per column is still
+   comfortable here (a ~171px image plus a ~280px text column at 1024px),
+   just with tighter gaps and a slightly smaller title than the wide-
+   desktop clamp settles on. */
+@media (min-width: 901px) and (max-width: 1080px) {
+  .home-latest-index {
+    column-gap: 32px;
+    row-gap: 32px;
+  }
+  .home-index-image {
+    flex-basis: 38%;
+  }
+  .home-index-title {
+    font-size: 19px;
+  }
 }
 
 /* Stacked layout: the hero copy sits at the mobile gutter, so the sections
@@ -717,19 +751,37 @@
     max-width: none;
     margin: 56px 0 28px;
   }
-  /* Two columns become one -- each module is already image-above-text
-     (see .home-index-row above), so collapsing the grid is the only
-     change needed to stack all four in DOM order (Voynich, Dancing
-     Plague, Lake Nyos, Tunguska). Reduced row-gap now that there's no
-     horizontal grouping doing part of the separating work. */
+  /* Two columns become one -- all four stories stack in DOM/reading order
+     (Voynich, Dancing Plague, Lake Nyos, Tunguska). Reduced row-gap now
+     that there's no horizontal grouping doing part of the separating
+     work. */
   .home-latest-index {
     max-width: none;
     margin: 0;
     grid-template-columns: 1fr;
     row-gap: 28px;
   }
-  .home-index-action {
-    height: 36px;
+  /* Each story flips from a horizontal row back to image-above-text --
+     a phone-width column has no room for a side-by-side ~44% image next
+     to real body copy. */
+  .home-index-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .home-index-image {
+    /* `flex-basis` targets the main axis, which is now vertical (row is
+       column-direction here) -- the desktop `flex: 0 0 44%` would
+       otherwise become a fixed 44%-of-row *height*, not width. Explicit
+       width + auto basis restores a full-width image at natural height. */
+    flex: 0 0 auto;
+    width: 100%;
+  }
+  .home-index-text {
+    flex: 0 1 auto;
+  }
+  .home-index-title {
+    font-size: clamp(19px, 5.5vw, 22px);
   }
 }
 
