@@ -1,10 +1,11 @@
 import type { RhMedia } from "../../api";
-import type { HighlightRegion } from "../../rabbitholeExtras";
 import { Cites } from "./CitationLink";
 
-export interface MediaHighlight {
-  region: HighlightRegion;
-  active: boolean;
+export interface MediaHotspot {
+  id: string;
+  region: { left: number; top: number; width: number; height: number };
+  label: string;
+  explain: string;
 }
 
 /** A real archival/source image attached to a RabbitHole — generic across
@@ -16,17 +17,20 @@ export interface MediaHighlight {
  *  the article — no card, no full-bleed break-out — so it reads as part of
  *  the story rather than a decorative header image.
  *
- *  `highlight`, when supplied, draws a quiet box over a real region of the
- *  image (measured against its actual pixels, in percentages so it holds
- *  up at any rendered size) and only shows it once `active` -- letting a
- *  page-specific interaction (see SignalReplay) point back at the real
- *  evidence without ever modifying the image itself. */
+ *  `hotspots`, when supplied, draws real clickable regions over the image
+ *  (measured against its actual pixels, in percentages so they hold up at
+ *  any rendered size) -- a generic capability, not tied to any experience
+ *  concept: this component only knows a region has a label, an
+ *  explanation, and an id to report back through `onActivateHotspot`. The
+ *  image itself is never modified. */
 export function RabbitHoleMedia({
   items,
-  highlight,
+  hotspots,
+  onActivateHotspot,
 }: {
   items: RhMedia[];
-  highlight?: MediaHighlight;
+  hotspots?: MediaHotspot[];
+  onActivateHotspot?: (hotspotId: string) => void;
 }) {
   const images = items.filter((m) => m.kind === "image" && m.url);
   if (images.length === 0) return null;
@@ -42,18 +46,26 @@ export function RabbitHoleMedia({
               className="rh-media-image"
               loading="lazy"
             />
-            {highlight && (
-              <span
-                className={`rh-media-highlight${highlight.active ? " is-active" : ""}`}
-                style={{
-                  left: `${highlight.region.left}%`,
-                  top: `${highlight.region.top}%`,
-                  width: `${highlight.region.width}%`,
-                  height: `${highlight.region.height}%`,
-                }}
-                aria-hidden="true"
-              />
-            )}
+            {i === 0 &&
+              hotspots?.map((h) => (
+                <button
+                  type="button"
+                  key={h.id}
+                  className="rh-media-hotspot"
+                  style={{
+                    left: `${h.region.left}%`,
+                    top: `${h.region.top}%`,
+                    width: `${h.region.width}%`,
+                    height: `${h.region.height}%`,
+                  }}
+                  aria-label={`${h.label}: ${h.explain}`}
+                  onClick={() => onActivateHotspot?.(h.id)}
+                >
+                  <span className="rh-media-hotspot-tag" aria-hidden="true">
+                    {h.label}
+                  </span>
+                </button>
+              ))}
           </div>
           {(m.caption || m.credit) && (
             <figcaption className="rh-media-caption">

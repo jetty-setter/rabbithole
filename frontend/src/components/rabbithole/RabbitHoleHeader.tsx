@@ -1,5 +1,5 @@
 import { monthYear, type RabbitHole } from "../../api";
-import { RabbitHoleMedia, type MediaHighlight } from "./RabbitHoleMedia";
+import { RabbitHoleMedia, type MediaHotspot } from "./RabbitHoleMedia";
 
 /** Title area + trust metadata + Hook + (optional real imagery) -- the
  *  feature opening. Designed to be (most of) the first viewport: you enter
@@ -14,10 +14,12 @@ import { RabbitHoleMedia, type MediaHighlight } from "./RabbitHoleMedia";
  *  title scale. */
 export function RabbitHoleHeader({
   rh,
-  mediaHighlight,
+  mediaHotspots,
+  onActivateHotspot,
 }: {
   rh: RabbitHole;
-  mediaHighlight?: MediaHighlight;
+  mediaHotspots?: MediaHotspot[];
+  onActivateHotspot?: (hotspotId: string) => void;
 }) {
   const published = monthYear(rh.published_at);
   const updated = monthYear(rh.updated_at);
@@ -60,7 +62,7 @@ export function RabbitHoleHeader({
         </div>
       )}
 
-      <RabbitHoleMedia items={rh.media} highlight={mediaHighlight} />
+      <RabbitHoleMedia items={rh.media} hotspots={mediaHotspots} onActivateHotspot={onActivateHotspot} />
     </header>
   );
 }
