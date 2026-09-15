@@ -130,10 +130,33 @@
   margin-top: 32px;
 }
 
+.rh-media-frame {
+  position: relative;
+}
+
 .rh-media-image {
   display: block;
   width: 100%;
   height: auto;
+}
+
+/* Points back at a real region of the image above (measured against its
+   actual pixels -- see rabbitholeExtras.ts) once a page-specific
+   interaction engages it. The image itself is never touched. */
+.rh-media-highlight {
+  position: absolute;
+  border: 2px solid transparent;
+  border-radius: 3px;
+  box-shadow: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 500ms ease, border-color 500ms ease, box-shadow 500ms ease;
+}
+
+.rh-media-highlight.is-active {
+  opacity: 1;
+  border-color: var(--violet-light);
+  box-shadow: 0 0 0 4px rgba(154, 130, 242, 0.16);
 }
 
 .rh-media-caption {
@@ -337,12 +360,56 @@
   color: var(--violet-soft);
 }
 
-/* ── The signal (specimen module) ────────────────────────────────────────
-   One major editorial moment, not a widget row: the raw reading at real
-   scale (large glyphs, tall bars), its total duration, then the handful
-   of facts that belong beside it -- a specimen / observation record, not
-   a KPI dashboard. Page-specific data, generic shape. No boxes, no card,
-   no terminal chrome. */
+/* ── The signal (interactive replay) ─────────────────────────────────────
+   "What actually happened during those 72 seconds?" -- answered by doing:
+   play/scrub/select through the six real samples. Large glyphs and tall
+   bars carry the scale; the controls and readout carry the interaction.
+   No boxes, no card, no terminal chrome. */
+
+.rh-signal-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: clamp(20px, 2.4vw, 32px);
+  max-width: 980px;
+}
+
+.rh-signal-play {
+  flex: none;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--bg);
+  background: var(--violet-light);
+  border: none;
+  border-radius: 8px;
+  padding: 9px 18px;
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+
+.rh-signal-play:hover {
+  background: var(--violet-soft);
+}
+
+.rh-signal-scrub {
+  flex: 1 1 auto;
+  min-width: 80px;
+  accent-color: var(--violet-light);
+  height: 20px;
+  cursor: pointer;
+}
+
+.rh-signal-elapsed {
+  flex: none;
+  font-family: var(--display);
+  font-size: 13.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  white-space: nowrap;
+}
 
 .rh-signal-row {
   display: flex;
@@ -358,6 +425,21 @@
   flex-direction: column;
   align-items: center;
   gap: 14px;
+  background: none;
+  border: none;
+  padding: 8px 2px;
+  margin: -8px -2px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+
+.rh-signal-char:hover {
+  background: rgba(154, 130, 242, 0.08);
+}
+
+.rh-signal-char.is-selected {
+  background: rgba(154, 130, 242, 0.12);
 }
 
 .rh-signal-bar-track {
@@ -372,6 +454,13 @@
   min-height: 6px;
   border-radius: 4px 4px 1px 1px;
   background: linear-gradient(180deg, var(--violet-light), var(--violet-deep));
+  opacity: 0.55;
+  transition: opacity 140ms ease;
+}
+
+.rh-signal-char.is-selected .rh-signal-bar,
+.rh-signal-char:hover .rh-signal-bar {
+  opacity: 1;
 }
 
 .rh-signal-glyph {
@@ -379,6 +468,11 @@
   font-weight: 700;
   font-size: clamp(30px, 3.2vw + 14px, 86px);
   line-height: 1;
+  color: var(--muted);
+  transition: color 140ms ease;
+}
+
+.rh-signal-char.is-selected .rh-signal-glyph {
   color: var(--text);
 }
 
@@ -389,6 +483,43 @@
   letter-spacing: 0.02em;
   color: var(--muted);
   white-space: nowrap;
+}
+
+.rh-signal-readout {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: clamp(24px, 2.8vw, 36px);
+  padding-top: clamp(24px, 2.8vw, 36px);
+  max-width: var(--rh-measure);
+}
+
+.rh-signal-readout-time {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  color: var(--violet-soft);
+}
+
+.rh-signal-readout-char {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--text);
+}
+
+.rh-signal-readout-text {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--muted);
+  flex-basis: 100%;
+}
+
+.rh-signal-readout-text strong {
+  color: var(--text);
+  font-weight: 600;
 }
 
 .rh-signal-duration {
@@ -456,17 +587,43 @@
   color: var(--muted);
 }
 
-/* ── Beam explainer: detected vs. missing ────────────────────────────────
-   A direct comparison, not a diagram to decode -- a real signal profile
-   beside a flat one. The absence reads from the shape alone; no
-   connecting line or node between the two panels. */
+/* ── Beam explainer: replayable detected vs. missing ─────────────────────
+   "Why is the missing second detection important?" -- a direct, replayable
+   comparison, not a diagram to decode. The end state (both passes fully
+   shown) is the default so the page reads without interaction; Replay
+   re-runs the staged reveal. A real signal profile beside a flat one --
+   the absence reads from the shape alone. No connecting line or node
+   between the two panels. */
 
 .rh-beam-desc {
   max-width: var(--rh-measure);
   font-size: 15px;
   line-height: 1.6;
   color: var(--muted);
-  margin-bottom: 32px;
+  margin-bottom: 24px;
+}
+
+.rh-beam-replay {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  background: transparent;
+  border: 1.5px solid var(--border-2);
+  border-radius: 8px;
+  padding: 8px 16px;
+  margin-bottom: clamp(28px, 3vw, 40px);
+  cursor: pointer;
+  transition: border-color 140ms ease, color 140ms ease;
+}
+
+.rh-beam-replay:hover {
+  border-color: var(--violet-soft);
+  color: var(--violet-light);
 }
 
 .rh-pass-grid {
@@ -496,12 +653,14 @@
   margin-top: -8px;
   font-size: 12.5px;
   color: var(--muted);
+  transition: opacity 400ms ease;
 }
 
 .rh-pass-profile {
   width: 100%;
   height: clamp(64px, 6vw, 96px);
   color: var(--violet);
+  transition: opacity 450ms ease;
 }
 
 .rh-pass--miss .rh-pass-profile {
@@ -514,10 +673,19 @@
   font-size: clamp(18px, 1vw + 13px, 22px);
   letter-spacing: -0.005em;
   color: var(--violet-light);
+  transition: opacity 450ms ease;
 }
 
 .rh-pass--miss .rh-pass-state {
   color: var(--coral-soft);
+}
+
+.rh-beam-conclusion {
+  margin-top: clamp(28px, 3vw, 40px);
+  max-width: var(--rh-measure);
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--muted);
 }
 
 @media (max-width: 620px) {
@@ -525,6 +693,93 @@
     grid-template-columns: 1fr;
     row-gap: 40px;
   }
+}
+
+/* ── Evidence explorer ────────────────────────────────────────────────────
+   "Which explanation best fits the evidence?" -- select a hypothesis,
+   compare its case and its problems in one shared panel instead of
+   scrolling a wall of prose. Plain buttons with an active-state underline
+   (a functional selection indicator, not a decorative rule) -- no tab-bar
+   chrome, no cards. */
+
+.rh-explorer {
+  margin-top: 8px;
+  max-width: var(--rh-measure);
+}
+
+.rh-explorer-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin-bottom: 26px;
+}
+
+.rh-explorer-tab {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: left;
+  color: var(--muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 2px 0 6px;
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.rh-explorer-tab:hover {
+  color: var(--text);
+}
+
+.rh-explorer-tab.is-active {
+  color: var(--text);
+  border-bottom-color: var(--violet-light);
+}
+
+.rh-explorer-standing {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.rh-explorer-standing-label {
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.rh-explorer-evidence + .rh-explorer-evidence {
+  margin-top: 18px;
+}
+
+.rh-explorer-h {
+  margin: 0 0 8px;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--violet-soft);
+}
+
+.rh-explorer-h--problem {
+  color: var(--coral-soft);
+}
+
+.rh-explorer-text {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.rh-explorer-h--problem + .rh-explorer-text {
+  color: var(--muted);
 }
 
 /* ── What we know ─────────────────────────────────────────────────────── */
@@ -1031,10 +1286,39 @@ a.rh-src-title:focus-visible {
   color: #0a0a0d;
 }
 
+/* ── focus states ─────────────────────────────────────────────────────── */
+/* Every interactive control introduced for the Wow! Signal evidence
+   modules gets a visible, consistent focus ring -- none of them depend on
+   hover, so keyboard and screen-reader use must be able to see where
+   focus is. */
+.rh-signal-play:focus-visible,
+.rh-signal-char:focus-visible,
+.rh-beam-replay:focus-visible,
+.rh-explorer-tab:focus-visible {
+  outline: 2px solid var(--violet-light);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.rh-signal-scrub:focus-visible {
+  outline: 2px solid var(--violet-light);
+  outline-offset: 4px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rh-src,
   .rh-src.is-flash,
-  .rh-keep-arrow {
+  .rh-keep-arrow,
+  .rh-signal-bar,
+  .rh-signal-glyph,
+  .rh-signal-char,
+  .rh-signal-play,
+  .rh-beam-replay,
+  .rh-pass-profile,
+  .rh-pass-state,
+  .rh-pass-timing,
+  .rh-explorer-tab,
+  .rh-media-highlight {
     transition: none;
   }
 }
