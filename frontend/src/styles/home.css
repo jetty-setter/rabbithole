@@ -780,7 +780,14 @@
     grid-template-columns: minmax(0, 1.5fr) minmax(400px, 1fr);
     column-gap: 64px;
     align-items: start;
-    width: min(calc(100% - 96px), 1600px);
+    /* Capped at 1640 (was 1600) -- at true wide desktop (~1913px+, so in
+       practice only 1920px and above among real viewports) the calc()
+       below now stops being the binding constraint before this cap does,
+       so the whole spread claims more of the viewport instead of
+       flat-lining 40px short of it. Untouched at 1600px and narrower: the
+       calc() term there is already smaller than either cap, so this
+       change is invisible below ~1913px. */
+    width: min(calc(100% - 96px), 1640px);
     margin-inline: auto;
   }
 
@@ -792,10 +799,14 @@
      visual half of the story (image ~60% / text ~40%, up from an even
      ~56%/44%) rather than a medium supporting illustration, and fits the
      feature into its zone without the browser silently compressing it
-     below its intended shape. Text column (22rem) is essentially
-     unchanged from the previous pass; only the image column grew. */
+     below its intended shape. Text column widened slightly (22rem ->
+     24rem) alongside the wider shell above so the copy column doesn't
+     stay pinned at its old width while the image and rail both grow --
+     the image track shrinks a hair in exchange (33rem -> 32.5rem) so the
+     pair still fits its zone without the browser silently compressing
+     either below its intended shape. */
   .home-latest-shell.has-rail .home-featured-grid {
-    grid-template-columns: minmax(0, 22rem) minmax(0, 33rem);
+    grid-template-columns: minmax(0, 24rem) minmax(0, 32.5rem);
     column-gap: clamp(24px, 3vw, 40px);
   }
 
