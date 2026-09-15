@@ -1,11 +1,15 @@
 /* ── Wow! Signal flagship experience ──────────────────────────────────────
    RabbitHole's near-black world, carried by scale, space and real evidence
-   rather than gradients or chrome. Scenes are plain stacked <section>s --
-   normal document flow, normal scrolling, no scroll-hijacking. Each scene
-   fades/settles into place via a small opacity+translate transition
-   (.wow-fade) driven by IntersectionObserver; under reduced motion or
-   before JS ever runs, content sits at full opacity -- nothing is ever
-   gated behind an animation completing. */
+   rather than gradients or chrome. Scenes are plain stacked <section>s in
+   normal document flow -- the browser's own scroll is never hijacked --
+   but several of them are pinned for a scroll distance by GSAP
+   ScrollTrigger (see experiences/wow/*.tsx), so the CSS below assumes every
+   element it choreographs starts from its fully resolved, fully visible
+   state and is only ever moved by GSAP-applied inline transform/opacity.
+   Nothing in this file hides content by default: the reduced-motion path
+   (no ResizeObserver/IntersectionObserver, or prefers-reduced-motion) never
+   runs any GSAP setup at all, so every scene simply renders in that same
+   resolved state with no animation, not a degraded one. */
 
 .wow-exp {
   position: relative;
@@ -17,6 +21,7 @@
 
 .wow-scene {
   padding: clamp(48px, 8vw, 120px) 0;
+  position: relative;
 }
 
 .wow-eyebrow {
@@ -68,17 +73,18 @@
   text-decoration: underline;
 }
 
-/* Scroll-reveal: subtle, never fully hides content so a slow/failed
-   observer never blocks comprehension. */
-.wow-fade {
-  opacity: 0.45;
-  transform: translateY(14px);
-  transition: opacity 700ms ease, transform 700ms ease;
+/* Press/response feedback shared by every primary control on this page --
+   deliberately not a hover lift or a scale(1.05): a small, immediate press
+   only, ~120ms, so it reads as a button responding rather than decoration. */
+.wow-exp button:active {
+  transform: scale(0.97);
 }
-
-.wow-fade.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+.wow-exp .rh-media-hotspot:active {
+  transform: scale(0.96);
+}
+.wow-exp button,
+.wow-exp .rh-media-hotspot {
+  transition: transform 120ms ease, background 140ms ease, color 140ms ease, border-color 140ms ease;
 }
 
 /* ── Scene 1: Arrival ─────────────────────────────────────────────────── */
@@ -103,6 +109,7 @@
   color: var(--text);
   margin: 0;
   text-wrap: balance;
+  will-change: transform, opacity;
 }
 
 .wow-arrival-line {
@@ -121,14 +128,57 @@
 
 .wow-artifact-wrap {
   max-width: 760px;
-  opacity: 0.5;
-  transform: scale(0.97);
-  transition: opacity 900ms ease, transform 900ms ease;
 }
 
-.wow-artifact-wrap.is-visible {
-  opacity: 1;
-  transform: scale(1);
+.wow-artifact-stage {
+  position: relative;
+}
+
+.wow-artifact-imgwrap {
+  position: relative;
+  will-change: transform, opacity;
+}
+
+/* The "de-emphasize the surrounding paper" mask -- a radial dark gradient
+   centered on the measured 6EQUJ5 hotspot (positioned via an inline
+   custom property set from the hotspot's own region, see WowSignalPage),
+   opacity 0 until GSAP fades it in while zooming toward that point. */
+.wow-artifact-mask {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    circle at var(--wow-focus-x, 50%) var(--wow-focus-y, 50%),
+    transparent 0%,
+    transparent 18%,
+    rgba(3, 1, 5, 0.86) 62%
+  );
+}
+
+/* The shared-element overlay: six large glyphs that begin at the paper's
+   own measured hotspot position and travel to a centered, enlarged resting
+   position as the user scrolls -- the "paper becomes data" illusion. Real
+   typography, not a duplicate of the archival image. Positioned via GSAP
+   (left/top/xPercent/yPercent/scale set in JS, since its start point is
+   measured geometry); this file only styles its look and guarantees it
+   never intercepts clicks. */
+.wow-glyph-flight {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: flex;
+  gap: clamp(6px, 1.4vw, 16px);
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.wow-glyph-flight span {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(22px, 3vw, 40px);
+  color: var(--violet-light);
 }
 
 .wow-artifact-cue {
@@ -140,6 +190,9 @@
   color: var(--muted);
 }
 
+/* The click-shortcut reveal (activating the hotspot jumps straight to the
+   replay controls) -- a small, immediate microinteraction, not part of the
+   scroll choreography above, so a quick CSS transition is fine here. */
 .wow-glyph-reveal {
   display: flex;
   gap: clamp(10px, 2vw, 24px);
@@ -153,7 +206,7 @@
   color: var(--violet-light);
   opacity: 0;
   transform: translateY(10px);
-  transition: opacity 500ms ease, transform 500ms ease;
+  transition: opacity 350ms ease, transform 350ms ease;
 }
 
 .wow-glyph-reveal.is-shown .wow-glyph-reveal-char {
@@ -182,7 +235,6 @@
   border-radius: 8px;
   padding: 10px 20px;
   cursor: pointer;
-  transition: background 140ms ease;
 }
 
 .wow-replay-play:hover {
@@ -206,6 +258,13 @@
   color: var(--muted);
 }
 
+/* Wraps the curve + glyph field only -- GSAP scales/fades/lowers this
+   whole group for the end-of-replay collapse, leaving the controls above
+   (play/scrub/time) untouched and still operable. */
+.wow-replay-collapse {
+  will-change: transform, opacity;
+}
+
 .wow-replay-field {
   position: relative;
   margin-top: clamp(24px, 3vw, 40px);
@@ -213,14 +272,14 @@
 
 .wow-replay-svg {
   width: 100%;
-  height: clamp(160px, 22vw, 280px);
+  height: clamp(200px, 30vw, 360px);
   display: block;
   overflow: visible;
 }
 
 .wow-replay-glyphs {
   position: relative;
-  height: 44px;
+  height: 52px;
   margin-top: 4px;
 }
 
@@ -230,18 +289,22 @@
   transform: translateX(-50%);
   font-family: var(--display);
   font-weight: 700;
-  font-size: clamp(18px, 2vw, 26px);
+  font-size: clamp(20px, 2.6vw, 32px);
   color: var(--muted);
   background: none;
   border: none;
   padding: 4px 8px;
   cursor: pointer;
-  transition: color 140ms ease, transform 140ms ease;
+  transition: color 140ms ease, transform 140ms ease, font-size 140ms ease;
 }
 
+/* The active sample doesn't just tint -- it visibly reacts to its own
+   measured intensity, so scale varies per glyph rather than one fixed
+   "active" size (set as an inline custom property from each step's
+   value/maxValue ratio; see WowSignalPage). */
 .wow-replay-glyph.is-active {
   color: var(--violet-light);
-  transform: translateX(-50%) scale(1.15);
+  transform: translateX(-50%) scale(var(--wow-intensity, 1.15));
 }
 
 .wow-replay-readout {
@@ -250,6 +313,7 @@
   font-size: 15px;
   line-height: 1.6;
   color: var(--muted);
+  min-height: 1.6em;
 }
 
 .wow-replay-readout strong {
@@ -274,6 +338,7 @@
   letter-spacing: -0.01em;
   color: var(--text);
   margin: 0;
+  will-change: transform, opacity;
 }
 
 .wow-unresolved {
@@ -314,6 +379,30 @@
   background: transparent;
 }
 
+.wow-secondpass-field {
+  position: relative;
+  min-height: clamp(120px, 16vw, 200px);
+}
+
+/* Large, time-as-typography countdown -- 2:52 counting down and
+   accelerating toward 0:00, replacing a literal 2-minute-52-second wait.
+   Sits above the pass blocks; only present during the countdown stage. */
+.wow-secondpass-countdown {
+  margin: 0 0 28px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(48px, 8vw, 108px);
+  letter-spacing: -0.02em;
+  color: var(--text);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.wow-secondpass-countdown.is-shown {
+  opacity: 1;
+}
+
 .wow-secondpass-stage {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -323,8 +412,8 @@
 }
 
 .wow-pass-block {
-  opacity: 0.25;
-  transition: opacity 500ms ease;
+  opacity: 0.22;
+  transition: opacity 400ms ease;
 }
 
 .wow-pass-block.is-shown {
@@ -387,11 +476,34 @@
   max-width: none;
 }
 
+/* The observation-becomes-evidence handoff: plain uppercase tokens, no
+   card fill, no border, no connecting line -- spacing and weight alone
+   carry the "these readings are now evidence" idea. */
+.wow-obs-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  margin: 0 0 30px;
+}
+
+.wow-obs-chip {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0;
+  transform: translateY(10px);
+  will-change: transform, opacity;
+}
+
 /* ── Scene 9: case file ───────────────────────────────────────────────────── */
 
 .wow-scene--casefile {
   border-top: none;
   padding-top: clamp(40px, 6vw, 80px);
+  will-change: transform, opacity;
 }
 
 .wow-scene--casefile .rh {
@@ -410,6 +522,9 @@
   .wow-secondpass-stage {
     max-width: none;
   }
+  .wow-glyph-flight span {
+    font-size: clamp(18px, 6vw, 30px);
+  }
 }
 
 @media (max-width: 560px) {
@@ -417,7 +532,7 @@
     min-height: 46vh;
   }
   .wow-replay-svg {
-    height: 160px;
+    height: 200px;
   }
   .wow-replay-glyph {
     font-size: 16px;
@@ -430,27 +545,14 @@
   .wow-glyph-reveal-char {
     font-size: 26px;
   }
+  .wow-secondpass-countdown {
+    font-size: clamp(36px, 14vw, 64px);
+  }
 }
 
-/* ── reduced motion ───────────────────────────────────────────────────────── */
-
-[data-reduced-motion] .wow-fade,
-[data-reduced-motion] .wow-artifact-wrap,
-[data-reduced-motion] .wow-glyph-reveal-char,
-[data-reduced-motion] .wow-pass-block,
-[data-reduced-motion] .wow-replay-play,
-[data-reduced-motion] .wow-replay-glyph,
-[data-reduced-motion] .wow-secondpass-replay {
-  transition: none !important;
-}
-
-[data-reduced-motion] .wow-fade,
-[data-reduced-motion] .wow-artifact-wrap {
-  opacity: 1;
-  transform: none;
-}
-
-[data-reduced-motion] .wow-glyph-reveal-char {
-  opacity: 1;
-  transform: none;
+@media (prefers-reduced-motion: reduce) {
+  .wow-exp button:active,
+  .wow-exp .rh-media-hotspot:active {
+    transform: none;
+  }
 }
