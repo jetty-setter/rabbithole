@@ -12,7 +12,14 @@ import { SourcesList } from "./components/rabbithole/SourcesList";
 import { WhatWeKnow } from "./components/rabbithole/WhatWeKnow";
 import { loadExperience } from "./experiences/registry";
 import { useEvidenceState } from "./experiences/useEvidenceState";
+import { WowSignalPage } from "./experiences/wow/WowSignalPage";
 import { useDocumentMeta } from "./hooks/useDocumentMeta";
+
+/** RabbitHoles with their own bespoke, cinematic experience composition --
+ *  fully replacing the generic reader layout, not augmenting it. Every
+ *  other RabbitHole (including one with a plain EvidenceExperience) keeps
+ *  the standard layout below. Keep this list short and deliberate. */
+const FLAGSHIP_EXPERIENCES = new Set(["the-wow-signal"]);
 
 type LoadState =
   | { status: "loading" }
@@ -64,6 +71,11 @@ export function RabbitHolePage() {
   if (state.status === "error") return <RabbitHoleError />;
 
   const rh = state.rh;
+
+  if (experience && FLAGSHIP_EXPERIENCES.has(rh.slug)) {
+    return <WowSignalPage rh={rh} experience={experience} />;
+  }
+
   const contested =
     rh.contested_open &&
     ((rh.contested_open.intro && rh.contested_open.intro.trim()) ||
