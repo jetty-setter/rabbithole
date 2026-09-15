@@ -1,17 +1,17 @@
 import { monthYear, type RabbitHole } from "../../api";
 import { RabbitHoleMedia } from "./RabbitHoleMedia";
 
-/** Title area + trust metadata + Hook + (optional real imagery) + The Short
- *  Version. Designed to be (most of) the first viewport: you enter this
- *  RabbitHole before you're invited anywhere else. Media sits between the
- *  hook and the short version when present — early enough to carry real
- *  visual weight, not so early it competes with the title for attention.
- *  When a real image is present, wide desktop breaks the opening into an
- *  asymmetric two-column composition (text left, image right) via CSS grid
- *  areas — the DOM order (hook, then media, then short version) is
- *  unchanged, only the visual placement shifts. Without media it simply
- *  stacks as a single editorial column, still at the article's full title
- *  scale. */
+/** Title area + trust metadata + Hook + (optional real imagery) -- the
+ *  feature opening. Designed to be (most of) the first viewport: you enter
+ *  this RabbitHole before you're invited anywhere else. The short version
+ *  and any page-specific evidence modules render after this, back in the
+ *  article's normal flow (see RabbitHolePage) -- this component only owns
+ *  the one deliberately asymmetric composition. When a real image is
+ *  present, wide desktop breaks the opening into a two-column composition
+ *  (text left, image right) via CSS grid areas -- the DOM order (hook, then
+ *  media) is unchanged, only the visual placement shifts. Without media it
+ *  simply stacks as a single editorial column, still at the article's full
+ *  title scale. */
 export function RabbitHoleHeader({ rh }: { rh: RabbitHole }) {
   const published = monthYear(rh.published_at);
   const updated = monthYear(rh.updated_at);
@@ -55,15 +55,6 @@ export function RabbitHoleHeader({ rh }: { rh: RabbitHole }) {
       )}
 
       <RabbitHoleMedia items={rh.media} />
-
-      {rh.short_version && (
-        <section className="rh-short" aria-labelledby="rh-h-short">
-          <h2 className="rh-short-label" id="rh-h-short">
-            The short version
-          </h2>
-          <p className="rh-short-text">{rh.short_version}</p>
-        </section>
-      )}
     </header>
   );
 }
