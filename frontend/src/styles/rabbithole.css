@@ -189,10 +189,10 @@
 /* ── wide desktop: the one asymmetric composition ───────────────────────
    The single place the page departs from its reading spine: when real
    media is present, the title/hook and the archival image sit side by
-   side, close to a 50/50 split. DOM order never changes (title/meta,
-   hook, media, short version) -- only placement, via named grid areas, so
-   the short version can drop straight back into the article's normal
-   column beneath both. */
+   side, close to a 50/50 split. DOM order never changes (title/meta, then
+   hook, then media) -- only placement, via named grid areas. Everything
+   after this component (short version, evidence modules, the rest of the
+   article) renders back in the page's normal single column. */
 @media (min-width: 1024px) {
   .rh-head--media {
     display: grid;
@@ -203,8 +203,7 @@
       "title    media"
       "subtitle media"
       "meta     media"
-      "hook     media"
-      "short    short";
+      "hook     media";
     align-items: start;
   }
 
@@ -227,10 +226,6 @@
   .rh-head--media .rh-media-group {
     grid-area: media;
     margin-top: 0;
-  }
-  .rh-head--media .rh-short {
-    grid-area: short;
-    margin-top: 56px;
   }
 }
 
@@ -342,6 +337,203 @@
   color: var(--violet-soft);
 }
 
+/* ── The signal (evidence module) ────────────────────────────────────────
+   A signature module, page-specific data but a generic shape: one glyph
+   per reading, a bar sized to its relative strength, a plain caption
+   underneath. Real typography and a simple bar chart carry it -- no
+   terminal chrome, no glow. */
+
+.rh-signal-row {
+  display: flex;
+  gap: clamp(10px, 2.2vw, 22px);
+  align-items: flex-end;
+  max-width: var(--rh-measure);
+}
+
+.rh-signal-char {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.rh-signal-bar-track {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  height: 84px;
+}
+
+.rh-signal-bar {
+  width: 100%;
+  min-height: 6px;
+  border-radius: 3px 3px 1px 1px;
+  background: linear-gradient(180deg, var(--violet-light), var(--violet-deep));
+}
+
+.rh-signal-glyph {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(20px, 3vw, 30px);
+  color: var(--text);
+}
+
+.rh-signal-intensity {
+  font-family: var(--sans);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.rh-signal-caption {
+  margin-top: 22px;
+  max-width: var(--rh-measure);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+/* ── Signal snapshot ──────────────────────────────────────────────────────
+   A compact, scannable orientation block -- plain type on the page, no
+   card, no tile wall. */
+
+.rh-snapshot-grid {
+  margin: 0;
+  max-width: 920px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  column-gap: 28px;
+  row-gap: 20px;
+}
+
+.rh-snapshot-field dt {
+  font-family: var(--sans);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 5px;
+}
+
+.rh-snapshot-field dd {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.003em;
+  color: var(--text);
+}
+
+/* ── Beam explainer ───────────────────────────────────────────────────────
+   A sequence of expected passes rendered as plain labelled points on a
+   line -- an intuitive diagram, not an instrument schematic. */
+
+.rh-beam-desc {
+  max-width: var(--rh-measure);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin-bottom: 28px;
+}
+
+.rh-beam-diagram {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 0;
+  max-width: var(--rh-measure);
+}
+
+.rh-beam-pass {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  min-width: 116px;
+}
+
+.rh-beam-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--violet);
+  box-shadow: 0 0 0 4px rgba(154, 130, 242, 0.18);
+}
+
+.rh-beam-pass.is-missing .rh-beam-dot {
+  background: transparent;
+  border: 1.5px dashed var(--border-2);
+  box-shadow: none;
+}
+
+.rh-beam-label {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.rh-beam-pass.is-missing .rh-beam-label {
+  color: var(--muted);
+}
+
+.rh-beam-note {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.rh-beam-pass.is-missing .rh-beam-note {
+  color: var(--coral-soft);
+}
+
+.rh-beam-connector {
+  flex: 1 1 60px;
+  min-width: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0 6px;
+  margin-bottom: 28px;
+}
+
+.rh-beam-line {
+  width: 100%;
+  height: 1px;
+  background: var(--border-2);
+}
+
+.rh-beam-gap {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .rh-beam-diagram {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .rh-beam-connector {
+    flex-direction: row;
+    width: 100%;
+    margin-bottom: 0;
+    padding: 4px 0;
+  }
+  .rh-beam-line {
+    width: 32px;
+    height: 1px;
+  }
+}
+
 /* ── What we know ─────────────────────────────────────────────────────── */
 /* A restrained two-column list, bounded well short of the full canvas so
    it still reads as part of the article rather than a standalone grid.
@@ -354,28 +546,28 @@
   max-width: 920px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 48px;
-  row-gap: 28px;
+  column-gap: 44px;
+  row-gap: 20px;
 }
 
 .rh-wwk-item {
   min-width: 0;
   display: grid;
-  grid-template-columns: 1.6rem 1fr;
-  column-gap: 12px;
+  grid-template-columns: 1.5rem 1fr;
+  column-gap: 10px;
 }
 
 .rh-wwk-index {
   font-family: var(--display);
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--violet);
   padding-top: 1px;
 }
 
 .rh-wwk-text {
-  font-size: 15.5px;
-  line-height: 1.58;
+  font-size: 15px;
+  line-height: 1.52;
   color: var(--text);
 }
 
@@ -407,7 +599,7 @@
 }
 
 .rh-contested-item + .rh-contested-item {
-  margin-top: 36px;
+  margin-top: 26px;
 }
 
 .rh-contested-claim-row {
@@ -499,7 +691,7 @@
 }
 
 .rh-tl-row + .rh-tl-row {
-  margin-top: 22px;
+  margin-top: 16px;
 }
 
 .rh-tl-date {
@@ -625,6 +817,37 @@ a.rh-keep-inner:focus-visible .rh-keep-arrow {
   margin: 0;
   padding: 0;
   max-width: var(--rh-measure);
+}
+
+/* The overflow past the first few sources, tucked behind a native
+   disclosure -- still real DOM nodes (a citation jump still resolves and
+   reveals them), just not part of the default visual weight of the page. */
+.rh-src-more {
+  max-width: var(--rh-measure);
+}
+
+.rh-src-more summary {
+  margin-top: 14px;
+  padding: 6px 0;
+  font-family: var(--sans);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--violet-soft);
+  cursor: pointer;
+  list-style: none;
+}
+
+.rh-src-more summary::-webkit-details-marker {
+  display: none;
+}
+
+.rh-src-more summary:hover {
+  color: var(--violet-light);
+}
+
+.rh-src-more[open] summary {
+  margin-bottom: 2px;
 }
 
 .rh-src {

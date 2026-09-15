@@ -2,13 +2,17 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { getRabbitHole, type RabbitHole } from "./api";
+import { BeamExplainer } from "./components/rabbithole/BeamExplainer";
 import { ContestedOpen } from "./components/rabbithole/ContestedOpen";
 import { KeepDigging } from "./components/rabbithole/KeepDigging";
 import { RabbitHoleHeader } from "./components/rabbithole/RabbitHoleHeader";
 import { RabbitHoleTimeline } from "./components/rabbithole/RabbitHoleTimeline";
+import { SignalSequence } from "./components/rabbithole/SignalSequence";
+import { SignalSnapshot } from "./components/rabbithole/SignalSnapshot";
 import { SourcesList } from "./components/rabbithole/SourcesList";
 import { WhatWeKnow } from "./components/rabbithole/WhatWeKnow";
 import { useDocumentMeta } from "./hooks/useDocumentMeta";
+import { RABBITHOLE_EXTRAS } from "./rabbitholeExtras";
 
 type LoadState =
   | { status: "loading" }
@@ -56,13 +60,27 @@ export function RabbitHolePage() {
       ? rh.contested_open
       : null;
   const timeline = rh.timeline && rh.timeline.length > 0 ? rh.timeline : null;
+  const extras = RABBITHOLE_EXTRAS[rh.slug];
 
   return (
     <main className="page rh-page">
       <article className="rh">
         <RabbitHoleHeader rh={rh} />
 
+        {extras?.signalSequence && <SignalSequence spec={extras.signalSequence} />}
+        {extras?.snapshot && <SignalSnapshot fields={extras.snapshot} />}
+
+        {rh.short_version && (
+          <section className="rh-block rh-short" aria-labelledby="rh-h-short">
+            <h2 className="rh-short-label" id="rh-h-short">
+              The short version
+            </h2>
+            <p className="rh-short-text">{rh.short_version}</p>
+          </section>
+        )}
+
         {rh.what_we_know.length > 0 && <WhatWeKnow facts={rh.what_we_know} />}
+        {extras?.beamExplainer && <BeamExplainer spec={extras.beamExplainer} />}
         {contested && <ContestedOpen data={contested} />}
         {timeline && <RabbitHoleTimeline entries={timeline} />}
         {rh.keep_digging.length > 0 && <KeepDigging connections={rh.keep_digging} />}

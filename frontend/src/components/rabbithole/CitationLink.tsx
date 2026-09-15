@@ -8,6 +8,11 @@ function jumpToSource(n: number, e?: { preventDefault: () => void }) {
   const el = document.getElementById(SOURCE_ID(n));
   if (!el) return; // no dead scroll if the sources list isn't mounted
   e?.preventDefault();
+  // A source past the default-visible count sits inside a closed <details>
+  // (see SourcesList) -- scrollIntoView doesn't reveal that on its own, so
+  // open the disclosure first rather than scrolling to a hidden target.
+  const details = el.closest("details");
+  if (details && !details.open) details.open = true;
   const reduce =
     typeof window !== "undefined" &&
     window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
