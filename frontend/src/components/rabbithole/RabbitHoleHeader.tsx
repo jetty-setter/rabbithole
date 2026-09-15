@@ -1,5 +1,5 @@
 import { monthYear, type RabbitHole } from "../../api";
-import { RabbitHoleMedia } from "./RabbitHoleMedia";
+import { RabbitHoleMedia, type MediaHighlight } from "./RabbitHoleMedia";
 
 /** Title area + trust metadata + Hook + (optional real imagery) -- the
  *  feature opening. Designed to be (most of) the first viewport: you enter
@@ -12,7 +12,13 @@ import { RabbitHoleMedia } from "./RabbitHoleMedia";
  *  media) is unchanged, only the visual placement shifts. Without media it
  *  simply stacks as a single editorial column, still at the article's full
  *  title scale. */
-export function RabbitHoleHeader({ rh }: { rh: RabbitHole }) {
+export function RabbitHoleHeader({
+  rh,
+  mediaHighlight,
+}: {
+  rh: RabbitHole;
+  mediaHighlight?: MediaHighlight;
+}) {
   const published = monthYear(rh.published_at);
   const updated = monthYear(rh.updated_at);
   const dateLabel =
@@ -54,7 +60,7 @@ export function RabbitHoleHeader({ rh }: { rh: RabbitHole }) {
         </div>
       )}
 
-      <RabbitHoleMedia items={rh.media} />
+      <RabbitHoleMedia items={rh.media} highlight={mediaHighlight} />
     </header>
   );
 }

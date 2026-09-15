@@ -4,10 +4,11 @@ import { Link, useParams } from "react-router-dom";
 import { getRabbitHole, type RabbitHole } from "./api";
 import { BeamExplainer } from "./components/rabbithole/BeamExplainer";
 import { ContestedOpen } from "./components/rabbithole/ContestedOpen";
+import { EvidenceExplorer } from "./components/rabbithole/EvidenceExplorer";
 import { KeepDigging } from "./components/rabbithole/KeepDigging";
 import { RabbitHoleHeader } from "./components/rabbithole/RabbitHoleHeader";
 import { RabbitHoleTimeline } from "./components/rabbithole/RabbitHoleTimeline";
-import { SignalSpecimen } from "./components/rabbithole/SignalSpecimen";
+import { SignalReplay } from "./components/rabbithole/SignalReplay";
 import { SourcesList } from "./components/rabbithole/SourcesList";
 import { WhatWeKnow } from "./components/rabbithole/WhatWeKnow";
 import { useDocumentMeta } from "./hooks/useDocumentMeta";
@@ -25,6 +26,9 @@ type LoadState =
 export function RabbitHolePage() {
   const { slug } = useParams<{ slug: string }>();
   const [state, setState] = useState<LoadState>({ status: "loading" });
+  // Set once the reader engages the interactive signal replay -- passed
+  // down to highlight the real 6EQUJ5 sequence in the archival printout.
+  const [signalEngaged, setSignalEngaged] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -64,13 +68,25 @@ export function RabbitHolePage() {
   return (
     <main className="page rh-page">
       <article className="rh">
-        <RabbitHoleHeader rh={rh} />
+        <RabbitHoleHeader
+          rh={rh}
+          mediaHighlight={
+            extras?.signalSpecimen
+              ? { region: extras.signalSpecimen.highlightRegion, active: signalEngaged }
+              : undefined
+          }
+        />
 
         {/* The top half's three visual moments: the real archival printout
-            (in the header above), the signal specimen, then the detected-
-            vs-missing second pass -- before the article returns to its
-            normal reading flow. */}
-        {extras?.signalSpecimen && <SignalSpecimen spec={extras.signalSpecimen} />}
+            (in the header above), the signal replay, then the detected-
+            vs-missing second-pass comparison -- before the article
+            returns to its normal reading flow. */}
+        {extras?.signalSpecimen && (
+          <SignalReplay
+            spec={extras.signalSpecimen}
+            onEngage={() => setSignalEngaged(true)}
+          />
+        )}
         {extras?.beamExplainer && <BeamExplainer spec={extras.beamExplainer} />}
 
         {rh.short_version && (
@@ -83,7 +99,8 @@ export function RabbitHolePage() {
         )}
 
         {rh.what_we_know.length > 0 && <WhatWeKnow facts={rh.what_we_know} />}
-        {contested && <ContestedOpen data={contested} />}
+        {contested &&
+          (extras ? <EvidenceExplorer data={contested} /> : <ContestedOpen data={contested} />)}
         {timeline && <RabbitHoleTimeline entries={timeline} />}
         {rh.keep_digging.length > 0 && <KeepDigging connections={rh.keep_digging} />}
         {rh.sources.length > 0 && <SourcesList sources={rh.sources} />}
