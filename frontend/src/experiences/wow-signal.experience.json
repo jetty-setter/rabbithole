@@ -1,0 +1,238 @@
+{
+  "id": "wow-signal-investigation",
+  "slug": "the-wow-signal",
+  "title": "Examine the Wow! Signal",
+  "invitation": "Examine the signal",
+
+  "artifacts": [
+    {
+      "id": "wow-printout",
+      "kind": "image",
+      "url": "/Wow_Signal_Archive_Crop_Wide.webp",
+      "hotspots": [
+        {
+          "id": "hotspot-6equj5",
+          "region": { "left": 12.8, "top": 17.5, "width": 7.5, "height": 33.5 },
+          "label": "6EQUJ5",
+          "explain": "The six-character sequence Jerry Ehman circled and wrote \"Wow!\" beside — not a message, but his own shorthand for how strong the signal was, moment to moment.",
+          "selects": { "kind": "sequence", "id": "signal-replay" }
+        }
+      ]
+    }
+  ],
+
+  "evidence": [
+    {
+      "id": "narrowband-signal",
+      "label": "Narrowband",
+      "statement": "The signal was narrowband, the kind of tightly-confined-frequency reading SETI searches are built to catch.",
+      "sources": [{ "sourceId": "s10" }, { "sourceId": "s12" }]
+    },
+    {
+      "id": "beam-shaped-response",
+      "label": "Beam-shaped rise and fall",
+      "statement": "The signal's strength rose and fell across the six samples closely matching Big Ear's antenna beam pattern, the way a fixed point in the sky should read as the telescope's fixed beam swept past it.",
+      "sources": [{ "sourceId": "s10" }, { "sourceId": "s11" }]
+    },
+    {
+      "id": "not-a-message",
+      "label": "Not a decoded message",
+      "statement": "6EQUJ5 encoded the signal's changing strength across six samples — it was not a decoded message or transmission text.",
+      "sources": [{ "sourceId": "s11" }, { "sourceId": "s12" }]
+    },
+    {
+      "id": "near-hydrogen-line",
+      "label": "Near the hydrogen line",
+      "statement": "Ehman's original analysis placed the signal at 1420.4556 ± 0.005 MHz, close to neutral hydrogen's 21-centimeter line — a protected, closely watched frequency band.",
+      "sources": [{ "sourceId": "s10" }]
+    },
+    {
+      "id": "missing-second-feed",
+      "label": "Missing second feed response",
+      "statement": "Big Ear's two feed horns should have crossed the source about 2 minutes 52 seconds apart, but only one response appeared.",
+      "sources": [{ "sourceId": "s10" }]
+    },
+    {
+      "id": "no-redetection",
+      "label": "Never redetected",
+      "statement": "Repeated searches, including coordinated Green Bank Telescope and Allen Telescope Array observations in 2022, have not redetected the signal.",
+      "sources": [{ "sourceId": "s12" }, { "sourceId": "s17" }]
+    },
+    {
+      "id": "reanalysis-favors-astrophysical",
+      "label": "2025 reanalysis",
+      "statement": "A 2025 archival reanalysis revised the signal's frequency, intensity, and sky position and argued that an astrophysical origin is more likely than interference.",
+      "sources": [{ "sourceId": "s14" }, { "sourceId": "s16" }]
+    }
+  ],
+
+  "sequences": [
+    {
+      "id": "signal-replay",
+      "kind": "replay",
+      "title": "The signal",
+      "totalSeconds": 72,
+      "steps": [
+        {
+          "id": "sample-6",
+          "order": 0,
+          "label": "6",
+          "elapsedSeconds": 0,
+          "value": 6.5,
+          "valueLabel": "≈6–7×",
+          "meaning": "Just above the noise floor — the reading begins."
+        },
+        {
+          "id": "sample-E",
+          "order": 1,
+          "label": "E",
+          "elapsedSeconds": 12,
+          "value": 14.5,
+          "valueLabel": "≈14–15×",
+          "meaning": "Rising quickly as Big Ear's beam sweeps onto the source."
+        },
+        {
+          "id": "sample-Q",
+          "order": 2,
+          "label": "Q",
+          "elapsedSeconds": 24,
+          "value": 26.5,
+          "valueLabel": "≈26–27×",
+          "meaning": "Nearing the peak of the pattern."
+        },
+        {
+          "id": "sample-U",
+          "order": 3,
+          "label": "U",
+          "elapsedSeconds": 36,
+          "value": 30.5,
+          "valueLabel": "≈30–31×",
+          "meaning": "The strongest reading — about 30 times the background level.",
+          "evidenceId": "beam-shaped-response"
+        },
+        {
+          "id": "sample-J",
+          "order": 4,
+          "label": "J",
+          "elapsedSeconds": 48,
+          "value": 19.5,
+          "valueLabel": "≈19–20×",
+          "meaning": "Falling as the beam moves past the source."
+        },
+        {
+          "id": "sample-5",
+          "order": 5,
+          "label": "5",
+          "elapsedSeconds": 60,
+          "value": 5.5,
+          "valueLabel": "≈5–6×",
+          "meaning": "Back near the noise floor as the reading ends."
+        }
+      ]
+    },
+    {
+      "id": "two-feed-observation",
+      "kind": "comparison",
+      "title": "It should have appeared twice",
+      "steps": [
+        {
+          "id": "pass-first",
+          "order": 0,
+          "label": "First pass",
+          "detected": true,
+          "state": "Detected",
+          "meaning": "The signal crossed Big Ear's first feed horn and was recorded."
+        },
+        {
+          "id": "pass-second",
+          "order": 1,
+          "label": "Second pass",
+          "timing": "2 min 52 sec later",
+          "detected": false,
+          "state": "Nothing detected",
+          "meaning": "A fixed source should have crossed the second feed horn about 2 minutes 52 seconds later. It didn't appear.",
+          "evidenceId": "missing-second-feed"
+        }
+      ]
+    }
+  ],
+
+  "hypotheses": [
+    {
+      "id": "extraterrestrial-transmission",
+      "label": "Extraterrestrial transmission",
+      "status": "contested",
+      "thesis": "The signal's shape and frequency match exactly what a directional SETI search is built to catch — but a single, unrepeated detection carrying no decodable content falls short of confirming an artificial transmitter.",
+      "sources": [{ "sourceId": "s10" }, { "sourceId": "s12" }, { "sourceId": "s17" }],
+      "evidence": [
+        { "evidenceId": "narrowband-signal", "verdict": "supports" },
+        { "evidenceId": "beam-shaped-response", "verdict": "supports" },
+        { "evidenceId": "near-hydrogen-line", "verdict": "supports" },
+        { "evidenceId": "not-a-message", "verdict": "weakens" },
+        { "evidenceId": "missing-second-feed", "verdict": "weakens" },
+        { "evidenceId": "no-redetection", "verdict": "weakens" },
+        { "evidenceId": "reanalysis-favors-astrophysical", "verdict": "uncertain" }
+      ]
+    },
+    {
+      "id": "terrestrial-interference",
+      "label": "Terrestrial interference",
+      "status": "contested",
+      "thesis": "A human-made signal is always possible in a one-off detection, but the beam-shaped rise and fall, the protected frequency band, and newer archival analysis make ordinary local interference a poor fit.",
+      "sources": [{ "sourceId": "s10" }, { "sourceId": "s14" }],
+      "evidence": [
+        { "evidenceId": "narrowband-signal", "verdict": "uncertain" },
+        { "evidenceId": "beam-shaped-response", "verdict": "weakens" },
+        { "evidenceId": "near-hydrogen-line", "verdict": "weakens" },
+        { "evidenceId": "not-a-message", "verdict": "not_applicable" },
+        { "evidenceId": "missing-second-feed", "verdict": "uncertain" },
+        { "evidenceId": "no-redetection", "verdict": "compatible" },
+        { "evidenceId": "reanalysis-favors-astrophysical", "verdict": "weakens" }
+      ]
+    },
+    {
+      "id": "natural-hydrogen-transient",
+      "label": "Natural hydrogen-line transient",
+      "status": "contested",
+      "thesis": "Weaker, similar narrowband hydrogen signals found in Arecibo data suggest a powerful transient could trigger stimulated emission from a cold hydrogen cloud — a mechanism a 2025 reanalysis favored, though it hasn't been directly identified at the Wow! source and the 1977 event hasn't repeated.",
+      "sources": [{ "sourceId": "s13" }, { "sourceId": "s14" }, { "sourceId": "s16" }],
+      "evidence": [
+        { "evidenceId": "narrowband-signal", "verdict": "supports" },
+        { "evidenceId": "beam-shaped-response", "verdict": "uncertain" },
+        { "evidenceId": "near-hydrogen-line", "verdict": "supports" },
+        { "evidenceId": "not-a-message", "verdict": "not_applicable" },
+        { "evidenceId": "missing-second-feed", "verdict": "uncertain" },
+        { "evidenceId": "no-redetection", "verdict": "weakens" },
+        { "evidenceId": "reanalysis-favors-astrophysical", "verdict": "supports" }
+      ]
+    },
+    {
+      "id": "comet",
+      "label": "Comet",
+      "status": "unsupported",
+      "thesis": "A cometary-hydrogen explanation attracted attention in 2017, but SETI researchers found problems with the proposed comets' positions, the two-feed timing, and the lack of comparably strong 1420 MHz comet emission.",
+      "sources": [{ "sourceId": "s15" }],
+      "evidence": [
+        { "evidenceId": "narrowband-signal", "verdict": "uncertain" },
+        { "evidenceId": "beam-shaped-response", "verdict": "uncertain" },
+        { "evidenceId": "near-hydrogen-line", "verdict": "weakens" },
+        { "evidenceId": "not-a-message", "verdict": "not_applicable" },
+        { "evidenceId": "missing-second-feed", "verdict": "weakens" },
+        { "evidenceId": "no-redetection", "verdict": "uncertain" },
+        { "evidenceId": "reanalysis-favors-astrophysical", "verdict": "uncertain" }
+      ]
+    }
+  ],
+
+  "matrix": {
+    "evidenceIds": [
+      "narrowband-signal",
+      "beam-shaped-response",
+      "not-a-message",
+      "near-hydrogen-line",
+      "missing-second-feed",
+      "no-redetection",
+      "reanalysis-favors-astrophysical"
+    ]
+  }
+}

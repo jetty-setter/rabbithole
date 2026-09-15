@@ -140,23 +140,50 @@
   height: auto;
 }
 
-/* Points back at a real region of the image above (measured against its
-   actual pixels -- see rabbitholeExtras.ts) once a page-specific
-   interaction engages it. The image itself is never touched. */
-.rh-media-highlight {
+/* A real, clickable region over a real part of the image -- measured
+   against its actual pixels (see wow-signal.experience.json), so it
+   holds up at any rendered size. Activating it selects a sequence or
+   piece of evidence elsewhere on the page (see RabbitHolePage). The
+   image itself is never touched. */
+.rh-media-hotspot {
   position: absolute;
-  border: 2px solid transparent;
+  background: rgba(154, 130, 242, 0.05);
+  border: 1.5px solid rgba(154, 130, 242, 0.35);
   border-radius: 3px;
-  box-shadow: none;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 500ms ease, border-color 500ms ease, box-shadow 500ms ease;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
 }
 
-.rh-media-highlight.is-active {
-  opacity: 1;
+.rh-media-hotspot:hover,
+.rh-media-hotspot:focus-visible {
+  background: rgba(154, 130, 242, 0.14);
   border-color: var(--violet-light);
-  box-shadow: 0 0 0 4px rgba(154, 130, 242, 0.16);
+  outline: none;
+}
+
+.rh-media-hotspot-tag {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--sans);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--violet-light);
+  background: var(--bg);
+  padding: 3px 7px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 160ms ease;
+  pointer-events: none;
+}
+
+.rh-media-hotspot:hover .rh-media-hotspot-tag,
+.rh-media-hotspot:focus-visible .rh-media-hotspot-tag {
+  opacity: 1;
 }
 
 .rh-media-caption {
@@ -695,17 +722,70 @@
   }
 }
 
-/* ── Evidence explorer ────────────────────────────────────────────────────
-   "Which explanation best fits the evidence?" -- select a hypothesis,
-   compare its case and its problems in one shared panel instead of
-   scrolling a wall of prose. Plain buttons with an active-state underline
-   (a functional selection indicator, not a decorative rule) -- no tab-bar
-   chrome, no cards. */
+/* ── Evidence mode ────────────────────────────────────────────────────────
+   The investigation layer: inspect the artifact (hotspots live on the
+   header's own image -- see .rh-media-hotspot above), replay what it
+   recorded, then compare hypotheses. A clearly labelled zone of its own,
+   not a redesign of the article container around it. */
 
-.rh-explorer {
-  margin-top: 8px;
-  max-width: var(--rh-measure);
+.rh-evidence-mode {
+  max-width: 980px;
 }
+
+.rh-evidence-eyebrow {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--violet-light);
+  margin: 0 0 10px;
+}
+
+.rh-evidence-mode-title {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(20px, 1.2vw + 15px, 26px);
+  letter-spacing: -0.006em;
+  color: var(--text);
+  margin: 0 0 40px;
+}
+
+.rh-evidence-sequence {
+  margin-top: clamp(40px, 4.5vw, 64px);
+}
+
+.rh-evidence-sequence .rh-section-h {
+  margin-bottom: 22px;
+}
+
+/* A step's optional pointer to a specific piece of evidence -- a plain
+   inline text link, not a button trying to look like a chip. */
+.rh-seq-evidence-link {
+  display: inline;
+  margin-left: 4px;
+  font-family: var(--sans);
+  font-size: inherit;
+  font-weight: 700;
+  color: var(--violet-soft);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.rh-seq-evidence-link:hover {
+  color: var(--violet-light);
+  text-decoration: underline;
+}
+
+/* ── Evidence comparison ──────────────────────────────────────────────────
+   "Which explanation best fits the evidence?" -- the evidence stays put;
+   the hypothesis changes. Plain hypothesis buttons with an active-state
+   underline (a functional selection indicator, not a decorative rule)
+   switch one shared evidence list; each row's verdict updates with the
+   selected hypothesis, so the whole picture is scannable before any row
+   is opened. No tab-bar chrome, no cards, no matrix-table grid. */
 
 .rh-explorer-tabs {
   display: flex;
@@ -742,7 +822,7 @@
   display: flex;
   align-items: baseline;
   gap: 10px;
-  margin-bottom: 18px;
+  margin-bottom: 10px;
 }
 
 .rh-explorer-standing-label {
@@ -754,32 +834,92 @@
   color: var(--muted);
 }
 
-.rh-explorer-evidence + .rh-explorer-evidence {
-  margin-top: 18px;
+.rh-evidence-hyp {
+  max-width: var(--rh-measure);
+  margin-bottom: 30px;
 }
 
-.rh-explorer-h {
-  margin: 0 0 8px;
+.rh-evidence-hyp-thesis {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.rh-evidence-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: var(--rh-measure);
+}
+
+.rh-evidence-row + .rh-evidence-row {
+  margin-top: 4px;
+}
+
+.rh-evidence-row-btn {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 10px 0;
+  cursor: pointer;
+}
+
+.rh-evidence-verdict {
+  flex: none;
+  width: 5.5em;
   font-family: var(--sans);
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--violet-soft);
+  color: var(--muted);
 }
 
-.rh-explorer-h--problem {
+.rh-evidence-verdict--supports {
+  color: var(--violet-light);
+}
+
+.rh-evidence-verdict--weakens {
   color: var(--coral-soft);
 }
 
-.rh-explorer-text {
+.rh-evidence-verdict--compatible {
+  color: var(--muted);
+}
+
+.rh-evidence-verdict--uncertain,
+.rh-evidence-verdict--not_applicable {
+  color: var(--border-2);
+}
+
+.rh-evidence-label {
+  font-family: var(--sans);
   font-size: 15px;
-  line-height: 1.6;
+  font-weight: 600;
   color: var(--text);
 }
 
-.rh-explorer-h--problem + .rh-explorer-text {
+.rh-evidence-statement {
+  margin: 0 0 12px calc(5.5em + 14px);
+  max-width: 56ch;
+  font-size: 14px;
+  line-height: 1.6;
   color: var(--muted);
+}
+
+@media (max-width: 560px) {
+  .rh-evidence-row-btn {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .rh-evidence-statement {
+    margin-left: 0;
+  }
 }
 
 /* ── What we know ─────────────────────────────────────────────────────── */
@@ -1287,14 +1427,16 @@ a.rh-src-title:focus-visible {
 }
 
 /* ── focus states ─────────────────────────────────────────────────────── */
-/* Every interactive control introduced for the Wow! Signal evidence
-   modules gets a visible, consistent focus ring -- none of them depend on
-   hover, so keyboard and screen-reader use must be able to see where
-   focus is. */
+/* Every interactive control in an Evidence Experience gets a visible,
+   consistent focus ring -- none of them depend on hover, so keyboard and
+   screen-reader use must be able to see where focus is. */
 .rh-signal-play:focus-visible,
 .rh-signal-char:focus-visible,
 .rh-beam-replay:focus-visible,
-.rh-explorer-tab:focus-visible {
+.rh-explorer-tab:focus-visible,
+.rh-media-hotspot:focus-visible,
+.rh-evidence-row-btn:focus-visible,
+.rh-seq-evidence-link:focus-visible {
   outline: 2px solid var(--violet-light);
   outline-offset: 2px;
   border-radius: 6px;
@@ -1318,7 +1460,8 @@ a.rh-src-title:focus-visible {
   .rh-pass-state,
   .rh-pass-timing,
   .rh-explorer-tab,
-  .rh-media-highlight {
+  .rh-media-hotspot,
+  .rh-media-hotspot-tag {
     transition: none;
   }
 }

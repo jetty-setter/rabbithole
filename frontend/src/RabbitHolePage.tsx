@@ -1,18 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { getRabbitHole, type RabbitHole } from "./api";
-import { BeamExplainer } from "./components/rabbithole/BeamExplainer";
 import { ContestedOpen } from "./components/rabbithole/ContestedOpen";
-import { EvidenceExplorer } from "./components/rabbithole/EvidenceExplorer";
+import { EvidenceExperience } from "./components/rabbithole/evidence/EvidenceExperience";
+import { sequenceDomId } from "./components/rabbithole/evidence/SequencePlayer";
 import { KeepDigging } from "./components/rabbithole/KeepDigging";
 import { RabbitHoleHeader } from "./components/rabbithole/RabbitHoleHeader";
 import { RabbitHoleTimeline } from "./components/rabbithole/RabbitHoleTimeline";
-import { SignalReplay } from "./components/rabbithole/SignalReplay";
 import { SourcesList } from "./components/rabbithole/SourcesList";
 import { WhatWeKnow } from "./components/rabbithole/WhatWeKnow";
+import { loadExperience } from "./experiences/registry";
+import { useEvidenceState } from "./experiences/useEvidenceState";
 import { useDocumentMeta } from "./hooks/useDocumentMeta";
-import { RABBITHOLE_EXTRAS } from "./rabbitholeExtras";
 
 type LoadState =
   | { status: "loading" }
@@ -22,13 +22,18 @@ type LoadState =
 
 /** The public RabbitHole reader page (`/rabbitholes/:slug`). Content comes
  *  entirely from the live API — nothing here is specific to any one
- *  RabbitHole. Optional sections that the API omits simply don't render. */
+ *  RabbitHole. Optional sections that the API omits simply don't render.
+ *
+ *  A RabbitHole may additionally have an Evidence Experience (see
+ *  ./experiences) -- a validated, data-driven interactive layer that sits
+ *  above the normal article and lets the reader inspect the real
+ *  artifact, replay what it recorded, and compare hypotheses against one
+ *  shared body of evidence, before dropping into the full narrative
+ *  below. A RabbitHole with no experience file, or one that fails
+ *  validation, renders exactly like this page always has. */
 export function RabbitHolePage() {
   const { slug } = useParams<{ slug: string }>();
   const [state, setState] = useState<LoadState>({ status: "loading" });
-  // Set once the reader engages the interactive signal replay -- passed
-  // down to highlight the real 6EQUJ5 sequence in the archival printout.
-  const [signalEngaged, setSignalEngaged] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -50,6 +55,10 @@ export function RabbitHolePage() {
     state.status === "ready" ? state.rh.subtitle ?? undefined : undefined,
   );
 
+  const readySlug = state.status === "ready" ? state.rh.slug : null;
+  const experience = useMemo(() => (readySlug ? loadExperience(readySlug) : null), [readySlug]);
+  const evidenceState = useEvidenceState(experience?.hypotheses[0]?.id ?? null);
+
   if (state.status === "loading") return <RabbitHoleSkeleton />;
   if (state.status === "not_found") return <RabbitHoleMissing />;
   if (state.status === "error") return <RabbitHoleError />;
@@ -63,31 +72,31 @@ export function RabbitHolePage() {
       ? rh.contested_open
       : null;
   const timeline = rh.timeline && rh.timeline.length > 0 ? rh.timeline : null;
-  const extras = RABBITHOLE_EXTRAS[rh.slug];
+
+  const activateHotspot = (hotspotId: string) => {
+    const hotspot = experience?.artifacts.flatMap((a) => a.hotspots ?? []).find((h) => h.id === hotspotId);
+    if (!hotspot) return;
+    if (hotspot.selects.kind === "evidence") {
+      evidenceState.selectEvidence(hotspot.selects.id);
+      return;
+    }
+    const reduced =
+      typeof window !== "undefined" && !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    document
+      .getElementById(sequenceDomId(hotspot.selects.id))
+      ?.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+  };
 
   return (
     <main className="page rh-page">
       <article className="rh">
         <RabbitHoleHeader
           rh={rh}
-          mediaHighlight={
-            extras?.signalSpecimen
-              ? { region: extras.signalSpecimen.highlightRegion, active: signalEngaged }
-              : undefined
-          }
+          mediaHotspots={experience?.artifacts[0]?.hotspots}
+          onActivateHotspot={experience ? activateHotspot : undefined}
         />
 
-        {/* The top half's three visual moments: the real archival printout
-            (in the header above), the signal replay, then the detected-
-            vs-missing second-pass comparison -- before the article
-            returns to its normal reading flow. */}
-        {extras?.signalSpecimen && (
-          <SignalReplay
-            spec={extras.signalSpecimen}
-            onEngage={() => setSignalEngaged(true)}
-          />
-        )}
-        {extras?.beamExplainer && <BeamExplainer spec={extras.beamExplainer} />}
+        {experience && <EvidenceExperience experience={experience} rh={rh} state={evidenceState} />}
 
         {rh.short_version && (
           <section className="rh-block rh-short" aria-labelledby="rh-h-short">
@@ -99,8 +108,7 @@ export function RabbitHolePage() {
         )}
 
         {rh.what_we_know.length > 0 && <WhatWeKnow facts={rh.what_we_know} />}
-        {contested &&
-          (extras ? <EvidenceExplorer data={contested} /> : <ContestedOpen data={contested} />)}
+        {contested && <ContestedOpen data={contested} />}
         {timeline && <RabbitHoleTimeline entries={timeline} />}
         {rh.keep_digging.length > 0 && <KeepDigging connections={rh.keep_digging} />}
         {rh.sources.length > 0 && <SourcesList sources={rh.sources} />}
