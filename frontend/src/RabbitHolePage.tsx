@@ -7,8 +7,7 @@ import { ContestedOpen } from "./components/rabbithole/ContestedOpen";
 import { KeepDigging } from "./components/rabbithole/KeepDigging";
 import { RabbitHoleHeader } from "./components/rabbithole/RabbitHoleHeader";
 import { RabbitHoleTimeline } from "./components/rabbithole/RabbitHoleTimeline";
-import { SignalSequence } from "./components/rabbithole/SignalSequence";
-import { SignalSnapshot } from "./components/rabbithole/SignalSnapshot";
+import { SignalSpecimen } from "./components/rabbithole/SignalSpecimen";
 import { SourcesList } from "./components/rabbithole/SourcesList";
 import { WhatWeKnow } from "./components/rabbithole/WhatWeKnow";
 import { useDocumentMeta } from "./hooks/useDocumentMeta";
@@ -67,8 +66,12 @@ export function RabbitHolePage() {
       <article className="rh">
         <RabbitHoleHeader rh={rh} />
 
-        {extras?.signalSequence && <SignalSequence spec={extras.signalSequence} />}
-        {extras?.snapshot && <SignalSnapshot fields={extras.snapshot} />}
+        {/* The top half's three visual moments: the real archival printout
+            (in the header above), the signal specimen, then the detected-
+            vs-missing second pass -- before the article returns to its
+            normal reading flow. */}
+        {extras?.signalSpecimen && <SignalSpecimen spec={extras.signalSpecimen} />}
+        {extras?.beamExplainer && <BeamExplainer spec={extras.beamExplainer} />}
 
         {rh.short_version && (
           <section className="rh-block rh-short" aria-labelledby="rh-h-short">
@@ -80,7 +83,6 @@ export function RabbitHolePage() {
         )}
 
         {rh.what_we_know.length > 0 && <WhatWeKnow facts={rh.what_we_know} />}
-        {extras?.beamExplainer && <BeamExplainer spec={extras.beamExplainer} />}
         {contested && <ContestedOpen data={contested} />}
         {timeline && <RabbitHoleTimeline entries={timeline} />}
         {rh.keep_digging.length > 0 && <KeepDigging connections={rh.keep_digging} />}
