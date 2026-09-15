@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -158,44 +158,49 @@ function validMinimal() {
 describe("RabbitHolePage — Wow! Signal evidence experience", () => {
   beforeEach(() => getRabbitHole.mockResolvedValue(wowFixture()));
 
-  it("renders the Evidence Mode block with its sequences and comparison", async () => {
+  it("renders the flagship scene structure: replay, second pass, comparison", async () => {
     renderPage("the-wow-signal");
-    await screen.findByRole("heading", { name: /examine the wow! signal/i });
-    expect(document.querySelector(".rh-evidence-mode")).toBeTruthy();
-    expect(screen.getByRole("heading", { name: /^the signal$/i })).toBeTruthy();
-    expect(screen.getByRole("heading", { name: /it should have appeared twice/i })).toBeTruthy();
+    await screen.findByRole("heading", { level: 1, name: /the wow! signal/i });
+    expect(document.querySelector(".wow-exp")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /the 72 seconds/i })).toBeTruthy();
     expect(screen.getByRole("heading", { name: /compare the explanations/i })).toBeTruthy();
+    // the traditional case file is always mounted (deep links must work
+    // regardless of scroll position), not gated behind an interaction
+    expect(document.querySelector(".rh-contested")).toBeTruthy();
+    expect(document.querySelector(".rh-sources")).toBeTruthy();
   });
 
-  it("clicking each sample button selects it, and the scrubber selects samples too", async () => {
+  it("tapping each sample glyph selects it; the scrubber also updates the active sample", async () => {
     renderPage("the-wow-signal");
-    await screen.findByRole("heading", { name: /examine the wow! signal/i });
+    await screen.findByRole("heading", { level: 1, name: /the wow! signal/i });
 
-    const buttons = [...document.querySelectorAll<HTMLButtonElement>(".rh-signal-char")];
+    const buttons = [...document.querySelectorAll<HTMLButtonElement>(".wow-replay-glyph")];
     expect(buttons).toHaveLength(6);
     const labels = ["6", "E", "Q", "U", "J", "5"];
     buttons.forEach((btn, i) => {
       fireEvent.click(btn);
       expect(btn.getAttribute("aria-pressed")).toBe("true");
-      expect(document.querySelector(".rh-signal-readout-char")?.textContent).toBe(labels[i]);
+      expect(document.querySelector(".wow-replay-glyph.is-active")?.textContent).toBe(labels[i]);
     });
 
-    const scrub = document.querySelector<HTMLInputElement>(".rh-signal-scrub")!;
+    const scrub = document.querySelector<HTMLInputElement>(".wow-replay-scrub")!;
     fireEvent.change(scrub, { target: { value: "0" } });
-    expect(document.querySelector(".rh-signal-readout-char")?.textContent).toBe("6");
+    expect(document.querySelector(".wow-replay-glyph.is-active")?.textContent).toBe("6");
   });
 
-  it("a hotspot on the printout selects/scrolls to its target", async () => {
+  it("a hotspot on the printout reveals the digital glyphs and scrolls to the replay scene", async () => {
     renderPage("the-wow-signal");
-    await screen.findByRole("heading", { name: /examine the wow! signal/i });
+    await screen.findByRole("heading", { level: 1, name: /the wow! signal/i });
 
     const hotspot = document.querySelector<HTMLElement>(".rh-media-hotspot")!;
     expect(hotspot).toBeTruthy();
+    expect(document.querySelector(".wow-glyph-reveal")?.classList.contains("is-shown")).toBe(false);
     fireEvent.click(hotspot);
 
-    // the signal-replay sequence is the hotspot's target -- its section
-    // should have been scrolled into view (jsdom stubs scrollIntoView,
-    // so just confirm it was actually invoked, not left a dead click).
+    expect(document.querySelector(".wow-glyph-reveal")?.classList.contains("is-shown")).toBe(true);
+    // the replay scene should have been scrolled into view (jsdom stubs
+    // scrollIntoView, so just confirm it was actually invoked, not left a
+    // dead click).
     expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
   });
 
@@ -232,31 +237,33 @@ describe("RabbitHolePage — Wow! Signal evidence experience", () => {
 
   it("every primary control is a real semantic element (button / range input)", async () => {
     renderPage("the-wow-signal");
-    await screen.findByRole("heading", { name: /examine the wow! signal/i });
+    await screen.findByRole("heading", { level: 1, name: /the wow! signal/i });
 
     // Real <button>/<input type=range> elements are keyboard-operable by
     // the browser itself (Enter/Space activates a button, arrow keys move
     // a range) -- guaranteed HTML behaviour, not something jsdom can
     // usefully re-simulate. This asserts every primary control actually
     // is one of those elements rather than a div with a click handler.
-    const selector = ".rh-signal-play, .rh-beam-replay, .rh-explorer-tab, .rh-evidence-row-btn, .rh-media-hotspot";
+    const selector =
+      ".wow-replay-play, .wow-replay-glyph, .wow-secondpass-replay, .rh-explorer-tab, .rh-evidence-row-btn, .rh-media-hotspot";
     for (const el of document.querySelectorAll(selector)) {
       expect(el.tagName).toBe("BUTTON");
       expect(el.getAttribute("type")).toBe("button");
     }
-    expect(document.querySelector(".rh-signal-scrub")?.tagName).toBe("INPUT");
-    expect(document.querySelector<HTMLInputElement>(".rh-signal-scrub")?.type).toBe("range");
+    expect(document.querySelector(".wow-replay-scrub")?.tagName).toBe("INPUT");
+    expect(document.querySelector<HTMLInputElement>(".wow-replay-scrub")?.type).toBe("range");
   });
 
-  it("the comparison replay resolves to its end state under prefers-reduced-motion", async () => {
+  it("the second-pass replay resolves to its end state under prefers-reduced-motion", async () => {
     window.matchMedia = vi.fn().mockReturnValue({ matches: true }) as never;
     renderPage("the-wow-signal");
-    await screen.findByRole("heading", { name: /it should have appeared twice/i });
-
-    const replayButton = screen.getByRole("button", { name: /^replay$/i });
+    const replayButton = await screen.findByRole("button", { name: /^replay$/i });
     fireEvent.click(replayButton);
-    const states = [...document.querySelectorAll(".rh-pass-state")].map((el) => el.textContent);
-    expect(states).toEqual(["Detected", "Nothing detected"]);
+
+    await waitFor(() => {
+      const states = [...document.querySelectorAll(".wow-pass-state")].map((el) => el.textContent);
+      expect(states).toEqual(["Detected", "Nothing detected"]);
+    });
   });
 
   it("citations rendered inside the experience resolve to the same source list as the article", async () => {
