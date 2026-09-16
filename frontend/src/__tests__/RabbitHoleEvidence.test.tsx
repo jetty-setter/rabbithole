@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -158,10 +158,18 @@ function validMinimal() {
 describe("RabbitHolePage — Wow! Signal evidence experience", () => {
   beforeEach(() => getRabbitHole.mockResolvedValue(wowFixture()));
 
-  it("renders the flagship scene structure: replay, second pass, comparison", async () => {
+  // jsdom has no ResizeObserver, so canRunStageMotion() is always false
+  // here regardless of prefers-reduced-motion -- every render below
+  // exercises WowReducedStage, the discrete/control-equivalent fallback
+  // the animated stage falls back to under real reduced motion too. The
+  // cinematic GSAP-driven stage (pin-free, play/pause/scrub timeline) is
+  // exercised only by the Playwright verification against a real browser.
+
+  it("renders the calm page + reduced stage + investigation lab structure", async () => {
     renderPage("the-wow-signal");
     await screen.findByRole("heading", { level: 1, name: /the wow! signal/i });
     expect(document.querySelector(".wow-exp")).toBeTruthy();
+    expect(document.querySelector(".wow-stage--reduced")).toBeTruthy();
     expect(screen.getByRole("heading", { name: /the 72 seconds/i })).toBeTruthy();
     expect(screen.getByRole("heading", { name: /compare the explanations/i })).toBeTruthy();
     // the traditional case file is always mounted (deep links must work
@@ -170,25 +178,21 @@ describe("RabbitHolePage — Wow! Signal evidence experience", () => {
     expect(document.querySelector(".rh-sources")).toBeTruthy();
   });
 
-  it("tapping each sample glyph selects it; the scrubber also updates the active sample", async () => {
+  it("tapping each sample selects it and updates the readout", async () => {
     renderPage("the-wow-signal");
     await screen.findByRole("heading", { level: 1, name: /the wow! signal/i });
 
-    const buttons = [...document.querySelectorAll<HTMLButtonElement>(".wow-replay-glyph")];
+    const buttons = [...document.querySelectorAll<HTMLButtonElement>(".wow-reduced-sample")];
     expect(buttons).toHaveLength(6);
     const labels = ["6", "E", "Q", "U", "J", "5"];
     buttons.forEach((btn, i) => {
       fireEvent.click(btn);
       expect(btn.getAttribute("aria-pressed")).toBe("true");
-      expect(document.querySelector(".wow-replay-glyph.is-active")?.textContent).toBe(labels[i]);
+      expect(document.querySelector(".wow-reduced-sample.is-active")?.textContent).toBe(labels[i]);
     });
-
-    const scrub = document.querySelector<HTMLInputElement>(".wow-replay-scrub")!;
-    fireEvent.change(scrub, { target: { value: "0" } });
-    expect(document.querySelector(".wow-replay-glyph.is-active")?.textContent).toBe("6");
   });
 
-  it("a hotspot on the printout reveals the digital glyphs and scrolls to the replay scene", async () => {
+  it("a hotspot on the printout reveals the digital glyphs", async () => {
     renderPage("the-wow-signal");
     await screen.findByRole("heading", { level: 1, name: /the wow! signal/i });
 
@@ -196,42 +200,43 @@ describe("RabbitHolePage — Wow! Signal evidence experience", () => {
     expect(hotspot).toBeTruthy();
     expect(document.querySelector(".wow-glyph-reveal")?.classList.contains("is-shown")).toBe(false);
     fireEvent.click(hotspot);
-
     expect(document.querySelector(".wow-glyph-reveal")?.classList.contains("is-shown")).toBe(true);
-    // the replay scene should have been scrolled into view (jsdom stubs
-    // scrollIntoView, so just confirm it was actually invoked, not left a
-    // dead click).
-    expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
   });
 
-  it("switching hypotheses changes the evidence verdicts shown; evidence rows stay the same", async () => {
+  it("both second-pass outcomes are shown at once, without any interaction needed", async () => {
+    renderPage("the-wow-signal");
+    await screen.findByRole("heading", { level: 1, name: /the wow! signal/i });
+    const states = [...document.querySelectorAll(".wow-reduced-pass-state")].map((el) => el.textContent);
+    expect(states).toEqual(["Detected", "Nothing detected"]);
+    expect(document.querySelector(".wow-reduced-absence")?.textContent).toMatch(/no second detection/i);
+  });
+
+  it("switching hypotheses reclassifies evidence into new buckets; the tokens stay the same set", async () => {
     renderPage("the-wow-signal");
     await screen.findByRole("heading", { name: /compare the explanations/i });
 
     const tabs = screen.getAllByRole("button", { name: /transmission|interference|transient|comet/i });
     expect(tabs.length).toBe(4);
 
-    const rowLabelsBefore = [...document.querySelectorAll(".rh-evidence-label")].map((el) => el.textContent);
+    const labelsBefore = [...document.querySelectorAll(".wow-lab-token-btn")].map((el) => el.textContent).sort();
     fireEvent.click(tabs[1]); // terrestrial interference
-    const rowLabelsAfter = [...document.querySelectorAll(".rh-evidence-label")].map((el) => el.textContent);
-    expect(rowLabelsAfter).toEqual(rowLabelsBefore); // same evidence, same order
+    const labelsAfter = [...document.querySelectorAll(".wow-lab-token-btn")].map((el) => el.textContent).sort();
+    expect(labelsAfter).toEqual(labelsBefore); // same evidence, reclassified not replaced
 
-    const verdicts = [...document.querySelectorAll(".rh-evidence-verdict")].map((el) => el.textContent);
-    expect(verdicts.length).toBeGreaterThan(0);
+    const buckets = new Set([...document.querySelectorAll(".wow-lab-bucket")].map((el) => el.getAttribute("data-bucket")));
+    expect(buckets).toEqual(new Set(["supports", "weakens", "compatible", "uncertain"]));
   });
 
-  it("selecting an evidence row reveals its statement with a resolving citation", async () => {
+  it("selecting an evidence token reveals its statement with a resolving citation", async () => {
     renderPage("the-wow-signal");
     await screen.findByRole("heading", { name: /compare the explanations/i });
 
-    const firstRow = document.querySelector<HTMLElement>(".rh-evidence-row-btn")!;
-    fireEvent.click(firstRow);
-    expect(firstRow.getAttribute("aria-expanded")).toBe("true");
-    const statement = document.querySelector(".rh-evidence-statement");
-    expect(statement).toBeTruthy();
-    // its citation, if any, must be a real resolving link (not a dead
-    // reference) -- if present it should carry a real href.
-    const cite = statement?.querySelector("a.rh-cite");
+    const firstToken = document.querySelector<HTMLElement>(".wow-lab-token-btn")!;
+    fireEvent.click(firstToken);
+    expect(firstToken.getAttribute("aria-expanded")).toBe("true");
+    const detail = document.querySelector(".wow-lab-token-detail");
+    expect(detail).toBeTruthy();
+    const cite = detail?.querySelector("a.rh-cite");
     if (cite) expect(cite.getAttribute("href")).toMatch(/^#rh-source-\d+$/);
   });
 
@@ -244,33 +249,18 @@ describe("RabbitHolePage — Wow! Signal evidence experience", () => {
     // a range) -- guaranteed HTML behaviour, not something jsdom can
     // usefully re-simulate. This asserts every primary control actually
     // is one of those elements rather than a div with a click handler.
-    const selector =
-      ".wow-replay-play, .wow-replay-glyph, .wow-secondpass-replay, .rh-explorer-tab, .rh-evidence-row-btn, .rh-media-hotspot";
+    const selector = ".wow-reduced-sample, .wow-lab-tab, .wow-lab-token-btn, .rh-media-hotspot";
     for (const el of document.querySelectorAll(selector)) {
       expect(el.tagName).toBe("BUTTON");
       expect(el.getAttribute("type")).toBe("button");
     }
-    expect(document.querySelector(".wow-replay-scrub")?.tagName).toBe("INPUT");
-    expect(document.querySelector<HTMLInputElement>(".wow-replay-scrub")?.type).toBe("range");
   });
 
-  it("the second-pass replay resolves to its end state under prefers-reduced-motion", async () => {
-    window.matchMedia = vi.fn().mockReturnValue({ matches: true }) as never;
-    renderPage("the-wow-signal");
-    const replayButton = await screen.findByRole("button", { name: /^replay$/i });
-    fireEvent.click(replayButton);
-
-    await waitFor(() => {
-      const states = [...document.querySelectorAll(".wow-pass-state")].map((el) => el.textContent);
-      expect(states).toEqual(["Detected", "Nothing detected"]);
-    });
-  });
-
-  it("citations rendered inside the experience resolve to the same source list as the article", async () => {
+  it("citations rendered inside the investigation lab resolve to the same source list as the article", async () => {
     renderPage("the-wow-signal");
     await screen.findByRole("heading", { name: /compare the explanations/i });
-    const hypThesis = document.querySelector(".rh-evidence-hyp-thesis")!;
-    const cites = within(hypThesis as HTMLElement).getAllByRole("link");
+    const thesis = document.querySelector(".wow-lab-thesis")!;
+    const cites = within(thesis as HTMLElement).getAllByRole("link");
     expect(cites.length).toBeGreaterThan(0);
     cites.forEach((cite) => {
       expect(cite.getAttribute("aria-label")).toMatch(/jump to source \d+/i);
