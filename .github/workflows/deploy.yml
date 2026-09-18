@@ -1,8 +1,8 @@
 name: Deploy
 
 # Ship application artifacts on every push to main. Assumes a least-privilege
-# AWS role via GitHub OIDC — no long-lived keys. (Infrastructure is applied
-# manually with `terraform apply`; state is local.)
+# AWS role via GitHub OIDC — no long-lived keys. Infrastructure changes are
+# managed separately by terraform.yml against remote S3 state with a gated apply.
 on:
   push:
     branches: [main]
