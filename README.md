@@ -7,19 +7,38 @@
 ![python](https://img.shields.io/badge/python-3.12-blue)
 ![terraform](https://img.shields.io/badge/IaC-Terraform-7B42BC)
 
-**An event-driven, AI-augmented video platform on AWS.** Upload a video; a fleet of
-autoscaling workers transcodes it to adaptive-bitrate HLS, a vision model writes its
-title and tags, and speech-to-text makes every spoken word **searchable** — then you
-stream it back through a CDN with live status the whole way.
+**Engineering case study of an event-driven, AI-augmented video platform on AWS.**
+This RabbitHole iteration accepted video uploads, processed them asynchronously into
+adaptive-bitrate HLS, enriched them with AI-generated metadata and transcripts, and
+served the result through a CDN with live processing status.
 
-Built as a portfolio piece to demonstrate **cloud architecture** (event-driven design,
-serverless + container hybrid, infrastructure-as-code, autoscaling-to-zero, real-time,
-cost-awareness), **AI integration** (vision + speech, two different invocation patterns),
-and **fullstack** engineering end to end.
+Built to demonstrate **cloud architecture** (event-driven design, serverless + container
+hybrid, Infrastructure as Code, deterministic scale-to-zero, real-time status, and
+cost-aware operations), **AI integration**, and full-stack engineering end to end.
 
-> **Live demo:** https://d2b8irgwcyn9l8.cloudfront.net
-> **Status:** deployed on AWS, one `terraform apply` from reproducible. Not a toy CRUD
-> app — the architecture is the point.
+> **Portfolio status:** The AWS video-processing architecture documented below was
+> implemented and deployed as an earlier RabbitHole iteration. RabbitHole has since
+> moved in a different product direction, so the current live experience may not mirror
+> this stack. The infrastructure, workers, delivery pipelines, tests, and architecture
+> documentation remain here as inspectable evidence of the engineering work.
+
+## Engineering evidence
+
+- **Event-driven processing:** [`infra/events.tf`](infra/events.tf) routes S3 object-created
+  events through EventBridge to SQS; [`infra/messaging.tf`](infra/messaging.tf) adds the
+  job queue and dead-letter queue.
+- **Container compute:** [`infra/ecs.tf`](infra/ecs.tf) defines the ARM64 ECS Fargate
+  worker, and [`worker/`](worker/) contains the ffmpeg processing implementation.
+- **Deterministic scale-to-zero:** [`infra/autoscaling.tf`](infra/autoscaling.tf),
+  [`infra/scaleup.tf`](infra/scaleup.tf), and [`infra/scaledown.tf`](infra/scaledown.tf)
+  coordinate queue-aware wake-up and safe return to zero only after queued and in-flight
+  work is gone.
+- **OIDC-based delivery:** [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)
+  and [`.github/workflows/terraform.yml`](.github/workflows/terraform.yml) assume AWS
+  roles through GitHub OIDC rather than storing long-lived AWS deployment credentials.
+- **Operational visibility:** [`infra/observability.tf`](infra/observability.tf) defines
+  CloudWatch views for queue health, worker utilization, API latency/errors, and custom
+  transcode cost metrics.
 
 ---
 
@@ -193,7 +212,7 @@ SecureString (`/rabbithole-dev/anthropic-api-key`) to enable auto-metadata; the 
 pipeline activates automatically once its IAM role is provisioned. Without either, uploads
 still transcode and stream normally.
 
-## Roadmap
+## Implemented milestones — video-platform iteration
 
 - [x] **P0–P3** — scaffold, presigned upload, EventBridge→SQS→Fargate transcode, HLS + CloudFront + `hls.js`
 - [x] **P4** — deterministic worker autoscaling with scale-to-zero
@@ -207,7 +226,7 @@ still transcode and stream normally.
 - [x] **P12** — remote Terraform state (S3 + native locking) + infra-through-CI (plan on merge, gated apply)
 - [x] **P13** — observability: CloudWatch dashboard (pipeline, worker, API, **$/day**) + X-Ray tracing on the serverless path
 - [x] **P14** — cross-video semantic search: local embedding model + brute-force vector search + jump-to-moment deep links
-- [ ] **Next** — real multi-user auth; worker-level (Fargate) X-Ray sidecar; gated infra-apply via remote state
+- [ ] **Deferred in this iteration** — real multi-user auth; worker-level (Fargate) X-Ray sidecar
 
 ## What I'd change at scale
 
