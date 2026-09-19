@@ -33,6 +33,10 @@ import { AdminPage } from "./AdminPage";
 import { CreatorPage } from "./CreatorPage";
 import { TopicMapPage } from "./TopicMapPage";
 import { RabbitHolePage } from "./RabbitHolePage";
+// Dev-only motion prototype, isolated from the production Wow! Signal
+// experience -- see WowStagePrototypePage's own comment. Delete this
+// import + the route below to remove it entirely.
+import { WowStagePrototypePage } from "./experiences/wow/prototype/WowStagePrototypePage";
 import { NotFoundPage } from "./NotFoundPage";
 
 export interface AppCtx {
@@ -290,6 +294,7 @@ export default function App() {
         <Route path="/creator/:username" element={<CreatorPage />} />
         <Route path="/map" element={<TopicMapPage />} />
         <Route path="/rabbitholes/:slug" element={<RabbitHolePage />} />
+        <Route path="/rabbitholes/the-wow-signal/prototype" element={<WowStagePrototypePage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>

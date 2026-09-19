@@ -1,0 +1,228 @@
+/* Standalone, fully isolated stylesheet for the Wow! Signal motion
+   prototype -- imported only by WowStagePrototype.tsx, so removing this
+   whole directory removes every style here too. Intentionally does not
+   reuse .wow-* classes from the production experience. */
+
+.wsp {
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+.wsp-note {
+  margin: 0 0 14px;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--coral-soft);
+}
+
+.wsp-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #050308;
+  touch-action: none;
+}
+
+.wsp-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.wsp-loading {
+  position: absolute;
+  inset: 0;
+  background: #050308;
+}
+
+.wsp-anchor {
+  position: absolute;
+  display: flex;
+  gap: clamp(4px, 1vw, 12px);
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.wsp-anchor span {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(22px, 3vw, 40px);
+  color: var(--text);
+  text-shadow: 0 0 26px rgba(196, 181, 253, 0.5);
+}
+
+.wsp-signal-row {
+  position: absolute;
+  bottom: 8%;
+  left: 0;
+  width: 100%;
+  height: 32px;
+}
+.wsp-signal-glyph {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%) scale(0.85);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(14px, 1.6vw, 20px);
+  color: var(--muted);
+  opacity: 0.5;
+  background: none;
+  border: none;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: color 160ms ease, opacity 160ms ease, transform 160ms ease;
+}
+.wsp-signal-glyph.is-lit {
+  color: var(--violet-light);
+  opacity: 1;
+  transform: translateX(-50%) scale(1.2);
+}
+
+.wsp-black-hold {
+  position: absolute;
+  inset: 0;
+  background: #030204;
+  animation: wsp-hold-in 900ms ease forwards;
+}
+@keyframes wsp-hold-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.wsp-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.wsp-play,
+.wsp-restart {
+  flex: none;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  cursor: pointer;
+}
+.wsp-play {
+  color: var(--bg);
+  background: var(--violet-light);
+}
+.wsp-play:hover {
+  background: var(--violet-soft);
+}
+.wsp-restart {
+  color: var(--text);
+  background: transparent;
+  border: 1.5px solid var(--border-2);
+}
+.wsp-restart:hover {
+  border-color: var(--violet-soft);
+  color: var(--violet-light);
+}
+.wsp-scrub {
+  flex: 1 1 auto;
+  min-width: 100px;
+  accent-color: var(--violet-light);
+  height: 22px;
+  cursor: pointer;
+}
+.wsp-time {
+  flex: none;
+  font-family: var(--display);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.wsp-samples {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.wsp-sample-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--muted);
+  background: none;
+  border: 1.5px solid var(--border-2);
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.wsp-sample-btn small {
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  opacity: 0.75;
+}
+.wsp-sample-btn.is-active {
+  color: var(--violet-light);
+  border-color: var(--violet-soft);
+}
+
+.wsp-sr-summary {
+  margin: 14px 0 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+/* -- reduced motion -- */
+
+.wsp--reduced .wsp-reduced-artifact {
+  position: relative;
+  max-width: 700px;
+  margin-bottom: 18px;
+}
+.wsp-reduced-artifact img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.wsp-reduced-hotspot {
+  position: absolute;
+  outline: 1.5px solid var(--violet-soft);
+  background: rgba(154, 130, 242, 0.12);
+}
+.wsp-reduced-readout {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+.wsp-reduced-readout strong {
+  color: var(--text);
+}
+
+@media (max-width: 700px) {
+  .wsp-frame {
+    aspect-ratio: 4 / 5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wsp-black-hold {
+    animation: none;
+    opacity: 1;
+  }
+}
