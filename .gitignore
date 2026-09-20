@@ -52,3 +52,4 @@ seg_*.ts  # HLS transport-stream segments (NOT TypeScript — was *.ts, which at
 # Terraform saved plans
 infra/tfplan
 *.tfplan
+.claude/
