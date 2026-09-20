@@ -29,6 +29,8 @@ What it preserves
 
 Usage
 -----
+    export UPLOADS_BUCKET=rabbithole-<env>-uploads-<account-id>
+    export STREAMING_BUCKET=rabbithole-<env>-streaming-<account-id>
     AWS_PROFILE=rabbithole api/.venv/bin/python scripts/purge-legacy-catalog.py --dry-run
     AWS_PROFILE=rabbithole api/.venv/bin/python scripts/purge-legacy-catalog.py --execute
 
@@ -59,10 +61,8 @@ TOPIC_CONNECTIONS_TABLE = os.environ.get(
     "TOPIC_CONNECTIONS_TABLE", "rabbithole-dev-topic-connections"
 )
 COMMENTS_TABLE = os.environ.get("COMMENTS_TABLE", "rabbithole-dev-comments")
-UPLOADS_BUCKET = os.environ.get("UPLOADS_BUCKET", "rabbithole-dev-uploads-936922781601")
-STREAMING_BUCKET = os.environ.get(
-    "STREAMING_BUCKET", "rabbithole-dev-streaming-936922781601"
-)
+UPLOADS_BUCKET = os.environ["UPLOADS_BUCKET"]
+STREAMING_BUCKET = os.environ["STREAMING_BUCKET"]
 
 session = boto3.Session(region_name=AWS_REGION)
 dynamodb = session.resource("dynamodb")

@@ -19,6 +19,8 @@ curation wins over automation.
 
 Usage (needs AWS credentials, ffmpeg on PATH, and the worker deps incl.
 pillow -- api/.venv has them):
+    export UPLOADS_BUCKET=rabbithole-<env>-uploads-<account-id>
+    export STREAMING_BUCKET=rabbithole-<env>-streaming-<account-id>
     AWS_PROFILE=rabbithole api/.venv/bin/python scripts/backfill-smart-thumbnails.py --dry-run
     AWS_PROFILE=rabbithole api/.venv/bin/python scripts/backfill-smart-thumbnails.py
     AWS_PROFILE=rabbithole api/.venv/bin/python scripts/backfill-smart-thumbnails.py --video-id abc123
@@ -40,8 +42,8 @@ from botocore.exceptions import ClientError
 
 AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 VIDEOS_TABLE = os.environ.get("VIDEOS_TABLE", "rabbithole-dev-videos")
-UPLOADS_BUCKET = os.environ.get("UPLOADS_BUCKET", "rabbithole-dev-uploads-936922781601")
-STREAMING_BUCKET = os.environ.get("STREAMING_BUCKET", "rabbithole-dev-streaming-936922781601")
+UPLOADS_BUCKET = os.environ["UPLOADS_BUCKET"]
+STREAMING_BUCKET = os.environ["STREAMING_BUCKET"]
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "worker"))
 from thumbnails import (  # noqa: E402

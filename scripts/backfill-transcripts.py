@@ -24,6 +24,9 @@ rather than double-started.
 
 Usage (needs AWS credentials + the same deps as the worker; both already in
 api/.venv, which also has boto3/anthropic):
+    export STREAMING_BUCKET=rabbithole-<env>-streaming-<account-id>
+    export TRANSCRIBE_ROLE_ARN=arn:aws:iam::<account-id>:role/rabbithole-<env>-transcribe
+    export UPLOADS_BUCKET=rabbithole-<env>-uploads-<account-id>  # or pass --uploads-bucket
     AWS_PROFILE=rabbithole api/.venv/bin/python scripts/backfill-transcripts.py --dry-run
     AWS_PROFILE=rabbithole api/.venv/bin/python scripts/backfill-transcripts.py
     AWS_PROFILE=rabbithole api/.venv/bin/python scripts/backfill-transcripts.py --limit 5
@@ -45,10 +48,10 @@ from botocore.exceptions import ClientError
 # worker._start_transcription reads STREAMING_BUCKET/TRANSCRIBE_ROLE_ARN as
 # module-level globals, resolved from the environment at import time -- they
 # must be set before the `from worker import ...` below, not merely by the
-# time main() runs. setdefault so a real override (e.g. a different account)
-# still wins if the caller exports these first.
-os.environ.setdefault("STREAMING_BUCKET", "rabbithole-dev-streaming-936922781601")
-os.environ.setdefault("TRANSCRIBE_ROLE_ARN", "arn:aws:iam::936922781601:role/rabbithole-dev-transcribe")
+# time main() runs. No account-specific default: the caller must export both.
+for _required_var in ("STREAMING_BUCKET", "TRANSCRIBE_ROLE_ARN"):
+    if _required_var not in os.environ:
+        sys.exit(f"{_required_var} must be set in the environment (see Usage above).")
 os.environ.setdefault("VIDEOS_TABLE", "rabbithole-dev-videos")
 os.environ.setdefault("AWS_REGION", "us-east-1")
 
@@ -82,7 +85,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--region", default="us-east-1")
     ap.add_argument("--videos-table", default="rabbithole-dev-videos")
-    ap.add_argument("--uploads-bucket", default="rabbithole-dev-uploads-936922781601")
+    ap.add_argument("--uploads-bucket", default=os.environ.get("UPLOADS_BUCKET"), required="UPLOADS_BUCKET" not in os.environ)
     ap.add_argument("--limit", type=int, default=None, help="stop after this many attempted retries")
     ap.add_argument("--video-id", action="append", default=None,
                      help="only retry this video_id (repeatable); skips the table scan")
