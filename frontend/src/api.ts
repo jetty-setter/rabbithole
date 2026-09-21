@@ -1,6 +1,18 @@
 const API_URL = (import.meta.env.VITE_API_URL ?? "http://localhost:8000").replace(/\/$/, "");
 
 const TOKEN_KEY = "rh_token";
+export interface EvidenceResult {
+  status: string;
+  jobs: Array<{ source_id: string; number: number; title: string; status: string; detail?: string; updated_at?: string; truncated?: boolean }>;
+  matches: Array<{ source_id: string; number: number; title: string; passage: string; passage_index: number }>;
+  total_matches: number;
+}
+export async function getEvidence(slug: string, q?: string, signal?: AbortSignal): Promise<EvidenceResult> {
+  const suffix = q ? `?q=${encodeURIComponent(q)}` : "";
+  const res = await fetch(`${API_URL}/rabbitholes/${encodeURIComponent(slug)}/evidence${suffix}`, { headers: authHeaders(), signal });
+  if (!res.ok) throw new Error("Could not load evidence");
+  return res.json();
+}
 export const getToken = (): string | null => localStorage.getItem(TOKEN_KEY);
 export const setToken = (t: string | null): void => {
   if (t) localStorage.setItem(TOKEN_KEY, t);

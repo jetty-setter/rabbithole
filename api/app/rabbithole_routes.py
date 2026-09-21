@@ -12,8 +12,13 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.responses import JSONResponse
+import uuid
+from datetime import datetime, timezone
+from botocore.exceptions import ClientError
 
 from . import rabbithole_store as store
+from . import aws
+from . import evidence as evidence_service
 from .auth import is_admin, optional_auth, require_auth
 from .rabbithole_models import (
     RELATIONSHIP_TYPES,
@@ -28,6 +33,22 @@ from .rabbithole_validation import validate_for_publish
 
 router = APIRouter(tags=["rabbitholes"])
 
+
+@router.get("/rabbitholes/{slug}/evidence")
+def evidence(slug: str, q: str | None = Query(default=None, min_length=2, max_length=120), viewer: str | None = Depends(optional_auth)):
+    """Return source-processing state and keyword matches for a published article."""
+    rh = store.get_by_slug(slug)
+    if not _can_see(rh, viewer):
+        raise HTTPException(status_code=404, detail="rabbithole not found")
+    # Slug lookup uses an eventually consistent index; recheck the current publication state.
+    rh = aws.rabbitholes_table().get_item(Key={"id": rh["id"]}, ConsistentRead=True).get("Item")
+    if not _can_see(rh, viewer):
+        raise HTTPException(status_code=404, detail="rabbithole not found")
+    try:
+        return evidence_service.read(rh, q or "")
+    except ClientError as exc:
+        raise HTTPException(status_code=503, detail="Evidence search is temporarily unavailable") from exc
+
 _LIFECYCLE_ACTIONS = ("submit", "publish", "unpublish", "archive")
 
 
@@ -35,6 +56,25 @@ def require_admin(user: str = Depends(require_auth)) -> str:
     if not is_admin(user):
         raise HTTPException(status_code=403, detail="not allowed")
     return user
+
+
+@router.post("/admin/rabbitholes/{rid}/evidence:rebuild", status_code=202)
+def rebuild_evidence(rid: str, user: str = Depends(require_admin)):
+    """Backfill an existing article or retry failed sources through the same durable stream."""
+    try:
+        aws.rabbitholes_table().update_item(
+            Key={"id": rid},
+            UpdateExpression="SET evidence_generation = :g, evidence_requested_at = :t",
+            ConditionExpression="attribute_exists(id) AND #s = :published",
+            ExpressionAttributeNames={"#s": "status"},
+            ExpressionAttributeValues={":g": uuid.uuid4().hex, ":t": datetime.now(timezone.utc).isoformat(),
+                                       ":published": "published"},
+        )
+    except ClientError as exc:
+        if exc.response["Error"]["Code"] == "ConditionalCheckFailedException":
+            raise HTTPException(status_code=409, detail="Only published articles can be reindexed") from exc
+        raise
+    return {"status": "queued"}
 
 
 def _store_error(exc: store.StoreError) -> HTTPException:

@@ -29,6 +29,7 @@ RABBITHOLE_CONNECTIONS_TABLE = os.getenv(
 RABBITHOLE_REVISIONS_TABLE = os.getenv(
     "RABBITHOLE_REVISIONS_TABLE", "rabbithole-dev-rabbithole-revisions"
 )
+EVIDENCE_TABLE = os.getenv("EVIDENCE_TABLE", "rabbithole-dev-evidence")
 # Local sentence-embedding model (bundled in the image) for semantic search.
 EMBED_MODEL = os.getenv("EMBED_MODEL", "BAAI/bge-small-en-v1.5")
 EMBED_CACHE_DIR = os.getenv("EMBED_CACHE_DIR", "/opt/models")

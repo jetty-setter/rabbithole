@@ -26,6 +26,7 @@ os.environ["TOPIC_CONNECTIONS_TABLE"] = "test-connections"
 os.environ["RABBITHOLES_TABLE"] = "test-rabbitholes"
 os.environ["RABBITHOLE_CONNECTIONS_TABLE"] = "test-rh-connections"
 os.environ["RABBITHOLE_REVISIONS_TABLE"] = "test-rh-revisions"
+os.environ["EVIDENCE_TABLE"] = "test-evidence"
 os.environ["UPLOADS_BUCKET"] = "test-uploads"
 os.environ["STREAMING_BUCKET"] = "test-streaming"
 os.environ["CLOUDFRONT_DOMAIN"] = "cdn.example.com"
@@ -164,6 +165,12 @@ def aws_stack():
                 {"AttributeName": "id", "AttributeType": "S"},
                 {"AttributeName": "rev", "AttributeType": "S"},
             ],
+            BillingMode="PAY_PER_REQUEST",
+        )
+        ddb.create_table(
+            TableName="test-evidence",
+            KeySchema=[{"AttributeName": "run_id", "KeyType": "HASH"}, {"AttributeName": "source_id", "KeyType": "RANGE"}],
+            AttributeDefinitions=[{"AttributeName": "run_id", "AttributeType": "S"}, {"AttributeName": "source_id", "AttributeType": "S"}],
             BillingMode="PAY_PER_REQUEST",
         )
         s3 = boto3.client("s3", region_name="us-east-1")

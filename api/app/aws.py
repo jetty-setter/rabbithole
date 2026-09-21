@@ -55,3 +55,7 @@ def rabbithole_connections_table():
 
 def rabbithole_revisions_table():
     return _dynamodb.Table(config.RABBITHOLE_REVISIONS_TABLE)
+
+
+def evidence_table():
+    return _dynamodb.Table(config.EVIDENCE_TABLE)
