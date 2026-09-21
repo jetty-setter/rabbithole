@@ -6,6 +6,7 @@ import { KeepDigging } from "../../components/rabbithole/KeepDigging";
 import { RabbitHoleMedia, type MediaHotspot } from "../../components/rabbithole/RabbitHoleMedia";
 import { RabbitHoleTimeline } from "../../components/rabbithole/RabbitHoleTimeline";
 import { SourcesList } from "../../components/rabbithole/SourcesList";
+import { EvidenceSearch } from "../../components/rabbithole/EvidenceSearch";
 import { WhatWeKnow } from "../../components/rabbithole/WhatWeKnow";
 import type { Experience } from "../types";
 import { buildSourceIdIndex } from "../sources";
@@ -196,6 +197,7 @@ function SceneCaseFile({ rh, published }: { rh: RabbitHole; published: string })
         {timeline && <RabbitHoleTimeline entries={timeline} />}
         {rh.keep_digging.length > 0 && <KeepDigging connections={rh.keep_digging} />}
         {rh.sources.length > 0 && <SourcesList sources={rh.sources} />}
+        {rh.sources.length > 0 && <EvidenceSearch key={rh.slug} slug={rh.slug} />}
       </div>
     </section>
   );

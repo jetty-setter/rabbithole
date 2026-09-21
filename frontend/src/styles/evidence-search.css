@@ -1,0 +1,9 @@
+.rh-evidence { margin-top: 3rem; }
+.rh-evidence > p, .rh-evidence details { font-size: .9rem; line-height: 1.6; }
+.rh-evidence-search { display: grid; gap: .5rem; margin: 1.25rem 0; font-size: .9rem; }
+.rh-evidence-search input { width: 100%; box-sizing: border-box; padding: .85rem 1rem; border: 1px solid currentColor; border-radius: .25rem; color: inherit; background: transparent; font: inherit; }
+.rh-evidence input:focus-visible, .rh-evidence button:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.rh-evidence-results { list-style: none; padding: 0; }
+.rh-evidence-results li { margin: 1.75rem 0; }
+.rh-evidence-results blockquote { margin: .6rem 0; padding-left: 1rem; border-left: 2px solid currentColor; line-height: 1.7; overflow-wrap: anywhere; }
+.rh-evidence details li { margin: .6rem 0; overflow-wrap: anywhere; }

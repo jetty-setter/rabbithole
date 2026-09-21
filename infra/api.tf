@@ -111,6 +111,7 @@ resource "aws_lambda_function" "api" {
       RABBITHOLES_TABLE            = aws_dynamodb_table.rabbitholes.name
       RABBITHOLE_CONNECTIONS_TABLE = aws_dynamodb_table.rabbithole_connections.name
       RABBITHOLE_REVISIONS_TABLE   = aws_dynamodb_table.rabbithole_revisions.name
+      EVIDENCE_TABLE               = aws_dynamodb_table.evidence.name
       ANTHROPIC_KEY_PARAM          = local.anthropic_key_param
       AI_MODEL                     = var.ai_model
       CLOUDFRONT_DOMAIN            = aws_cloudfront_distribution.streaming.domain_name

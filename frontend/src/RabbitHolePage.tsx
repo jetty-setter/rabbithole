@@ -9,6 +9,7 @@ import { KeepDigging } from "./components/rabbithole/KeepDigging";
 import { RabbitHoleHeader } from "./components/rabbithole/RabbitHoleHeader";
 import { RabbitHoleTimeline } from "./components/rabbithole/RabbitHoleTimeline";
 import { SourcesList } from "./components/rabbithole/SourcesList";
+import { EvidenceSearch } from "./components/rabbithole/EvidenceSearch";
 import { WhatWeKnow } from "./components/rabbithole/WhatWeKnow";
 import { loadExperience } from "./experiences/registry";
 import { useEvidenceState } from "./experiences/useEvidenceState";
@@ -124,6 +125,7 @@ export function RabbitHolePage() {
         {timeline && <RabbitHoleTimeline entries={timeline} />}
         {rh.keep_digging.length > 0 && <KeepDigging connections={rh.keep_digging} />}
         {rh.sources.length > 0 && <SourcesList sources={rh.sources} />}
+        {rh.sources.length > 0 && <EvidenceSearch key={rh.slug} slug={rh.slug} />}
       </article>
     </main>
   );

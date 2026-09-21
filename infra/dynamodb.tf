@@ -153,9 +153,11 @@ output "topic_connections_table" {
 # real-time surface.
 
 resource "aws_dynamodb_table" "rabbitholes" {
-  name         = "${local.name}-rabbitholes"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "id"
+  stream_enabled   = true
+  stream_view_type = "NEW_AND_OLD_IMAGES"
+  name             = "${local.name}-rabbitholes"
+  billing_mode     = "PAY_PER_REQUEST"
+  hash_key         = "id"
 
   attribute {
     name = "id"
@@ -275,4 +277,26 @@ resource "aws_dynamodb_table" "rabbithole_revisions" {
 
 output "rabbithole_revisions_table" {
   value = aws_dynamodb_table.rabbithole_revisions.name
+}
+
+resource "aws_dynamodb_table" "evidence" {
+  name         = "${local.name}-evidence"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "run_id"
+  range_key    = "source_id"
+  attribute {
+    name = "run_id"
+    type = "S"
+  }
+  attribute {
+    name = "source_id"
+    type = "S"
+  }
+  point_in_time_recovery {
+    enabled = true
+  }
+}
+
+output "evidence_table" {
+  value = aws_dynamodb_table.evidence.name
 }
