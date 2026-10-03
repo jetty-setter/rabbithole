@@ -1,34 +1,58 @@
 [
   {
-    "provider_id": "Akv36y8WLYA",
-    "title": "A fish with a transparent head",
-    "description": "Look closely at the green shapes inside the dome: those are its eyes. MBARI's footage makes the deep sea feel like another planet.",
-    "tags": ["deep-sea", "strange-science", "animals"],
-    "expected_author": "MBARI",
-    "reference_url": "https://www.youtube.com/watch?v=Akv36y8WLYA"
+    "provider_id": "a0rByLgRdLM",
+    "title": "The Wow! signal",
+    "description": "A radio telescope catches something remarkable, and a handwritten Wow! gives it a name. SciShow Space introduces the 1977 detection and the search for a repeat. This 2015 explainer is a starting point, not a current verdict or proof of extraterrestrial contact.",
+    "tags": [
+      "unknown-signals",
+      "space",
+      "unsolved-mysteries"
+    ],
+    "expected_author": "SciShow Space",
+    "next_provider_id": "d1s5g2Nh2c0",
+    "connection": "What if a signal really is a message, but you are not its intended listener? Enter the world of numbers stations.",
+    "reference_url": "https://www.youtube.com/watch?v=a0rByLgRdLM"
   },
   {
-    "provider_id": "9bzQYKm3xTA",
-    "title": "The giant phantom jelly",
-    "description": "A rarely seen jelly drifts through the deep with long, ribbon-like arms. Follow MBARI's camera into a world that looks almost unreal.",
-    "tags": ["deep-sea", "animals", "strange-science"],
-    "expected_author": "MBARI",
-    "reference_url": "https://www.mbari.org/news/new-underwater-camera-records-stunning-4k-video-of-deep-sea-animals-and-habitats/"
+    "provider_id": "d1s5g2Nh2c0",
+    "title": "Numbers stations: messages hiding in plain hearing",
+    "description": "Voices read strings of numbers into the shortwave ether. Ringway Manchester explores spy communications and the listeners who document them. The broadcasts are real; an ordinary listener usually cannot identify the recipient or decode the message.",
+    "tags": [
+      "unknown-signals",
+      "shortwave",
+      "coded-messages"
+    ],
+    "expected_author": "Ringway Manchester",
+    "next_provider_id": "tuDhgB5jvww",
+    "connection": "Once you start listening for coded voices, a persistent buzz becomes hard to ignore. What happens when UVB-76 starts talking?",
+    "reference_url": "https://www.youtube.com/watch?v=d1s5g2Nh2c0"
   },
   {
-    "provider_id": "1qLuEIfp1So",
-    "title": "A black hole, translated into sound",
-    "description": "Astronomical data becomes an eerie listening experience. This is a sonification of pressure waves in the Perseus cluster, shifted into human hearing range—not a microphone recording in space.",
-    "tags": ["space", "strange-sounds", "strange-science"],
-    "expected_author": "Chandra",
-    "reference_url": "https://www.nasa.gov/universe/new-nasa-black-hole-sonifications-with-a-remix/"
+    "provider_id": "tuDhgB5jvww",
+    "title": "UVB-76: voices behind the buzz",
+    "description": "Ringway Manchester examines voices and sounds associated with the shortwave station nicknamed the Buzzer. Listen for the human activity behind the eerie reputation. Claims that it is a doomsday switch remain speculation, not an established explanation.",
+    "tags": [
+      "shortwave",
+      "unknown-signals",
+      "strange-broadcasts"
+    ],
+    "expected_author": "Ringway Manchester",
+    "next_provider_id": "NVcRWOhXmh4",
+    "connection": "Hearing a voice does not settle who controls a signal. In Chicago, someone took over the broadcast itself.",
+    "reference_url": "https://www.youtube.com/watch?v=tuDhgB5jvww"
   },
   {
-    "provider_id": "kie96iRTq5M",
-    "title": "The clockwork friar",
-    "description": "Watch a mechanical figure walk and gesture in the Smithsonian's demonstration. A small, uncanny encounter with the history of moving machines.",
-    "tags": ["obscure-history", "machines", "clockwork"],
-    "expected_author": "National Museum of American History",
-    "reference_url": "https://www.si.edu/object/automaton-friar-action%3Ayt_kie96iRTq5M"
+    "provider_id": "NVcRWOhXmh4",
+    "title": "The Max Headroom broadcast hijacking",
+    "description": "Two Chicago television broadcasts were interrupted in 1987 by a masked intruder. The Reyna Bros. documentary examines the footage and the mystery behind it. The intrusion is documented; proposed identities should be treated as theories. Contains crude language and disturbing broadcast footage.",
+    "tags": [
+      "strange-broadcasts",
+      "unsolved-mysteries",
+      "broadcast-hijacking"
+    ],
+    "expected_author": "The Reyna Bros.",
+    "next_provider_id": "a0rByLgRdLM",
+    "connection": "Here we know someone deliberately transmitted. The Wow! signal poses a stranger question: was there a sender at all?",
+    "reference_url": "https://www.youtube.com/watch?v=NVcRWOhXmh4"
   }
 ]

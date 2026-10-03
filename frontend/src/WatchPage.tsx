@@ -26,6 +26,7 @@ import { useVideoData } from "./hooks/useVideoData";
 import { useDocumentMeta } from "./hooks/useDocumentMeta";
 import { useTranscript } from "./hooks/useTranscript";
 import { relatedVideos, sharedTags } from "./discovery";
+import { nextInTrail } from "./curatedTrail";
 
 /** Seconds → m:ss for cue timestamps. */
 function fmtTime(s: number): string {
@@ -474,6 +475,14 @@ export function WatchPage() {
                   </div>
                 </div>
                 {video.description && <p className="watch-desc">{video.description}</p>}
+                {(() => {
+                  const next = nextInTrail(video, videos);
+                  return next && <section className="watch-desc" aria-label="Follow this thread">
+                    <h3>Follow this thread</h3>
+                    <p>{next.connection}</p>
+                    <Link to={`/watch/${next.video.video_id}`}>{displayTitle(next.video)} →</Link>
+                  </section>;
+                })()}
                 {video.tags && video.tags.length > 0 && (
                   <div className="tag-row">
                     {video.tags.map((t) => (
