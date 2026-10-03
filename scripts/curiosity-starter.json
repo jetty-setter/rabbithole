@@ -1,0 +1,34 @@
+[
+  {
+    "provider_id": "Akv36y8WLYA",
+    "title": "A fish with a transparent head",
+    "description": "Look closely at the green shapes inside the dome: those are its eyes. MBARI's footage makes the deep sea feel like another planet.",
+    "tags": ["deep-sea", "strange-science", "animals"],
+    "expected_author": "MBARI",
+    "reference_url": "https://www.youtube.com/watch?v=Akv36y8WLYA"
+  },
+  {
+    "provider_id": "9bzQYKm3xTA",
+    "title": "The giant phantom jelly",
+    "description": "A rarely seen jelly drifts through the deep with long, ribbon-like arms. Follow MBARI's camera into a world that looks almost unreal.",
+    "tags": ["deep-sea", "animals", "strange-science"],
+    "expected_author": "MBARI",
+    "reference_url": "https://www.mbari.org/news/new-underwater-camera-records-stunning-4k-video-of-deep-sea-animals-and-habitats/"
+  },
+  {
+    "provider_id": "1qLuEIfp1So",
+    "title": "A black hole, translated into sound",
+    "description": "Astronomical data becomes an eerie listening experience. This is a sonification of pressure waves in the Perseus cluster, shifted into human hearing range—not a microphone recording in space.",
+    "tags": ["space", "strange-sounds", "strange-science"],
+    "expected_author": "Chandra",
+    "reference_url": "https://www.nasa.gov/universe/new-nasa-black-hole-sonifications-with-a-remix/"
+  },
+  {
+    "provider_id": "kie96iRTq5M",
+    "title": "The clockwork friar",
+    "description": "Watch a mechanical figure walk and gesture in the Smithsonian's demonstration. A small, uncanny encounter with the history of moving machines.",
+    "tags": ["obscure-history", "machines", "clockwork"],
+    "expected_author": "National Museum of American History",
+    "reference_url": "https://www.si.edu/object/automaton-friar-action%3Ayt_kie96iRTq5M"
+  }
+]

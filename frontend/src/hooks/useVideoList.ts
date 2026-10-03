@@ -4,12 +4,14 @@ import { listVideos, type Video } from "../api";
 export function useVideoList() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
       setVideos(await listVideos());
+      setError(false);
     } catch {
-      /* keep last good list */
+      setError(true); // Preserve the last good list while exposing the failed refresh.
     } finally {
       setLoading(false);
     }
@@ -19,5 +21,5 @@ export function useVideoList() {
     refresh();
   }, [refresh]);
 
-  return { videos, setVideos, loading, refresh };
+  return { videos, setVideos, loading, refresh, error };
 }

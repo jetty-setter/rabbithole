@@ -49,6 +49,8 @@ function renderHome(over: Partial<AppCtx> = {}) {
     loading: false,
     live: true,
     openUpload: vi.fn(),
+    openExternal: vi.fn(),
+    isAdmin: true,
     ...over,
   } as unknown as AppCtx;
   render(
@@ -160,6 +162,24 @@ describe("LibraryPage — homepage", () => {
 
     expect(screen.getByRole("heading", { name: /no videos yet/i })).toBeTruthy();
     expect(screen.getByRole("button", { name: /upload a video/i })).toBeTruthy();
+  });
+
+  it("lets an editor add a YouTube find without uploading a file", () => {
+    const ctx = renderHome({ videos: [] });
+    fireEvent.click(screen.getByRole("button", { name: "Add a YouTube find" }));
+    expect(ctx.openExternal).toHaveBeenCalledOnce();
+  });
+
+  it("does not present unlisted videos as featured or pending", () => {
+    renderHome({ videos: [video({ title: "Hidden clip", visibility: "unlisted" })] });
+    expect(screen.queryByText("Hidden clip")).toBeNull();
+    expect(screen.queryByRole("region", { name: /in the pipeline/i })).toBeNull();
+  });
+
+  it("keeps other users' processing jobs out of public discovery", () => {
+    renderHome({ isAdmin: false, username: null });
+    expect(screen.queryByRole("region", { name: /in the pipeline/i })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Add a YouTube find" })).toBeNull();
   });
 
   it("hero search: a query + Dive in routes into /search, carrying the query", async () => {

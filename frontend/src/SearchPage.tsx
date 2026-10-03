@@ -1,108 +1,32 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { displayTitle, searchMoments, type SearchMoment } from "./api";
-import { Avatar } from "./Avatar";
+import { useApp } from "./App";
+import { EditorialCard } from "./EditorialCard";
+import { searchVideos } from "./discovery";
+import { useDocumentMeta } from "./hooks/useDocumentMeta";
 
-function fmt(s: number): string {
-  const m = Math.floor(s / 60);
-  const sec = Math.floor(s % 60);
-  return `${m}:${sec.toString().padStart(2, "0")}`;
-}
-
-/** Semantic search results — the best moment per matching video, each a deep
- *  link that jumps the player to that timestamp. */
 export function SearchPage() {
-  const [params] = useSearchParams();
-  const q = params.get("q") || "";
-  const [results, setResults] = useState<SearchMoment[] | null>([]);
-
-  const trailStats = useMemo(() => {
-    if (!results || results.length < 2) return null;
-    const videoIds = new Set(results.map((r) => r.video.video_id));
-    const creators = new Set(results.map((r) => r.video.owner || "RabbitHole"));
-    return { moments: results.length, videos: videoIds.size, creators: creators.size };
-  }, [results]);
-
-  useEffect(() => {
-    if (!q.trim()) {
-      setResults([]);
-      return;
-    }
-    setResults(null); // loading
-    let live = true;
-    searchMoments(q).then((r) => live && setResults(r));
-    return () => {
-      live = false;
-    };
-  }, [q]);
-
-  return (
-    <main className="page">
-      {q ? (
-        <div className="feed-head search-head">
-          <h1 className="search-query-title">“{q}”</h1>
-          {(results === null || (results && results.length > 0)) && (
-            <p className="search-trail-line">
-              {results === null
-                ? "Building a trail…"
-                : trailStats
-                  ? `A trail through ${trailStats.moments} moments · ${trailStats.videos} videos · ${trailStats.creators} ${trailStats.creators === 1 ? "creator" : "creators"}`
-                  : "A trail through 1 moment"}
-            </p>
-          )}
-        </div>
-      ) : (
-        <div className="feed-head">
-          <h1>Search</h1>
-          <p>
-            Search what was actually said. RabbitHole reads every video's transcript and
-            jumps you straight to the matching moment — not just titles and tags.
-          </p>
-        </div>
-      )}
-
-      {results === null ? (
-        <p className="muted transcript-note">
-          <span className="proc-spinner sm" /> Searching the library…
-        </p>
-      ) : results.length === 0 ? (
-        <div className="empty">
-          <p>
-            {q
-              ? `No spoken moments matched “${q}”.`
-              : "Try a phrase someone might have actually said on camera — search runs across every video's transcript, by meaning, not just keywords."}
-          </p>
-        </div>
-      ) : (
-        <div className="search-results">
-          {results.map((r) => (
-            <Link
-              key={r.video.video_id}
-              to={`/watch/${r.video.video_id}?t=${Math.floor(r.start)}`}
-              className="search-hit"
-            >
-              <div className="search-thumb">
-                {r.video.thumbnail_url ? (
-                  <img src={r.video.thumbnail_url} alt="" />
-                ) : (
-                  <img src="/RHRabbit.png?v=5" alt="" className="thumb-ph" />
-                )}
-                <span className="dur-badge">{fmt(r.start)}</span>
-              </div>
-              <div className="search-info">
-                <h3 className="search-title">{displayTitle(r.video)}</h3>
-                <p className="search-snippet">“…{r.snippet}…”</p>
-                <div className="search-by">
-                  <Avatar name={r.video.owner || "RabbitHole"} />
-                  <span>
-                    {r.video.owner || "RabbitHole"} · jump to {fmt(r.start)}
-                  </span>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
-    </main>
-  );
+  const [params, setParams] = useSearchParams();
+  const query = params.get("q")?.trim() ?? "";
+  const { videos, loading, catalogError, refresh } = useApp();
+  const results = useMemo(() => searchVideos(videos, query), [videos, query]);
+  useDocumentMeta(query ? `Search: ${query}` : "Find your next rabbit hole");
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    const draft = String(new FormData(event.currentTarget as HTMLFormElement).get("q") ?? "");
+    setParams(draft.trim() ? { q: draft.trim() } : {});
+  }
+  return <main className="page discovery-search">
+    <div className="feed-head"><h1>{query ? `Results for “${query}”` : "What are you curious about?"}</h1>
+      <p>Search videos by title, topic, creator, or what makes them worth watching.</p>
+    </div>
+    <form className="discovery-search-form" role="search" onSubmit={submit}>
+      <input key={query} name="q" type="search" aria-label="Search videos" defaultValue={query} placeholder="Deep sea, strange sounds, clockwork…" maxLength={120} />
+      <button className="btn-primary" type="submit">Search</button>
+    </form>
+    {catalogError && <p role="alert">The video catalog could not be loaded. <button className="btn-ghost" onClick={refresh}>Try again</button></p>}
+    <p role="status">{loading ? "Loading videos…" : `${results.length} video${results.length === 1 ? "" : "s"}${query ? " found" : " to explore"}.`}</p>
+    {!loading && !catalogError && results.length === 0 && <div className="empty"><p>{query ? "No matches yet. Try a broader topic or another word." : "The first finds are on their way."}</p><Link to="/tunnels">Explore topics</Link></div>}
+    <div className="home-grid">{results.map((video) => <EditorialCard key={video.video_id} v={video} />)}</div>
+  </main>;
 }

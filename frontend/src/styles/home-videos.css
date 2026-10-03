@@ -12,6 +12,12 @@
   padding-right: clamp(0px, 4vw, 72px);
 }
 
+.hv-editor-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; color: var(--muted); font-size: 14px; }
+.hv-source { color: var(--violet-soft); font-size: 14px; margin-top: 16px; }
+.discovery-search-form { display: flex; gap: 12px; margin: 24px 0; max-width: 740px; }
+.discovery-search-form input { flex: 1; min-width: 0; padding: 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); color: var(--text); font: inherit; }
+.discovery-search-form input:focus-visible { outline: 2px solid var(--violet); outline-offset: 3px; }
+
 /* Featured video: image-led split, image wider than the copy. */
 .hv-featured {
   display: grid;

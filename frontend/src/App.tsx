@@ -38,6 +38,7 @@ import { NotFoundPage } from "./NotFoundPage";
 export interface AppCtx {
   videos: Video[];
   loading: boolean;
+  catalogError: boolean;
   refresh: () => void;
   live: boolean;
   authed: boolean;
@@ -46,6 +47,7 @@ export interface AppCtx {
   requireLogin: () => void;
   /** Opens the upload modal, or sign-in first for guests. */
   openUpload: () => void;
+  openExternal: () => void;
   favorites: Set<string>;
   toggleFavorite: (id: string) => void;
   hopped: Set<string>;
@@ -73,7 +75,7 @@ function loadTrail(): string[] {
 function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { videos, setVideos, loading, refresh } = useVideoList();
+  const { videos, setVideos, loading, refresh, error: catalogError } = useVideoList();
   const { hopped, setHopped, thumped, setThumped, react: reactCore } = useReactions();
   const [uploadOpen, setUploadOpen] = useState(false);
   const [externalOpen, setExternalOpen] = useState(false);
@@ -186,7 +188,10 @@ function Layout() {
     const current = currentId ? ready.find((v) => v.video_id === currentId) : null;
 
     const pool = ready.filter((v) => v.video_id !== currentId);
-    if (!pool.length) return;
+    if (!pool.length) {
+      if (!currentId) navigate(`/watch/${ready[0].video_id}`);
+      return;
+    }
 
     let fresh = pool.filter((v) => !tumbleHistoryRef.current.has(v.video_id));
     if (!fresh.length) {
@@ -209,6 +214,8 @@ function Layout() {
   }
 
   const ctx: AppCtx = {
+    catalogError,
+    openExternal: () => { if (isAdmin) setExternalOpen(true); },
     videos,
     loading,
     refresh,

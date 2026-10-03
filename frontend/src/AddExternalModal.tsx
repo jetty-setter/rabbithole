@@ -90,7 +90,7 @@ export function AddExternalModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-head">
-          <h2 id="external-modal-title">Add external video</h2>
+          <h2 id="external-modal-title">Add a find</h2>
           <button className="icon-btn" onClick={onClose} aria-label="Close">
             ✕
           </button>
@@ -122,7 +122,8 @@ export function AddExternalModal({
           />
           <textarea
             className="search wide ta"
-            placeholder="Description (optional)"
+            placeholder="Why is this worth watching? A detail to notice, a question it raises…"
+            aria-label="Why this is worth watching"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
