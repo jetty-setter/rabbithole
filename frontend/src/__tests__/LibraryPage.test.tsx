@@ -1,9 +1,40 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
-import { MemoryRouter, Route, Routes, useSearchParams } from "react-router-dom";
-import { afterEach, describe, expect, it } from "vitest";
+import { MemoryRouter, Outlet, Route, Routes, useSearchParams } from "react-router-dom";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
+import type { Video } from "../api";
+import type { AppCtx } from "../App";
 import { LibraryPage } from "../LibraryPage";
+
+function video(over: Partial<Video>): Video {
+  return {
+    video_id: "x",
+    filename: "x.mp4",
+    status: "ready",
+    created_at: "2026-09-01T00:00:00Z",
+    playback_url: "https://cdn.example/x/master.m3u8",
+    views: 0,
+    tags: [],
+    ...over,
+  };
+}
+
+const VIDEOS: Video[] = [
+  video({
+    video_id: "feat",
+    title: "Strange lights over the lake",
+    featured: true,
+    views: 900,
+    duration_seconds: "184",
+    has_transcript: true,
+    tags: ["lights", "lakes"],
+    created_at: "2026-08-01T00:00:00Z",
+  }),
+  video({ video_id: "new", title: "Newer clip", views: 40, tags: ["lights"], created_at: "2026-09-20T00:00:00Z" }),
+  video({ video_id: "old", title: "Older clip", views: 5, created_at: "2026-09-10T00:00:00Z" }),
+  video({ video_id: "proc", title: "Still transcoding", status: "processing", playback_url: null }),
+];
 
 // Stands in for the real search results route so a hero submission can be
 // observed, including the query it carried in `?q=`.
@@ -12,16 +43,26 @@ function SearchProbe() {
   return <div>search results for: {params.get("q")}</div>;
 }
 
-function renderHome() {
-  return render(
+function renderHome(over: Partial<AppCtx> = {}) {
+  const ctx = {
+    videos: VIDEOS,
+    loading: false,
+    live: true,
+    openUpload: vi.fn(),
+    ...over,
+  } as unknown as AppCtx;
+  render(
     <MemoryRouter initialEntries={["/"]}>
       <Routes>
-        <Route path="/" element={<LibraryPage />} />
+        <Route element={<Outlet context={ctx} />}>
+          <Route path="/" element={<LibraryPage />} />
+        </Route>
         <Route path="/rabbitholes/:slug" element={<div>reader page</div>} />
         <Route path="/search" element={<SearchProbe />} />
       </Routes>
     </MemoryRouter>,
   );
+  return ctx;
 }
 
 const heroSearchInput = () =>
@@ -50,62 +91,75 @@ describe("LibraryPage — homepage", () => {
     expect(screen.queryByText(/where it goes from here/i)).toBeNull();
   });
 
-  it("Latest: renders the Wow! Signal feature with its exact copy", () => {
+  it("features the curated video and links it to its watch page", () => {
     renderHome();
 
-    const region = screen.getByRole("region", { name: /^latest$/i });
-    expect(
-      within(region).getByRole("heading", { name: /the wow! signal/i }),
-    ).toBeTruthy();
-    expect(
-      within(region).getByText(
-        "For 72 seconds in 1977, a radio telescope in Ohio picked up a signal unlike anything astronomers expected. Jerry Ehman circled the printout and wrote one word beside it: Wow! It was never detected again.",
-      ),
-    ).toBeTruthy();
+    const region = screen.getByRole("region", { name: /strange lights over the lake/i });
+    expect(within(region).getByText(/featured video/i)).toBeTruthy();
+    const watch = within(region).getByRole("link", { name: /^watch$/i });
+    expect(watch.getAttribute("href")).toBe("/watch/feat");
+    expect(within(region).getByText(/captions and searchable transcript/i)).toBeTruthy();
   });
 
-  it("Latest: the read action has no arrow and links to the RabbitHole", () => {
+  it("lists other ready videos under Just added, newest first", () => {
     renderHome();
 
-    const region = screen.getByRole("region", { name: /^latest$/i });
-    const heading = within(region).getByRole("heading", {
-      name: /the wow! signal/i,
-    });
-    const article = heading.closest("article")!;
-    const action = within(article).getByRole("link", {
-      name: /read rabbithole/i,
-    });
-    expect(action.textContent).toBe("Read RabbitHole");
-    expect(action.getAttribute("href")).toBe("/rabbitholes/the-wow-signal");
+    const region = screen.getByRole("region", { name: /just added/i });
+    const titles = within(region)
+      .getAllByRole("heading", { level: 3 })
+      .map((h) => h.textContent);
+    expect(titles).toEqual(["Newer clip", "Older clip"]);
   });
 
-  it("Latest: More RabbitHoles lists the prototype index items under their own eyebrow", () => {
+  it("hides Most watched while Just added already shows the whole library", () => {
+    renderHome();
+    expect(screen.queryByRole("region", { name: /most watched/i })).toBeNull();
+  });
+
+  it("ranks Most watched by views once the library outgrows Just added", () => {
+    const many = Array.from({ length: 10 }, (_, i) =>
+      video({ video_id: `m${i}`, title: `Clip ${i}`, views: i, created_at: `2026-09-${10 + i}T00:00:00Z` }),
+    );
+    renderHome({ videos: [...VIDEOS, ...many] });
+
+    const region = screen.getByRole("region", { name: /most watched/i });
+    const titles = within(region)
+      .getAllByRole("heading", { level: 3 })
+      .map((h) => h.textContent);
+    expect(titles[0]).toBe("Strange lights over the lake");
+    expect(titles[1]).toBe("Newer clip");
+  });
+
+  it("shows uploads still processing with their current stage", () => {
     renderHome();
 
-    const region = screen.getByRole("region", { name: /^latest$/i });
-    expect(within(region).getByText(/^more rabbitholes$/i)).toBeTruthy();
+    const region = screen.getByRole("region", { name: /in the pipeline/i });
+    expect(within(region).getByText("Still transcoding")).toBeTruthy();
+    const current = within(region).getByText("Transcoding");
+    expect(current.getAttribute("aria-current")).toBe("step");
+    expect(within(region).getByText(/live status/i)).toBeTruthy();
+  });
 
-    const voynichHeading = within(region).getByRole("heading", {
-      name: /the voynich manuscript/i,
-    });
-    const voynichLink = within(voynichHeading.closest("article")!).getByRole(
-      "link",
-      { name: /read rabbithole/i },
-    );
-    expect(voynichLink.getAttribute("href")).toBe(
-      "/rabbitholes/the-voynich-manuscript",
-    );
+  it("builds topic chips from video tags with counts", () => {
+    renderHome();
 
-    const plagueHeading = within(region).getByRole("heading", {
-      name: /the dancing plague of 1518/i,
-    });
-    const plagueLink = within(plagueHeading.closest("article")!).getByRole(
-      "link",
-      { name: /read rabbithole/i },
-    );
-    expect(plagueLink.getAttribute("href")).toBe(
-      "/rabbitholes/the-dancing-plague-of-1518",
-    );
+    const region = screen.getByRole("region", { name: /^topics$/i });
+    const chip = within(region).getByRole("link", { name: /^lights\s*2$/i });
+    expect(chip.getAttribute("href")).toBe("/tunnels/lights");
+  });
+
+  it("Upload a video calls the upload handler", () => {
+    const ctx = renderHome();
+
+    fireEvent.click(screen.getByRole("button", { name: /upload a video/i }));
+    expect(ctx.openUpload).toHaveBeenCalledTimes(1);
+  });
+
+  it("invites an upload when there are no videos", () => {
+    renderHome({ videos: [] });
+
+    expect(screen.getByRole("heading", { name: /no videos yet/i })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /upload a video/i })).toBeTruthy();
   });
 
   it("hero search: a query + Dive in routes into /search, carrying the query", async () => {

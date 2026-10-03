@@ -44,6 +44,8 @@ export interface AppCtx {
   isAdmin: boolean;
   username: string | null;
   requireLogin: () => void;
+  /** Opens the upload modal, or sign-in first for guests. */
+  openUpload: () => void;
   favorites: Set<string>;
   toggleFavorite: (id: string) => void;
   hopped: Set<string>;
@@ -217,6 +219,14 @@ function Layout() {
     requireLogin: () => {
       setLoginMode("login");
       setLoginOpen(true);
+    },
+    openUpload: () => {
+      if (authed) {
+        setUploadOpen(true);
+      } else {
+        setLoginMode("login");
+        setLoginOpen(true);
+      }
     },
     favorites,
     toggleFavorite,

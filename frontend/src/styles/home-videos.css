@@ -1,0 +1,312 @@
+/* ── Homepage video body (HomeVideos) ─────────────────────────
+   Sits inside .home-below, under the unchanged hero. One lead (the
+   featured video), then quieter sections. The featured video is the only
+   loud element; everything after it uses the existing card grid and chip
+   styles so the page reads as one system. */
+
+.hv {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(48px, 7vh, 80px);
+  max-width: 1400px;
+  padding-right: clamp(0px, 4vw, 72px);
+}
+
+/* Featured video: image-led split, image wider than the copy. */
+.hv-featured {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: clamp(24px, 3.5vw, 56px);
+  align-items: center;
+}
+.hv-featured-media {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--panel);
+}
+.hv-featured-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 400ms ease;
+}
+.hv-featured-media img.thumb-ph {
+  object-fit: contain;
+  padding: 12%;
+}
+.hv-featured-media:hover img {
+  transform: scale(1.02);
+}
+.hv-featured-play {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(5, 5, 5, 0.72);
+  border: 1.5px solid var(--violet);
+  color: var(--text);
+}
+.hv-featured-play svg {
+  width: 16px;
+  height: 16px;
+  margin-left: 3px;
+}
+.hv-featured-body {
+  max-width: 34rem;
+}
+.hv-featured-kicker {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--violet-soft);
+}
+.hv-featured-title {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(28px, 2.8vw, 44px);
+  line-height: 1.06;
+  letter-spacing: -0.015em;
+}
+.hv-featured-title a {
+  color: var(--text);
+  text-decoration: none;
+}
+.hv-featured-title a:hover {
+  color: var(--violet-light);
+}
+.hv-featured-desc {
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.hv-facts {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.hv-watch {
+  display: inline-block;
+  margin-top: 26px;
+  padding: 12px 30px;
+  border-radius: 10px;
+  background: var(--violet);
+  color: #0a0a0d;
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+  transition: background 140ms ease;
+}
+.hv-watch:hover {
+  background: var(--violet-light);
+}
+
+/* Section scaffolding. */
+.hv-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.hv-section-head h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(22px, 1.9vw, 28px);
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.hv-more {
+  display: inline-block;
+  margin-top: 20px;
+  color: var(--violet-soft);
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+}
+.hv-more:hover {
+  color: var(--violet-light);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.hv-upload {
+  flex-shrink: 0;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 9px 18px;
+  border-radius: 10px;
+  border: none;
+  background: var(--violet-deep);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+.hv-upload:hover {
+  background: var(--violet-deep-hover);
+}
+
+/* Pipeline: each in-flight upload with a three-step tracker. */
+.hv-live {
+  font-size: 13px;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.hv-live::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--border-2);
+}
+.hv-live.on::before {
+  background: var(--violet);
+}
+.hv-pipe-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+}
+.hv-pipe-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px 32px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.hv-pipe-title {
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hv-stages {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+.hv-stages li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.hv-stages li + li::before {
+  content: "";
+  width: 28px;
+  height: 1px;
+  margin: 0 10px;
+  background: var(--border-2);
+}
+.hv-stages li.done {
+  color: var(--violet-soft);
+}
+.hv-stages li.done + li::before,
+.hv-stages li.current::before {
+  background: var(--violet-deep);
+}
+.hv-stages li.current {
+  color: var(--text);
+  font-weight: 600;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hv-stages li.current {
+    animation: hv-pulse 1.6s ease-in-out infinite;
+  }
+  .hv-live.on::before {
+    animation: hv-pulse 1.6s ease-in-out infinite;
+  }
+}
+@keyframes hv-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+/* Topics: reuse .tunnel-chip, add the count. */
+.hv-topics {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.hv-topic-count {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 13px;
+}
+
+/* Empty state. */
+.hv-empty {
+  max-width: 34rem;
+  padding: 24px 0;
+}
+.hv-empty h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 28px;
+}
+.hv-empty p {
+  margin: 12px 0 22px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* Focus visibility for the new controls. */
+.hv-watch:focus-visible,
+.hv-upload:focus-visible,
+.hv-more:focus-visible,
+.hv-featured-title a:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: 3px;
+}
+
+@media (max-width: 900px) {
+  .hv {
+    padding-right: 0;
+  }
+  .hv-featured {
+    grid-template-columns: 1fr;
+  }
+  .hv-pipe-item {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 560px) {
+  .hv-section-head {
+    flex-wrap: wrap;
+  }
+  .hv-stages li + li::before {
+    width: 14px;
+    margin: 0 6px;
+  }
+}
