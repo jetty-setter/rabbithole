@@ -72,6 +72,8 @@ export function EmbedPlayer({
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const registerSeekRef = useRef(registerSeek);
+  registerSeekRef.current = registerSeek;
 
   useEffect(() => {
     let player: YTPlayer | null = null;
@@ -80,7 +82,11 @@ export function EmbedPlayer({
     if (videoId) {
       loadYouTubeApi().then((YT) => {
         if (cancelled || !YT || !hostRef.current) return;
-        player = new YT.Player(hostRef.current, {
+        // YouTube replaces its target element. Keep React's host intact so a
+        // video change (or StrictMode cleanup) can safely create a new target.
+        const target = document.createElement("div");
+        hostRef.current.replaceChildren(target);
+        player = new YT.Player(target, {
           videoId,
           host: "https://www.youtube-nocookie.com",
           playerVars: {
@@ -95,26 +101,26 @@ export function EmbedPlayer({
             },
           },
         });
-        registerSeek?.((seconds: number) => {
+        registerSeekRef.current?.((seconds: number) => {
           player?.seekTo(Math.max(0, seconds), true);
           player?.playVideo();
         });
       });
     } else {
       // Fallback: raw iframe. Deep-link start works; runtime seeking doesn't.
-      registerSeek?.(null);
+      registerSeekRef.current?.(null);
     }
 
     return () => {
       cancelled = true;
-      registerSeek?.(null);
+      registerSeekRef.current?.(null);
       try {
         player?.destroy();
       } catch {
         /* player may already be gone */
       }
     };
-  }, [videoId, startAt, registerSeek]);
+  }, [videoId, startAt]);
 
   const fallbackSrc = startAt > 0 ? `${embedUrl}&start=${Math.floor(startAt)}` : embedUrl;
 

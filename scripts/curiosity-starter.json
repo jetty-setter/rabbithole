@@ -9,9 +9,17 @@
       "unsolved-mysteries"
     ],
     "expected_author": "SciShow Space",
-    "next_provider_id": "ryg077wBvsM",
-    "connection": "One tantalizing detection raises a much larger question: if someone is out there, why is the universe so quiet?",
-    "reference_url": "https://www.youtube.com/watch?v=a0rByLgRdLM"
+    "reference_url": "https://www.youtube.com/watch?v=a0rByLgRdLM",
+    "connections": [
+      {
+        "provider_id": "ryg077wBvsM",
+        "reason": "One detection raises a bigger question: why does the rest of the universe seem so quiet?"
+      },
+      {
+        "provider_id": "d1s5g2Nh2c0",
+        "reason": "What if a signal is a message, but you are not its intended listener?"
+      }
+    ]
   },
   {
     "provider_id": "d1s5g2Nh2c0",
@@ -23,9 +31,21 @@
       "coded-messages"
     ],
     "expected_author": "Ringway Manchester",
-    "next_provider_id": "I2O7blSSzpI",
-    "connection": "Numbers stations hide messages for selected listeners. What happens when an anonymous sender invites the whole internet to crack the code?",
-    "reference_url": "https://www.youtube.com/watch?v=d1s5g2Nh2c0"
+    "reference_url": "https://www.youtube.com/watch?v=d1s5g2Nh2c0",
+    "connections": [
+      {
+        "provider_id": "I2O7blSSzpI",
+        "reason": "From secret recipients to a public challenge: who was Cicada recruiting?"
+      },
+      {
+        "provider_id": "tuDhgB5jvww",
+        "reason": "Follow shortwave listening into the voices behind the Buzzer."
+      },
+      {
+        "provider_id": "jVpsLMCIB0Y",
+        "reason": "Can a message hide in full view, even outside CIA headquarters?"
+      }
+    ]
   },
   {
     "provider_id": "tuDhgB5jvww",
@@ -37,9 +57,17 @@
       "strange-broadcasts"
     ],
     "expected_author": "Ringway Manchester",
-    "next_provider_id": "NVcRWOhXmh4",
-    "connection": "Hearing a voice does not settle who controls a signal. In Chicago, someone took over the broadcast itself.",
-    "reference_url": "https://www.youtube.com/watch?v=tuDhgB5jvww"
+    "reference_url": "https://www.youtube.com/watch?v=tuDhgB5jvww",
+    "connections": [
+      {
+        "provider_id": "NVcRWOhXmh4",
+        "reason": "A voice does not tell you who controls the signal. What happens when someone takes over a broadcast?"
+      },
+      {
+        "provider_id": "d1s5g2Nh2c0",
+        "reason": "Compare the Buzzer with transmissions built around spoken codes."
+      }
+    ]
   },
   {
     "provider_id": "NVcRWOhXmh4",
@@ -51,9 +79,21 @@
       "broadcast-hijacking"
     ],
     "expected_author": "The Reyna Bros.",
-    "next_provider_id": "a0rByLgRdLM",
-    "connection": "Here we know someone deliberately transmitted. The Wow! signal poses a stranger question: was there a sender at all?",
-    "reference_url": "https://www.youtube.com/watch?v=NVcRWOhXmh4"
+    "reference_url": "https://www.youtube.com/watch?v=NVcRWOhXmh4",
+    "connections": [
+      {
+        "provider_id": "xkTsoP5v2GM",
+        "reason": "Compare this unidentified intruder with a solved TV hijacking and a supposed alien message."
+      },
+      {
+        "provider_id": "TLMVjfKg35M",
+        "reason": "An anonymous message can interrupt a street as well as a screen. Who wanted these words to be seen?"
+      },
+      {
+        "provider_id": "a0rByLgRdLM",
+        "reason": "Here a sender was deliberate. With the Wow! signal, was there a sender at all?"
+      }
+    ]
   },
   {
     "provider_id": "ryg077wBvsM",
@@ -65,9 +105,17 @@
       "extraterrestrial-life"
     ],
     "expected_author": "LEMMiNO",
-    "next_provider_id": "SpeSpA3e56A",
-    "connection": "Searching distant stars is one approach. What should we make of unusual encounters reported much closer to home?",
-    "reference_url": "https://www.lemmi.no/p/the-great-silence"
+    "reference_url": "https://www.lemmi.no/p/the-great-silence",
+    "connections": [
+      {
+        "provider_id": "SpeSpA3e56A",
+        "reason": "If distant searches are quiet, what should we make of reported encounters closer to home?"
+      },
+      {
+        "provider_id": "a0rByLgRdLM",
+        "reason": "Return to a specific detection that made the larger question feel urgent."
+      }
+    ]
   },
   {
     "provider_id": "SpeSpA3e56A",
@@ -79,9 +127,17 @@
       "unsolved-mysteries"
     ],
     "expected_author": "LEMMiNO",
-    "next_provider_id": "NVcRWOhXmh4",
-    "connection": "Before interpreting unusual footage, ask where it came from. The Max Headroom intrusion is a very different case of a real recording with an unidentified actor.",
-    "reference_url": "https://www.lemmi.no/p/extraordinary-until-proven-otherwise"
+    "reference_url": "https://www.lemmi.no/p/extraordinary-until-proven-otherwise",
+    "connections": [
+      {
+        "provider_id": "ryg077wBvsM",
+        "reason": "Step back from individual sightings to the larger question of extraterrestrial intelligence."
+      },
+      {
+        "provider_id": "xkTsoP5v2GM",
+        "reason": "An unusual observation and an explicit claim of alien contact are different kinds of evidence. Compare them."
+      }
+    ]
   },
   {
     "provider_id": "I2O7blSSzpI",
@@ -93,8 +149,90 @@
       "unsolved-mysteries"
     ],
     "expected_author": "LEMMiNO",
-    "next_provider_id": "tuDhgB5jvww",
-    "connection": "Cicada invites people to solve its clues. What about transmissions whose intended audience is never announced? Return to the voices behind UVB-76.",
-    "reference_url": "https://www.lemmi.no/p/cicada-3301"
+    "reference_url": "https://www.lemmi.no/p/cicada-3301",
+    "connections": [
+      {
+        "provider_id": "jVpsLMCIB0Y",
+        "reason": "Another deliberately constructed cipher: what changes when the author is known?"
+      },
+      {
+        "provider_id": "d1s5g2Nh2c0",
+        "reason": "Compare public puzzles with codes intended for a select audience."
+      },
+      {
+        "provider_id": "TLMVjfKg35M",
+        "reason": "Leave the screen and follow cryptic messages into city streets."
+      }
+    ]
+  },
+  {
+    "provider_id": "jVpsLMCIB0Y",
+    "title": "Kryptos: the code outside CIA headquarters",
+    "description": "LEMMiNO traces the sculpture and the decades spent trying to read its hidden messages. This 2024 documentary predates the discovery of K4 plaintext in archival papers in 2025. Finding the text and reconstructing the cipher method are different achievements.",
+    "tags": [
+      "coded-messages",
+      "cryptography",
+      "public-mysteries"
+    ],
+    "expected_author": "LEMMiNO",
+    "reference_url": "https://apnews.com/article/cb8ee8554ca473910cbd0592f8bdb350",
+    "connections": [
+      {
+        "provider_id": "I2O7blSSzpI",
+        "reason": "Kryptos has a named creator. How does a puzzle change when its organizers stay anonymous?"
+      },
+      {
+        "provider_id": "TLMVjfKg35M",
+        "reason": "Another public object carrying an obscure message, but is it meant to be decoded?"
+      }
+    ]
+  },
+  {
+    "provider_id": "TLMVjfKg35M",
+    "title": "The Toynbee tiles: messages underfoot",
+    "description": "Cryptic tiles embedded in city streets turn a walk into an investigation. Spektator follows the messages and the efforts to explain them. This account presents an investigation and proposed attribution, not permission to treat every theory as established fact.",
+    "tags": [
+      "public-mysteries",
+      "cryptic-messages",
+      "strange-happenings"
+    ],
+    "expected_author": "Spektator",
+    "reference_url": "https://www.youtube.com/watch?v=TLMVjfKg35M",
+    "connections": [
+      {
+        "provider_id": "I2O7blSSzpI",
+        "reason": "Compare scattered physical clues with a puzzle that spread from the internet into the world."
+      },
+      {
+        "provider_id": "NVcRWOhXmh4",
+        "reason": "Both force an unexpected message into everyday life. What can the delivery method tell us?"
+      }
+    ]
+  },
+  {
+    "provider_id": "xkTsoP5v2GM",
+    "title": "Captain Midnight and the alien broadcast",
+    "description": "Oddity Archive compares the 1986 HBO intrusion with the 1977 Southern Television interruption. One was a pricing protest by an identified operator; the other carried a voice claiming extraterrestrial authority. That claim is part of the broadcast, not evidence of alien contact.",
+    "tags": [
+      "broadcast-hijacking",
+      "strange-broadcasts",
+      "high-strangeness"
+    ],
+    "expected_author": "OddityArchive",
+    "reference_url": "https://www.youtube.com/watch?v=xkTsoP5v2GM",
+    "connections": [
+      {
+        "provider_id": "NVcRWOhXmh4",
+        "reason": "Return to the broadcast intrusion whose masked performer remains the central mystery."
+      },
+      {
+        "provider_id": "SpeSpA3e56A",
+        "reason": "Compare someone claiming alien authority with witnesses trying to describe something unidentified."
+      },
+      {
+        "provider_id": "d1s5g2Nh2c0",
+        "reason": "Not every strange transmission is an intrusion. Some have an intended audience all along."
+      }
+    ]
   }
 ]
