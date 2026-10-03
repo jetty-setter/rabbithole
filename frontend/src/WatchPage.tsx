@@ -6,18 +6,14 @@ import {
   canAsk,
   canEmbed,
   canPlayInternal,
-  canSeekExactMoment,
-  canWatch,
   deleteVideo,
   displayTitle,
   formatDuration,
   hasTranscript,
   relativeTime,
-  searchMoments,
   transcriptSectionState,
   updateVideo,
   type AskAnswer,
-  type SearchMoment,
   type Video,
 } from "./api";
 import { Player } from "./Player";
@@ -29,6 +25,8 @@ import { EditForm } from "./components/EditForm";
 import { useVideoData } from "./hooks/useVideoData";
 import { useDocumentMeta } from "./hooks/useDocumentMeta";
 import { useTranscript } from "./hooks/useTranscript";
+import { relatedVideos, sharedTags } from "./discovery";
+import { nextInTrail } from "./curatedTrail";
 
 /** Seconds → m:ss for cue timestamps. */
 function fmtTime(s: number): string {
@@ -100,37 +98,9 @@ export function WatchPage() {
 
   const related = useMemo(
     () =>
-      videos
-        .filter((v) => canWatch(v) && v.video_id !== id)
-        .slice(0, 12),
-    [videos, id],
+      video ? relatedVideos(video, videos) : [],
+    [videos, video],
   );
-
-  // RELATED — semantically connected moments in OTHER videos. Seeded by this
-  // video's own transcript content (what it's actually about), not just its
-  // title, whenever a transcript is available. Reuses the same cross-video
-  // search endpoint the Search page uses; no separate topic/relation model
-  // needed. Falls back to the plain video list (via `related` below) when
-  // there's no transcript yet or the search turns up nothing useful.
-  const [deeperMoments, setDeeperMoments] = useState<SearchMoment[] | null>(null);
-  useEffect(() => {
-    setDeeperMoments(null);
-    if (!video || !hasTranscript(video)) return;
-    // Wait for the transcript to finish loading so the seed reflects real
-    // cue text; this effect re-fires once `cues` populates.
-    if (cues.length === 0) return;
-    const seed = cues.map((c) => c.text).join(" ").trim().slice(0, 1000) || displayTitle(video);
-    let live = true;
-    searchMoments(seed).then((results) => {
-      if (!live) return;
-      setDeeperMoments(
-        results.filter((r) => r.video.video_id !== video.video_id && canWatch(r.video)),
-      );
-    });
-    return () => {
-      live = false;
-    };
-  }, [video?.video_id, video?.has_transcript, cues]);
 
   useEffect(() => {
     setAskQuestion("");
@@ -505,6 +475,14 @@ export function WatchPage() {
                   </div>
                 </div>
                 {video.description && <p className="watch-desc">{video.description}</p>}
+                {(() => {
+                  const next = nextInTrail(video, videos);
+                  return next && <section className="watch-desc" aria-label="Follow this thread">
+                    <h3>Follow this thread</h3>
+                    <p>{next.connection}</p>
+                    <Link to={`/watch/${next.video.video_id}`}>{displayTitle(next.video)} →</Link>
+                  </section>;
+                })()}
                 {video.tags && video.tags.length > 0 && (
                   <div className="tag-row">
                     {video.tags.map((t) => (
@@ -524,8 +502,8 @@ export function WatchPage() {
           </div>
 
           {canAsk(video) && (
-            <section className="feature-panel ask-video">
-              <h2 className="feature-head">Ask this video</h2>
+            <details className="feature-panel ask-video">
+              <summary className="feature-head">Ask this video (optional AI)</summary>
               <form className="ask-form" onSubmit={submitAsk}>
                 <input
                   className="ask-input"
@@ -565,7 +543,7 @@ export function WatchPage() {
                   )}
                 </div>
               )}
-            </section>
+            </details>
           )}
 
           {showTranscriptUI && (
@@ -650,38 +628,9 @@ export function WatchPage() {
             className="rail-panel-related"
             hidden={effectiveRail !== "related"}
           >
-            <p className="related-sub">Connected moments from across RabbitHole.</p>
-            {deeperMoments && deeperMoments.length > 0
-              ? deeperMoments.map((r) => {
-                  const seekable = canSeekExactMoment(r.video);
-                  return (
-                  <Link
-                    to={
-                      seekable
-                        ? `/watch/${r.video.video_id}?t=${Math.floor(r.start)}`
-                        : `/watch/${r.video.video_id}`
-                    }
-                    className="related-item deeper-moment"
-                    key={r.video.video_id}
-                  >
-                    <div className="related-thumb">
-                      {r.video.thumbnail_url ? (
-                        <img src={r.video.thumbnail_url} alt="" />
-                      ) : (
-                        <img src="/RHRabbit.png?v=5" alt="" className="thumb-ph" />
-                      )}
-                      <span className="dur-badge">
-                        {seekable ? fmtTime(r.start) : "mentioned"}
-                      </span>
-                    </div>
-                    <div className="related-info">
-                      <span className="related-title">{displayTitle(r.video)}</span>
-                      <span className="deeper-snippet">“…{r.snippet}…”</span>
-                    </div>
-                  </Link>
-                  );
-                })
-              : related.map((r) => (
+            <p className="related-sub">Keep digging. Follow a shared topic into another video.</p>
+            {related.length === 0 && <p className="muted">More finds are on their way. <Link to="/">Back to Discover</Link></p>}
+            {related.map((r) => (
                   <Link to={`/watch/${r.video_id}`} className="related-item" key={r.video_id}>
                     <div className="related-thumb">
                       {r.thumbnail_url ? <img src={r.thumbnail_url} alt="" /> : <img src="/RHRabbit.png?v=5" alt="" className="thumb-ph" />}
@@ -692,6 +641,7 @@ export function WatchPage() {
                     <div className="related-info">
                       <span className="related-title">{displayTitle(r)}</span>
                       <span className="related-meta">{r.owner || "RabbitHole"}</span>
+                      <span className="related-meta">{sharedTags(video, r).length ? `Connected through ${sharedTags(video, r).map((tag) => `#${tag}`).join(" · ")}` : "Something different to explore"}</span>
                       <span className="related-meta">
                         {r.views ?? 0} views · {relativeTime(r.created_at)}
                       </span>

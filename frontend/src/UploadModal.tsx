@@ -42,20 +42,26 @@ export function UploadModal({
     }
     setError(null);
     setFile(f);
+    setTitle(f.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " "));
+  }
+
+  async function suggestForFile() {
+    if (!file || suggesting) return;
+    const f = file;
     setSuggesting(true);
     try {
       const frames = await extractFrames(f);
       if (frames.length) {
         const s = await suggestMetadata(frames);
         if (s) {
-          setTitle((t) => (t.trim() ? t : s.title));
+          setTitle((t) => (!t.trim() || t === f.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ") ? s.title : t));
           setDescription((d) => (d.trim() ? d : s.description));
           if (s.tags?.length) setTags(s.tags);
           setSuggested(!!(s.title || s.description || s.tags?.length));
         }
       }
     } catch {
-      /* fall back to the server-side auto-titler on publish */
+      /* The upload remains usable with its manually entered metadata. */
     } finally {
       setSuggesting(false);
     }
@@ -75,7 +81,7 @@ export function UploadModal({
       const ticket = await createUpload(
         file.name,
         contentType,
-        title,
+        title.trim() || file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " "),
         description,
         tags,
         visibility,
@@ -144,6 +150,7 @@ export function UploadModal({
 
         {file && (
           <div className="upload-fields">
+            <button type="button" className="btn-ghost" onClick={suggestForFile} disabled={suggesting || progress !== null}>Suggest metadata with AI (optional)</button>
             {suggesting && (
               <div className="ai-suggest-note loading">
                 <span className="proc-spinner sm" /> Reading your video to suggest a title…
@@ -154,13 +161,13 @@ export function UploadModal({
             )}
             <input
               className="search wide"
-              placeholder="Title — leave blank and the AI will name it ✦"
+              placeholder="Give this video a title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
             <textarea
               className="search wide ta"
-              placeholder="Description (optional)"
+              placeholder="Why is this worth watching? (optional)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}

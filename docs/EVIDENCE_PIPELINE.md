@@ -20,7 +20,7 @@ same `run_id` and source ID.
 
 ## Deployment and operation
 
-This implementation has not been deployed. Terraform in `infra/evidence.tf` provisions the
+Provision infrastructure before publishing API and frontend changes. Terraform in `infra/evidence.tf` provisions the
 two Lambda functions, SQS queue, dead-letter queue, restricted IAM roles, private S3 bucket,
 event source mappings, logs, and a dead-letter alarm. The API image and frontend also need
 deployment. Run the existing CI checks and review a Terraform plan before applying.

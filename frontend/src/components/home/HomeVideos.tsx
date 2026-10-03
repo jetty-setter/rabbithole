@@ -3,13 +3,13 @@ import { Link } from "react-router-dom";
 import {
   displayTitle,
   formatDuration,
-  isDiscoverable,
   normalizeTag,
   pickFeatured,
   relativeTime,
   type Video,
 } from "../../api";
 import { EditorialCard } from "../../EditorialCard";
+import { publicVideos } from "../../discovery";
 
 /** Statuses a video passes through before it can be watched. Order matters:
  *  it drives the stage tracker in "In the pipeline". */
@@ -34,23 +34,25 @@ export interface HomeVideosProps {
   live: boolean;
   /** Opens the upload flow (or sign-in first, for guests). */
   onUpload: () => void;
+  onAddExternal?: () => void;
+  username?: string | null;
+  isAdmin?: boolean;
 }
 
 /** The video-first body of the homepage, under the hero: the featured
  *  video, anything still moving through the processing pipeline, the
  *  newest and most-watched videos, and the topics they cover. */
-export function HomeVideos({ videos, loading, live, onUpload }: HomeVideosProps) {
+export function HomeVideos({ videos, loading, live, onUpload, onAddExternal, username, isAdmin }: HomeVideosProps) {
   const ready = useMemo(
     () =>
-      videos
-        .filter(isDiscoverable)
+      publicVideos(videos)
         .sort((a, b) => (b.created_at || "").localeCompare(a.created_at || "")),
     [videos],
   );
 
   const inPipeline = useMemo(
-    () => videos.filter((v) => !isDiscoverable(v) && v.status !== "failed"),
-    [videos],
+    () => videos.filter((v) => ["pending_upload", "uploaded", "processing"].includes(v.status) && (isAdmin || (!!username && v.owner === username))),
+    [videos, isAdmin, username],
   );
 
   const featured = pickFeatured(ready);
@@ -103,7 +105,8 @@ export function HomeVideos({ videos, loading, live, onUpload }: HomeVideosProps)
       <div className="hv">
         <section className="hv-empty" aria-labelledby="hv-empty-title">
           <h2 id="hv-empty-title">No videos yet</h2>
-          <p>Upload one and it&rsquo;s transcoded, captioned, and searchable within a few minutes.</p>
+          <p>Strange science. Hidden history. Things you didn&rsquo;t know you wanted to watch.</p>
+          {onAddExternal && <button type="button" className="hv-upload" onClick={onAddExternal}>Add a YouTube find</button>}
           <button type="button" className="hv-upload" onClick={onUpload}>
             Upload a video
           </button>
@@ -115,6 +118,7 @@ export function HomeVideos({ videos, loading, live, onUpload }: HomeVideosProps)
   return (
     <div className="hv">
       {featured && <FeaturedVideo v={featured} />}
+      {onAddExternal && <div className="hv-editor-actions"><button type="button" className="hv-upload" onClick={onAddExternal}>Add a YouTube find</button><span>A link, a reason to watch, and a few connecting topics.</span></div>}
 
       {inPipeline.length > 0 && <Pipeline videos={inPipeline} live={live} />}
 
@@ -205,6 +209,7 @@ function FeaturedVideo({ v }: { v: Video }) {
           <Link to={`/watch/${v.video_id}`}>{title}</Link>
         </h2>
         {v.description && <p className="hv-featured-desc">{v.description}</p>}
+        {v.owner && <p className="hv-source">From {v.source_name || v.owner}{v.source_type === "external" ? ` · ${v.provider === "youtube" ? "YouTube" : "Watch at source"}` : " · Uploaded to RabbitHole"}</p>}
         {facts.length > 0 && (
           <ul className="hv-facts">
             {facts.map((f) => (

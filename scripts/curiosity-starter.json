@@ -1,0 +1,100 @@
+[
+  {
+    "provider_id": "a0rByLgRdLM",
+    "title": "The Wow! signal",
+    "description": "A radio telescope catches something remarkable, and a handwritten Wow! gives it a name. SciShow Space introduces the 1977 detection and the search for a repeat. This 2015 explainer is a starting point, not a current verdict or proof of extraterrestrial contact.",
+    "tags": [
+      "unknown-signals",
+      "space",
+      "unsolved-mysteries"
+    ],
+    "expected_author": "SciShow Space",
+    "next_provider_id": "ryg077wBvsM",
+    "connection": "One tantalizing detection raises a much larger question: if someone is out there, why is the universe so quiet?",
+    "reference_url": "https://www.youtube.com/watch?v=a0rByLgRdLM"
+  },
+  {
+    "provider_id": "d1s5g2Nh2c0",
+    "title": "Numbers stations: messages hiding in plain hearing",
+    "description": "Voices read strings of numbers into the shortwave ether. Ringway Manchester explores spy communications and the listeners who document them. The broadcasts are real; an ordinary listener usually cannot identify the recipient or decode the message.",
+    "tags": [
+      "unknown-signals",
+      "shortwave",
+      "coded-messages"
+    ],
+    "expected_author": "Ringway Manchester",
+    "next_provider_id": "I2O7blSSzpI",
+    "connection": "Numbers stations hide messages for selected listeners. What happens when an anonymous sender invites the whole internet to crack the code?",
+    "reference_url": "https://www.youtube.com/watch?v=d1s5g2Nh2c0"
+  },
+  {
+    "provider_id": "tuDhgB5jvww",
+    "title": "UVB-76: voices behind the buzz",
+    "description": "Ringway Manchester examines voices and sounds associated with the shortwave station nicknamed the Buzzer. Listen for the human activity behind the eerie reputation. Claims that it is a doomsday switch remain speculation, not an established explanation.",
+    "tags": [
+      "shortwave",
+      "unknown-signals",
+      "strange-broadcasts"
+    ],
+    "expected_author": "Ringway Manchester",
+    "next_provider_id": "NVcRWOhXmh4",
+    "connection": "Hearing a voice does not settle who controls a signal. In Chicago, someone took over the broadcast itself.",
+    "reference_url": "https://www.youtube.com/watch?v=tuDhgB5jvww"
+  },
+  {
+    "provider_id": "NVcRWOhXmh4",
+    "title": "The Max Headroom broadcast hijacking",
+    "description": "Two Chicago television broadcasts were interrupted in 1987 by a masked intruder. The Reyna Bros. documentary examines the footage and the mystery behind it. The intrusion is documented; proposed identities should be treated as theories. Contains crude language and disturbing broadcast footage.",
+    "tags": [
+      "strange-broadcasts",
+      "unsolved-mysteries",
+      "broadcast-hijacking"
+    ],
+    "expected_author": "The Reyna Bros.",
+    "next_provider_id": "a0rByLgRdLM",
+    "connection": "Here we know someone deliberately transmitted. The Wow! signal poses a stranger question: was there a sender at all?",
+    "reference_url": "https://www.youtube.com/watch?v=NVcRWOhXmh4"
+  },
+  {
+    "provider_id": "ryg077wBvsM",
+    "title": "The Great Silence",
+    "description": "If the universe is so vast, why has contact proved so elusive? LEMMiNO explores the search for extraterrestrial intelligence in this 2018 documentary. Its scenarios are possibilities to consider, not evidence that anyone has contacted us.",
+    "tags": [
+      "space",
+      "unknown-signals",
+      "extraterrestrial-life"
+    ],
+    "expected_author": "LEMMiNO",
+    "next_provider_id": "SpeSpA3e56A",
+    "connection": "Searching distant stars is one approach. What should we make of unusual encounters reported much closer to home?",
+    "reference_url": "https://www.lemmi.no/p/the-great-silence"
+  },
+  {
+    "provider_id": "SpeSpA3e56A",
+    "title": "Extraordinary Until Proven Otherwise",
+    "description": "LEMMiNO examines three widely circulated Navy UFO videos alongside witness accounts. This 2020 documentary captures the debate at that time; unidentified does not establish an extraterrestrial origin. Follow the footage, the testimony, and the gaps between them.",
+    "tags": [
+      "ufo",
+      "unexplained-sightings",
+      "unsolved-mysteries"
+    ],
+    "expected_author": "LEMMiNO",
+    "next_provider_id": "NVcRWOhXmh4",
+    "connection": "Before interpreting unusual footage, ask where it came from. The Max Headroom intrusion is a very different case of a real recording with an unidentified actor.",
+    "reference_url": "https://www.lemmi.no/p/extraordinary-until-proven-otherwise"
+  },
+  {
+    "provider_id": "I2O7blSSzpI",
+    "title": "Cicada 3301: An Internet Mystery",
+    "description": "Anonymous puzzles draw strangers into cryptography, hidden messages, and a search for whoever is behind them. LEMMiNO reconstructs the trail in this 2018 documentary. Proposed identities and motives remain theories within this account.",
+    "tags": [
+      "coded-messages",
+      "internet-mysteries",
+      "unsolved-mysteries"
+    ],
+    "expected_author": "LEMMiNO",
+    "next_provider_id": "tuDhgB5jvww",
+    "connection": "Cicada invites people to solve its clues. What about transmissions whose intended audience is never announced? Return to the voices behind UVB-76.",
+    "reference_url": "https://www.lemmi.no/p/cicada-3301"
+  }
+]
