@@ -117,26 +117,23 @@ jobs:
       - name: Verify live deployment
         run: |
           cd frontend
-          CSS_FILE=$(basename dist/assets/index-*.css)
-          echo "This build's CSS asset: $CSS_FILE"
           PROD_URL="https://rabbithole.stephsimmons.dev"
           for i in $(seq 1 24); do
-            LIVE_HTML=$(curl -sS --max-time 10 "$PROD_URL/?v=$(date +%s%N)" || true)
-            LIVE_CSS_PATH=$(echo "$LIVE_HTML" | grep -oE '/assets/index-[A-Za-z0-9]+\.css' | head -1)
-            echo "Attempt $i: live index references $LIVE_CSS_PATH"
-            if [ "$LIVE_CSS_PATH" = "/assets/$CSS_FILE" ]; then
-              LIVE_CSS=$(curl -sS --max-time 10 "$PROD_URL$LIVE_CSS_PATH?v=$(date +%s%N)" || true)
-              LIVE_BYTES=$(echo -n "$LIVE_CSS" | wc -c)
-              LOCAL_BYTES=$(wc -c < "dist/assets/$CSS_FILE")
-              echo "Live CSS bytes: $LIVE_BYTES, local build CSS bytes: $LOCAL_BYTES"
-              if [ "$LIVE_BYTES" = "$LOCAL_BYTES" ]; then
-                echo "VERIFIED: $PROD_URL is serving this build's exact CSS ($CSS_FILE, $LIVE_BYTES bytes)."
-                exit 0
+            curl -fsS --max-time 10 "$PROD_URL/?v=$(date +%s%N)" -o /tmp/live-index.html || true
+            VERIFIED=true
+            for LOCAL_FILE in dist/assets/index-*.css dist/assets/index-*.js; do
+              ASSET="/assets/$(basename "$LOCAL_FILE")"
+              if ! grep -Fq "$ASSET" /tmp/live-index.html || ! curl -fsS --max-time 20 "$PROD_URL$ASSET" -o /tmp/live-asset || ! cmp -s "$LOCAL_FILE" /tmp/live-asset; then
+                VERIFIED=false
+                echo "Attempt $i: waiting for $ASSET"
+                break
               fi
-              echo "Filename matches but byte count differs -- unexpected, retrying."
+            done
+            if [ "$VERIFIED" = true ]; then
+              echo "VERIFIED: live JavaScript and CSS match this build exactly."
+              exit 0
             fi
             sleep 10
           done
-          echo "FAILED: $PROD_URL did not converge to this build's assets within 4 minutes."
-          echo "Live index.html referenced: $LIVE_CSS_PATH"
+          echo "FAILED: live assets did not converge to this build."
           exit 1

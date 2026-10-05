@@ -136,6 +136,14 @@
       {
         "provider_id": "xkTsoP5v2GM",
         "reason": "An unusual observation and an explicit claim of alien contact are different kinds of evidence. Compare them."
+      },
+      {
+        "provider_id": "YxXhp-xjZ28",
+        "reason": "Disputed footage is not limited to the sky. What happens when the unidentified subject looks like an animal?"
+      },
+      {
+        "provider_id": "GUpeDwiD64M",
+        "reason": "Follow unusual aerial sightings into the folklore surrounding Mothman."
       }
     ]
   },
@@ -233,6 +241,117 @@
         "provider_id": "d1s5g2Nh2c0",
         "reason": "Not every strange transmission is an intrusion. Some have an intended audience all along."
       }
+    ]
+  },
+  {
+    "provider_id": "YxXhp-xjZ28",
+    "title": "Sasquatch: unraveling the sightings",
+    "description": "Monstrum explores how Sasquatch stories, reported encounters, and disputed footage shaped the modern Bigfoot legend. Follow the history of the claims without mistaking their popularity for proof of an undiscovered animal.",
+    "tags": [
+      "cryptids",
+      "bigfoot",
+      "unexplained-sightings"
+    ],
+    "expected_author": "Storied",
+    "reference_url": "https://www.youtube.com/watch?v=YxXhp-xjZ28",
+    "connections": [
+      {
+        "provider_id": "wW6eKLLViK8",
+        "reason": "From a figure in the forest to a shape on the water: compare two legends shaped by disputed images."
+      },
+      {
+        "provider_id": "SpeSpA3e56A",
+        "reason": "What can a short recording establish? Compare Bigfoot footage with the debate around Navy UFO videos."
+      }
+    ]
+  },
+  {
+    "provider_id": "wW6eKLLViK8",
+    "title": "Loch Ness: beneath the surface",
+    "description": "Monstrum follows the history of Nessie and the photographs, theories, and searches surrounding the lake. A tour through a persistent mystery and its explanations, rather than a claim that a monster has been found.",
+    "tags": [
+      "cryptids",
+      "lake-monsters",
+      "unexplained-sightings"
+    ],
+    "expected_author": "Storied",
+    "reference_url": "https://www.youtube.com/watch?v=wW6eKLLViK8",
+    "connections": [
+      {
+        "provider_id": "YxXhp-xjZ28",
+        "reason": "How much of a creature can we infer from an ambiguous image? Compare Nessie with Sasquatch."
+      },
+      {
+        "provider_id": "GUpeDwiD64M",
+        "reason": "Leave the lake for a town where reported sightings became a very different kind of local legend."
+      }
+    ]
+  },
+  {
+    "provider_id": "GUpeDwiD64M",
+    "title": "Mothman: the winged legend of Point Pleasant",
+    "description": "Monstrum examines the reported winged figure and the folklore that grew around Point Pleasant. Separate witness stories and later interpretations from established events; associations with disasters do not establish prediction or causation.",
+    "tags": [
+      "cryptids",
+      "mothman",
+      "high-strangeness"
+    ],
+    "expected_author": "Storied",
+    "reference_url": "https://www.youtube.com/watch?v=GUpeDwiD64M",
+    "connections": [
+      {
+        "provider_id": "1C7zocpEqT8",
+        "reason": "Another West Virginia encounter sits between creature folklore and UFO reports. Follow the story to Flatwoods."
+      },
+      {
+        "provider_id": "d-jkZE8AdLA",
+        "reason": "Compare how reported encounters become regional legends, and how a creature's description changes as its story travels."
+      },
+      {
+        "provider_id": "YxXhp-xjZ28",
+        "reason": "Compare two American creature legends and the ways communities retell encounters."
+      },
+      {
+        "provider_id": "SpeSpA3e56A",
+        "reason": "A strange figure in the sky opens another path: how do witnesses describe something they cannot identify?"
+      }
+    ]
+  },
+  {
+    "provider_id": "d-jkZE8AdLA",
+    "title": "Chupacabras: a modern mystery",
+    "description": "Monstrum traces the Chupacabras story and the changing descriptions attached to it. How did one name come to cover such different creatures? Explore the reported encounters, media coverage, and animal explanations behind the legend.",
+    "tags": ["cryptids", "chupacabras", "strange-happenings"],
+    "expected_author": "Storied",
+    "reference_url": "https://www.pbs.org/video/el-chupacabras-a-modern-mystery-qeyye6/",
+    "connections": [
+      {"provider_id": "QrGcxeyIPx4", "reason": "Watch another creature story spread through media, this time from a grainy clip into an internet phenomenon."},
+      {"provider_id": "GUpeDwiD64M", "reason": "Compare a changing creature description with the winged figure associated with Point Pleasant."}
+    ]
+  },
+  {
+    "provider_id": "QrGcxeyIPx4",
+    "title": "Fresno Nightcrawlers: a legend caught on camera?",
+    "description": "A short, grainy recording helped turn strange walking shapes into an internet cryptid. Monstrum examines the footage, theories, and folklore that followed. The existence of a video does not establish what it depicts.",
+    "tags": ["cryptids", "disputed-footage", "internet-mysteries"],
+    "expected_author": "Storied",
+    "reference_url": "https://www.pbs.org/video/the-fresno-night-crawlers-cxpixd/",
+    "connections": [
+      {"provider_id": "YxXhp-xjZ28", "reason": "Compare the Nightcrawler clips with another creature whose reputation is inseparable from disputed footage."},
+      {"provider_id": "d-jkZE8AdLA", "reason": "How much does the medium change the monster? Follow a cryptid shaped by reports and retellings."},
+      {"provider_id": "SpeSpA3e56A", "reason": "Move from an unidentified figure on the ground to unidentified objects in the sky: what can the recording alone tell us?"}
+    ]
+  },
+  {
+    "provider_id": "1C7zocpEqT8",
+    "title": "The Flatwoods Monster",
+    "description": "Bedtime Stories retells the reported encounter at Flatwoods in a dramatized, illustrated format. This is a narrated account and interpretation, not original footage of a creature. Follow the overlap between a strange sighting, a UFO story, and local folklore.",
+    "tags": ["cryptids", "high-strangeness", "ufo"],
+    "expected_author": "Bedtime Stories",
+    "reference_url": "https://www.youtube.com/watch?v=1C7zocpEqT8",
+    "connections": [
+      {"provider_id": "GUpeDwiD64M", "reason": "Stay in West Virginia and compare another reported creature encounter that became a local legend."},
+      {"provider_id": "SpeSpA3e56A", "reason": "Flatwoods crosses between creature lore and UFO accounts. Compare its retelling with recorded Navy encounters."}
     ]
   }
 ]
