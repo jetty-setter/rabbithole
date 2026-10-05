@@ -86,6 +86,10 @@
         "reason": "Compare this unidentified intruder with a solved TV hijacking and a supposed alien message."
       },
       {
+        "provider_id": "CbUjuwhQPKs",
+        "reason": "From an unidentified broadcast intruder to an unidentified skyjacker: which clues can actually establish a name?"
+      },
+      {
         "provider_id": "TLMVjfKg35M",
         "reason": "An anonymous message can interrupt a street as well as a screen. Who wanted these words to be seen?"
       },
@@ -192,6 +196,10 @@
       {
         "provider_id": "TLMVjfKg35M",
         "reason": "Another public object carrying an obscure message, but is it meant to be decoded?"
+      },
+      {
+        "provider_id": "iTOKRWgjOlg",
+        "reason": "A readable word can still leave a mystery. Follow CROATOAN into the search for Roanoke's colonists."
       }
     ]
   },
@@ -352,6 +360,30 @@
     "connections": [
       {"provider_id": "GUpeDwiD64M", "reason": "Stay in West Virginia and compare another reported creature encounter that became a local legend."},
       {"provider_id": "SpeSpA3e56A", "reason": "Flatwoods crosses between creature lore and UFO accounts. Compare its retelling with recorded Navy encounters."}
+    ]
+  },
+  {
+    "provider_id": "CbUjuwhQPKs",
+    "title": "D. B. Cooper: the man who vanished",
+    "description": "A ransom, a parachute, and an identity that became a mystery. LEMMiNO's 2020 documentary reconstructs the 1971 skyjacking, the evidence, and competing suspect theories. This is a historical investigation; the suspects discussed are not established identifications.",
+    "tags": ["unsolved-mysteries", "disappearances", "unknown-identities"],
+    "expected_author": "LEMMiNO",
+    "reference_url": "https://www.lemmi.no/p/the-search-for-d-b-cooper",
+    "connections": [
+      {"provider_id": "NVcRWOhXmh4", "reason": "Another hijacking leaves investigators trying to put a name to an intruder, this time behind a television mask."},
+      {"provider_id": "iTOKRWgjOlg", "reason": "A few surviving clues can support very different stories. Compare one disappearance with an abandoned settlement."}
+    ]
+  },
+  {
+    "provider_id": "iTOKRWgjOlg",
+    "title": "Roanoke: the colony and the carved clue",
+    "description": "An abandoned settlement and the word CROATOAN fuel centuries of questions. LEMMiNO's 2019 documentary follows the historical accounts, archaeological clues, and proposed fates of Roanoke's colonists. Its discoveries and interpretations reflect that publication date; gaps in the record do not establish a supernatural disappearance.",
+    "tags": ["historical-mysteries", "disappearances", "unsolved-mysteries"],
+    "expected_author": "LEMMiNO",
+    "reference_url": "https://www.lemmi.no/p/the-lost-colony-of-roanoke",
+    "connections": [
+      {"provider_id": "CbUjuwhQPKs", "reason": "Move from an abandoned settlement to a missing skyjacker, and compare what physical traces can tell us about a disappearance."},
+      {"provider_id": "jVpsLMCIB0Y", "reason": "Roanoke's clue can be read but remains debated. At Kryptos, reading the message itself became the challenge."}
     ]
   }
 ]

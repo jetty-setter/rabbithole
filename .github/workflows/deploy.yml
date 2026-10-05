@@ -10,6 +10,7 @@ on:
       - "api/**"
       - "worker/**"
       - "frontend/**"
+      - "scripts/curiosity-starter.json"
       - ".github/workflows/deploy.yml"
   workflow_dispatch:
 
