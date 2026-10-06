@@ -267,6 +267,7 @@
         "provider_id": "wW6eKLLViK8",
         "reason": "From a figure in the forest to a shape on the water: compare two legends shaped by disputed images."
       },
+      {"provider_id": "TeUGl1rOXx0", "reason": "Follow creature stories into Australia's waterways, where the bunyip has a different cultural history."},
       {
         "provider_id": "SpeSpA3e56A",
         "reason": "What can a short recording establish? Compare Bigfoot footage with the debate around Navy UFO videos."
@@ -359,6 +360,7 @@
     "reference_url": "https://www.youtube.com/watch?v=1C7zocpEqT8",
     "connections": [
       {"provider_id": "GUpeDwiD64M", "reason": "Stay in West Virginia and compare another reported creature encounter that became a local legend."},
+      {"provider_id": "FcNUxb_4qbo", "reason": "Before a strange light becomes a creature story, what might the light itself be? Follow the will-o'-the-wisp."},
       {"provider_id": "SpeSpA3e56A", "reason": "Flatwoods crosses between creature lore and UFO accounts. Compare its retelling with recorded Navy encounters."}
     ]
   },
@@ -384,6 +386,32 @@
     "connections": [
       {"provider_id": "CbUjuwhQPKs", "reason": "Move from an abandoned settlement to a missing skyjacker, and compare what physical traces can tell us about a disappearance."},
       {"provider_id": "jVpsLMCIB0Y", "reason": "Roanoke's clue can be read but remains debated. At Kryptos, reading the message itself became the challenge."}
+    ]
+  },
+  {
+    "provider_id": "FcNUxb_4qbo",
+    "title": "Will-o'-the-wisp: lights that lead you astray",
+    "description": "An eerie light over dark ground becomes a warning, a spirit, or a lure. Monstrum explores will-o'-the-wisp folklore and the search for natural explanations. Follow the space between a reported light and the stories people build around it.",
+    "tags": ["strange-lights", "folklore", "high-strangeness"],
+    "expected_author": "Storied",
+    "reference_url": "https://www.pbs.org/video/will-o-the-wisp-monstrous-flame-or-scientific-phenomenon-dsugln/",
+    "connections": [
+      {"provider_id": "1C7zocpEqT8", "reason": "Follow an eerie light into the Flatwoods account, where a sighting became a creature legend."},
+      {"provider_id": "SpeSpA3e56A", "reason": "From lights in folklore to recorded objects in the sky: how do we separate an observation from its interpretation?"},
+      {"provider_id": "TeUGl1rOXx0", "reason": "Stay near the water and explore another tradition in which the landscape carries a warning."}
+    ]
+  },
+  {
+    "provider_id": "TeUGl1rOXx0",
+    "title": "Bunyip: something in the water",
+    "description": "Monstrum explores bunyip traditions from southeastern Indigenous Australia, historical accounts, and the effects of colonization on their retelling. The descriptions vary; this is a look at distinct cultural stories and later creature claims, not proof of a single undiscovered animal.",
+    "tags": ["cryptids", "water-monsters", "folklore"],
+    "expected_author": "Storied",
+    "reference_url": "https://www.pbs.org/video/bunyip-australias-mysterious-amphibian-monster-sklddd/",
+    "connections": [
+      {"provider_id": "wW6eKLLViK8", "reason": "Compare the bunyip's varied traditions with the modern search for a creature in Loch Ness."},
+      {"provider_id": "FcNUxb_4qbo", "reason": "Water can hide a creature or reflect a strange light. Follow another story attached to an unsettling landscape."},
+      {"provider_id": "d-jkZE8AdLA", "reason": "What happens when different descriptions share one creature name? Compare the changing Chupacabras reports."}
     ]
   }
 ]
