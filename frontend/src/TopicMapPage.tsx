@@ -1,376 +1,51 @@
-import { Fragment, useEffect, useMemo, useState, type CSSProperties } from "react";
-import { Link } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { useApp } from "./App";
-import {
-  buildTopicGraph,
-  connectionsFor,
-  followTopic,
-  jumpToStep,
-  MAX_CONNECTIONS,
-  mergeConnections,
-  scoreTopics,
-  startingTopics,
-  stepBack,
-  tunnelPath,
-} from "./topicGraph";
-import { canWatch, getTopicConnections, type TopicConnection } from "./api";
+import { buildMysteryCases } from "./mysteryCases";
 import { SkeletonFeed } from "./Skeleton";
+import { useDocumentMeta } from "./hooks/useDocumentMeta";
 
-const NARROW_QUERY = "(max-width: 640px)";
-// Where the connected topics sit, as a percentage of the hub box from its
-// centre. The box is square, so this reads the same on both axes.
-const RING = 34;
-
-function plural(n: number, word: string): string {
-  return `${n} ${word}${n === 1 ? "" : "s"}`;
-}
-
-/** Position of connected topic `i` of `n` around the centre, as a percentage
- *  offset from the hub's middle. Starts at the top, goes clockwise. */
-function spoke(i: number, n: number): { x: number; y: number } {
-  const a = -Math.PI / 2 + (i / n) * Math.PI * 2;
-  return { x: Math.cos(a) * RING, y: Math.sin(a) * RING };
-}
-
-/**
- * The Map: a guided "follow the rabbit hole" navigator. You pick a topic,
- * see its strongest connections, pick one of those to re-centre, and keep
- * going. A breadcrumb tracks the path; the tunnel is one explicit click away.
- * The underlying data is still a topic graph — the UI just never asks you to
- * read one.
- */
 export function TopicMapPage() {
   const { videos, loading } = useApp();
-
-  const { nodes, edges } = useMemo(() => {
-    // Hosted and external alike — the topic graph is about ideas, not hosting.
-    const ready = videos.filter(canWatch);
-    return buildTopicGraph(ready);
-  }, [videos]);
-
-  const scored = useMemo(() => scoreTopics(nodes, edges), [nodes, edges]);
-  const scoreByTag = useMemo(
-    () => new Map(scored.map((s) => [s.tag, s.score])),
-    [scored],
-  );
-  const countByTag = useMemo(
-    () => new Map(nodes.map((n) => [n.tag, n.count])),
-    [nodes],
-  );
-  const starts = useMemo(
-    () => startingTopics(scored, edges, scoreByTag),
-    [scored, edges, scoreByTag],
-  );
-
-  // The path of topics visited; [] means the starting view. The last entry is
-  // the current centre.
-  const [path, setPath] = useState<string[]>([]);
-  const [narrow, setNarrow] = useState(
-    () => typeof window !== "undefined" && window.matchMedia(NARROW_QUERY).matches,
-  );
-
-  useEffect(() => {
-    const mq = window.matchMedia(NARROW_QUERY);
-    const on = () => setNarrow(mq.matches);
-    mq.addEventListener("change", on);
-    return () => mq.removeEventListener("change", on);
-  }, []);
-
-  const center = path.length ? path[path.length - 1] : null;
-
-  // Curated connections for the centred topic — editorially-authored
-  // relationship + "why this connects" records (GET /topics/{slug}/connections).
-  // These are first-class
-  // graph edges: a curated connection makes a spoke navigable even when the
-  // two topics share no video (folded in by mergeConnections below).
-  // `curatedFor` records which centre `curated` actually belongs to, so an
-  // in-flight fetch and the reset guard don't act on stale data.
-  const [curated, setCurated] = useState<TopicConnection[]>([]);
-  const [curatedFor, setCuratedFor] = useState<string | null>(null);
-  useEffect(() => {
-    let live = true;
-    if (!center) {
-      setCurated([]);
-      setCuratedFor(null);
-      return;
-    }
-    getTopicConnections(center).then((c) => {
-      if (live) {
-        setCurated(c);
-        setCuratedFor(center);
-      }
-    });
-    return () => {
-      live = false;
-    };
-  }, [center]);
-
-  // If the catalogue changes out from under an active path (a video is
-  // deleted, its last tag disappears), fall back to the starting view — but
-  // only once we've confirmed the centre is neither an organic topic nor a
-  // curated-only one. The `curatedFor` gate stops this from bouncing every
-  // curated-only centre back to the start before its connections load.
-  useEffect(() => {
-    if (!path.length) return;
-    const c = path[path.length - 1];
-    if (countByTag.has(c)) return;
-    if (curatedFor !== c) return;
-    if (curated.length > 0) return;
-    setPath([]);
-  }, [countByTag, path, curatedFor, curated]);
-
-  // Escape steps back one level.
-  useEffect(() => {
-    if (!path.length) return;
-    const on = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setPath((p) => stepBack(p));
-    };
-    window.addEventListener("keydown", on);
-    return () => window.removeEventListener("keydown", on);
-  }, [path.length]);
-
-  // Organic connections, uncapped — mergeConnections applies the cap after
-  // folding in the curated edges.
-  const organic = useMemo(
-    () => (center ? connectionsFor(center, edges, scoreByTag, Infinity) : []),
-    [center, edges, scoreByTag],
-  );
-
-  // The spoke list the navigator renders: organic + curated, deduped to one
-  // spoke per topic, curated copy winning where both exist, capped.
-  const spokes = useMemo(
-    () =>
-      center
-        ? mergeConnections(organic, curated, scoreByTag, center, MAX_CONNECTIONS)
-        : [],
-    [center, organic, curated, scoreByTag],
-  );
-
-  // "connected to N topics" — the union of organic and curated neighbours.
-  const totalConnections = useMemo(() => {
-    if (!center) return 0;
-    const seen = new Set<string>();
-    for (const e of edges) {
-      if (e.source === center) seen.add(e.target);
-      else if (e.target === center) seen.add(e.source);
-    }
-    for (const c of curated) seen.add(c.topic);
-    seen.delete(center);
-    return seen.size;
-  }, [center, edges, curated]);
-
-  // The curated relationships among the spokes actually on screen — never
-  // reference a topic the user can't currently click through to.
-  const curatedVisible = useMemo(
-    () => spokes.map((s) => s.curated).filter((c): c is TopicConnection => !!c),
-    [spokes],
-  );
-
-  if (loading && nodes.length === 0) return <SkeletonFeed />;
-
-  const centerVideos = center ? countByTag.get(center) ?? 0 : 0;
-
-  return (
-    <main className="page standard-page">
-      <div className="feed-head">
-        <h1>Map</h1>
-        <p>
-          {center
-            ? "Follow the connections, or explore this tunnel."
-            : "Pick a topic and see where it leads."}
-        </p>
-      </div>
-
-      {nodes.length === 0 ? (
-        <div className="empty">
-          <p>No topics yet — they appear as videos pick up tags.</p>
-        </div>
-      ) : !center ? (
-        <div className="topic-starts">
-          {starts.map((s) => (
-            <button
-              key={s.tag}
-              type="button"
-              className="topic-start"
-              onClick={() => setPath([s.tag])}
-            >
-              <span className="topic-start-tag">#{s.tag}</span>
-              <span className="topic-start-meta">{plural(s.count, "video")}</span>
-            </button>
-          ))}
-        </div>
-      ) : (
-        <div className="topic-nav">
-          <nav className="topic-path" aria-label="Topics you've followed">
-            {path.map((t, i) => (
-              <Fragment key={`${t}-${i}`}>
-                {i > 0 && (
-                  <span className="topic-path-sep" aria-hidden="true">
-                    →
-                  </span>
-                )}
-                {i < path.length - 1 ? (
-                  <button
-                    type="button"
-                    className="topic-path-step"
-                    onClick={() => setPath((p) => jumpToStep(p, i))}
-                  >
-                    #{t}
-                  </button>
-                ) : (
-                  <span className="topic-path-step is-current" aria-current="location">
-                    #{t}
-                  </span>
-                )}
-              </Fragment>
-            ))}
-          </nav>
-
-          <div className="topic-nav-head" aria-live="polite">
-            <h2>#{center}</h2>
-            <p>
-              {centerVideos > 0 && `${plural(centerVideos, "video")} · `}
-              connected to {plural(totalConnections, "topic")}
-            </p>
-          </div>
-
-          {spokes.length === 0 ? (
-            <p className="topic-nav-empty">No strong connections yet.</p>
-          ) : narrow ? (
-            <ul className="topic-spoke-list" key={center}>
-              {spokes.map((c) => {
-                const rel = c.curated;
-                return (
-                  <li key={c.tag}>
-                    <button
-                      type="button"
-                      className="topic-spoke-row"
-                      onClick={() => setPath((p) => followTopic(p, c.tag))}
-                      aria-label={
-                        rel
-                          ? `${c.tag}, connected to ${center} (${rel.relationship_type}). Follow it.`
-                          : `${c.tag}, connected to ${center} through ${plural(
-                              c.shared,
-                              "shared video",
-                            )}. Follow it.`
-                      }
-                    >
-                      <span className="topic-spoke-tag">#{c.tag}</span>
-                      <span className="topic-spoke-meta">
-                        {rel ? rel.relationship_type : plural(c.shared, "shared video")}
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <div className="topic-hub" key={center}>
-              <svg
-                className="topic-hub-lines"
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
-                aria-hidden="true"
-              >
-                {spokes.map((c, i) => {
-                  const { x, y } = spoke(i, spokes.length);
-                  return (
-                    <line
-                      key={c.tag}
-                      x1={50}
-                      y1={50}
-                      x2={50 + x}
-                      y2={50 + y}
-                      strokeWidth={Math.min(0.4 + c.shared * 0.35, 1.8)}
-                    />
-                  );
-                })}
-              </svg>
-
-              <div
-                className="topic-hub-center"
-                aria-current="true"
-                aria-label={`${center}, current topic`}
-              >
-                #{center}
-              </div>
-
-              {spokes.map((c, i) => {
-                const { x, y } = spoke(i, spokes.length);
-                // A small, subtle nod to how many videos the topic has —
-                // never enough to overpower the label.
-                const dot = 7 + Math.min(countByTag.get(c.tag) ?? 1, 8);
-                const rel = c.curated;
-                return (
-                  <button
-                    key={c.tag}
-                    type="button"
-                    className={rel ? "topic-hub-spoke has-connection" : "topic-hub-spoke"}
-                    style={
-                      {
-                        left: `${50 + x}%`,
-                        top: `${50 + y}%`,
-                        "--dot": `${dot}px`,
-                      } as CSSProperties
-                    }
-                    onClick={() => setPath((p) => followTopic(p, c.tag))}
-                    aria-label={
-                      rel
-                        ? `${c.tag}, connected to ${center} (${rel.relationship_type}). Follow it.`
-                        : `${c.tag}, connected to ${center} through ${plural(
-                            c.shared,
-                            "shared video",
-                          )}. Follow it.`
-                    }
-                  >
-                    <span className="topic-hub-spoke-dot" aria-hidden="true" />
-                    <span className="topic-hub-spoke-tag">#{c.tag}</span>
-                    <span className="topic-hub-spoke-meta">
-                      {rel ? rel.relationship_type : plural(c.shared, "shared video")}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          {curatedVisible.length > 0 && (
-            <div className="topic-why-panel">
-              {curatedVisible.map((c) => (
-                <p className="topic-why-item" key={c.topic}>
-                  <span className="topic-why-pair">
-                    #{center} <span aria-hidden="true">→</span> #{c.topic}
-                  </span>
-                  <span className="topic-why-relationship">{c.relationship_type}</span>
-                  <span className="topic-why-explanation">{c.explanation}</span>
-                </p>
-              ))}
-            </div>
-          )}
-
-          <div className="topic-nav-foot">
-            {centerVideos > 0 && (
-              <Link className="btn-primary topic-nav-cta" to={tunnelPath(center)}>
-                Explore {plural(centerVideos, "video")} in #{center} →
-              </Link>
-            )}
-            <div className="topic-nav-controls">
-              {path.length > 1 && (
-                <button
-                  type="button"
-                  className="link-btn"
-                  onClick={() => setPath((p) => stepBack(p))}
-                >
-                  ← Back
-                </button>
-              )}
-              <button type="button" className="link-btn" onClick={() => setPath([])}>
-                Start over
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </main>
-  );
+  const cases = useMemo(() => buildMysteryCases(videos), [videos]);
+  const [params, setParams] = useSearchParams();
+  const [query, setQuery] = useState("");
+  const [showAll, setShowAll] = useState(false);
+  const path = params.getAll("case").filter(id => cases.some(c => c.id === id)).slice(-30);
+  const current = cases.find(c => c.id === path[path.length - 1]);
+  const follow = (id: string) => {
+    const prior = path.indexOf(id);
+    setParams({ case: prior >= 0 ? path.slice(0, prior + 1) : [...path, id].slice(-30) });
+  };
+  useDocumentMeta("Map", "Follow the connections between strange cases, one mystery at a time.");
+  const starts = ["mothman", "wow-signal", "max-headroom", "cicada-3301", "db-cooper", "will-o-the-wisp"];
+  const matches = query.trim()
+    ? cases.filter(c => `${c.title} ${c.tags.join(" ")}`.toLowerCase().includes(query.trim().toLowerCase()))
+    : showAll ? cases : starts.flatMap(id => cases.filter(c => c.id === id));
+  if (loading && !cases.length) return <SkeletonFeed />;
+  return <main className="page standard-page case-map">
+    <header className="feed-head"><h1>Map</h1><p>One mystery leads to another. Choose where to go next.</p></header>
+    {!cases.length ? <p>No cases available yet.</p> : !current ? <>
+      <label className="case-search">Find a case<input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Try Mothman, signals, or disappearances" /></label>
+      <h2>{query.trim() ? "Matching cases" : "Choose your starting point"}</h2>
+      <div className="case-starts">{matches.map(c => <button className="case-start" key={c.id} onClick={() => follow(c.id)}>
+        <img src={c.videos[0].thumbnail_url || "/RHRabbit.png?v=5"} alt="" /><span><strong>{c.title}</strong><small>{c.connections.length} connections · Explore →</small></span>
+      </button>)}</div>
+      {!matches.length && <p>No matching cases. Try another name or topic.</p>}
+      {!query.trim() && <button className="link-btn case-all" onClick={() => setShowAll(!showAll)}>{showAll ? "Show starting points" : `Browse all ${cases.length} cases →`}</button>}
+    </> : <>
+      <nav className="case-route" aria-label="Your route"><button onClick={() => setParams({})}>Starting points</button>{path.map((id, index) => <span key={`${id}-${index}`}><span aria-hidden="true"> → </span><button aria-current={index === path.length - 1 ? "step" : undefined} onClick={() => setParams({ case: path.slice(0, index + 1) })}>{cases.find(c => c.id === id)?.title}</button></span>)}</nav>
+      <section className="case-current" aria-labelledby="current-case">
+        <Link to={`/watch/${current.videos[0].video_id}`} aria-label={`Watch ${current.title}`}><img src={current.videos[0].thumbnail_url || "/RHRabbit.png?v=5"} alt="" /></Link>
+        <div><span className="case-eyebrow">You are here</span><h2 id="current-case">{current.title}</h2><p>{current.description}</p><div className="case-watch-links">{current.videos.map((video, index) => <Link className="btn-primary" key={video.video_id} to={`/watch/${video.video_id}`}>{current.videos.length > 1 ? `Watch perspective ${index + 1}` : "Watch video"} →</Link>)}</div></div>
+      </section>
+      <section aria-labelledby="case-branches"><h2 id="case-branches">Where does this lead?</h2><p className="case-note">Follow a connection to explore another case.</p>
+        <div className="case-branches">{current.connections.slice(0, 4).map(edge => {
+          const next = cases.find(c => c.id === edge.target)!;
+          return <article className="case-branch" key={next.id}><img src={next.videos[0].thumbnail_url || "/RHRabbit.png?v=5"} alt="" /><div><h3>{next.title}</h3><p>{edge.reason}</p><button className="link-btn" onClick={() => follow(next.id)}>Follow this connection →</button><Link className="case-watch" to={`/watch/${next.videos[0].video_id}`}>Watch video</Link></div></article>;
+        })}</div>
+        {!current.connections.length && <p>This branch ends here for now. Choose an earlier stop to follow another connection.</p>}
+      </section>
+    </>}
+  </main>;
 }
