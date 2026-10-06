@@ -477,11 +477,13 @@ export function WatchPage() {
                 {video.description && <p className="watch-desc">{video.description}</p>}
                 {(() => {
                   const branches = branchesInTrail(video, videos);
-                  return branches.length > 0 && <section className="watch-desc" aria-label="Follow a thread">
+                  return branches.length > 0 && <section className="watch-threads" aria-label="Follow a thread">
                     <h3>Follow a thread</h3>
                     <ul>{branches.map((branch) => <li key={branch.video.video_id}>
-                      <Link to={`/watch/${branch.video.video_id}`}>{displayTitle(branch.video)} →</Link>
-                      <p>{branch.connection}</p>
+                      <Link to={`/watch/${branch.video.video_id}`}>
+                        <span className="watch-thread-title">{displayTitle(branch.video)} <span aria-hidden="true">→</span></span>
+                        <span className="watch-thread-why">{branch.connection}</span>
+                      </Link>
                     </li>)}</ul>
                   </section>;
                 })()}
