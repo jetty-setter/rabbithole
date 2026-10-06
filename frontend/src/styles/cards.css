@@ -208,7 +208,8 @@
 /* ── Rich video cards (YouTube-style) ────────────────────── */
 
 .grid {
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
   gap: 30px 16px;
 }
 
@@ -398,4 +399,3 @@
 @media (prefers-reduced-motion: reduce) {
   .sk { animation: none; }
 }
-
