@@ -96,11 +96,20 @@ export function WatchPage() {
     return () => v.removeEventListener("loadedmetadata", seek);
   }, [startAt, video]);
 
-  const related = useMemo(
-    () =>
-      video ? relatedVideos(video, videos) : [],
-    [videos, video],
-  );
+  // Curated threads lead the rail, each with its editorial reason; the
+  // automatic tag-overlap matches follow, minus anything already threaded.
+  const railItems = useMemo(() => {
+    if (!video) return [];
+    const threads = branchesInTrail(video, videos).map((b) => ({ video: b.video, reason: b.connection }));
+    const threaded = new Set(threads.map((t) => t.video.video_id));
+    const rest = relatedVideos(video, videos)
+      .filter((r) => !threaded.has(r.video_id))
+      .map((r) => {
+        const tags = sharedTags(video, r);
+        return { video: r, reason: tags.length ? `Connected through ${tags.map((tag) => `#${tag}`).join(" · ")}` : "Something different to explore" };
+      });
+    return [...threads, ...rest];
+  }, [videos, video]);
 
   useEffect(() => {
     setAskQuestion("");
@@ -475,18 +484,6 @@ export function WatchPage() {
                   </div>
                 </div>
                 {video.description && <p className="watch-desc">{video.description}</p>}
-                {(() => {
-                  const branches = branchesInTrail(video, videos);
-                  return branches.length > 0 && <section className="watch-threads" aria-label="Follow a thread">
-                    <h3>Follow a thread</h3>
-                    <ul>{branches.map((branch) => <li key={branch.video.video_id}>
-                      <Link to={`/watch/${branch.video.video_id}`}>
-                        <span className="watch-thread-title">{displayTitle(branch.video)} <span aria-hidden="true">→</span></span>
-                        <span className="watch-thread-why">{branch.connection}</span>
-                      </Link>
-                    </li>)}</ul>
-                  </section>;
-                })()}
                 {video.tags && video.tags.length > 0 && (
                   <div className="tag-row">
                     {video.tags.map((t) => (
@@ -633,8 +630,8 @@ export function WatchPage() {
             hidden={effectiveRail !== "related"}
           >
             <p className="related-sub">Keep digging. Follow a shared topic into another video.</p>
-            {related.length === 0 && <p className="muted">More finds are on their way. <Link to="/">Back to Discover</Link></p>}
-            {related.map((r) => (
+            {railItems.length === 0 && <p className="muted">More finds are on their way. <Link to="/">Back to Discover</Link></p>}
+            {railItems.map(({ video: r, reason }) => (
                   <Link to={`/watch/${r.video_id}`} className="related-item" key={r.video_id}>
                     <div className="related-thumb">
                       {r.thumbnail_url ? <img src={r.thumbnail_url} alt="" /> : <img src="/RHRabbit.png?v=5" alt="" className="thumb-ph" />}
@@ -645,7 +642,7 @@ export function WatchPage() {
                     <div className="related-info">
                       <span className="related-title">{displayTitle(r)}</span>
                       <span className="related-meta">{r.owner || "RabbitHole"}</span>
-                      <span className="related-meta">{sharedTags(video, r).length ? `Connected through ${sharedTags(video, r).map((tag) => `#${tag}`).join(" · ")}` : "Something different to explore"}</span>
+                      <span className="related-meta">{reason}</span>
                       <span className="related-meta">
                         {r.views ?? 0} views · {relativeTime(r.created_at)}
                       </span>
