@@ -415,9 +415,9 @@ export interface SearchMoment {
 }
 
 /** Cross-video semantic search — best moment per matching video. */
-export async function searchMoments(q: string): Promise<SearchMoment[]> {
-  const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(q)}`);
-  if (!res.ok) return [];
+export async function searchMoments(q: string, signal?: AbortSignal): Promise<SearchMoment[]> {
+  const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(q)}`, { signal });
+  if (!res.ok) throw new Error("Transcript search is unavailable");
   const data = await res.json();
   return Array.isArray(data.results) ? data.results : [];
 }
