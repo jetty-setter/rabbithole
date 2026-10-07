@@ -23,7 +23,6 @@ export function KeepDigging({ connections }: { connections: RhConnection[] }) {
             <>
               <span className="rh-keep-title">
                 {title}
-                <span className="rh-keep-arrow" aria-hidden="true">→</span>
                 {soon && <span className="rh-keep-soon">coming soon</span>}
               </span>
               <p className="rh-keep-why">{c.why_care}</p>

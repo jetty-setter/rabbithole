@@ -15,7 +15,7 @@ it("finds spoken words absent from metadata and links to their timestamp", async
   vi.mocked(searchMoments).mockResolvedValue([{ video: { video_id: "mothman", title: "Mothman", capabilities: { seek: true } } as never, start: 65, snippet: "The eyes glowed red.", score: .8 }]);
   render(<MemoryRouter initialEntries={["/search?q=red+eyes"]}><SearchPage /></MemoryRouter>);
   expect(await screen.findByText("The eyes glowed red.")).toBeTruthy();
-  expect(screen.getByRole("link", { name: "Watch from 1:05 →" }).getAttribute("href")).toBe("/watch/mothman?t=65");
+  expect(screen.getByRole("link", { name: "Watch from 1:05" }).getAttribute("href")).toBe("/watch/mothman?t=65");
 });
 it("reports a failed request instead of presenting it as no matches", async () => {
   vi.mocked(searchMoments).mockRejectedValue(new Error("unavailable"));
@@ -25,6 +25,6 @@ it("reports a failed request instead of presenting it as no matches", async () =
 it("does not invent timestamps for untimed transcripts", async () => {
   vi.mocked(searchMoments).mockResolvedValue([{ video: { video_id: "mothman", title: "Mothman", capabilities: { seek: false } } as never, start: 0, snippet: "A witness account.", score: .8 }]);
   render(<MemoryRouter initialEntries={["/search?q=witness"]}><SearchPage /></MemoryRouter>);
-  expect(await screen.findByRole("link", { name: "Watch video →" })).toHaveProperty("href", expect.stringContaining("/watch/mothman"));
+  expect(await screen.findByRole("link", { name: "Watch video" })).toHaveProperty("href", expect.stringContaining("/watch/mothman"));
   expect(screen.queryByText(/Watch from/)).toBeNull();
 });

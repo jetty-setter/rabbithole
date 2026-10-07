@@ -136,7 +136,7 @@ export function SequenceReplay({
                 className="rh-seq-evidence-link"
                 onClick={() => onSelectEvidence(current.evidenceId!)}
               >
-                See the evidence →
+                See the evidence
               </button>
             )}
           </span>

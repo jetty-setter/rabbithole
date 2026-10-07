@@ -34,7 +34,7 @@ export function TrailPage() {
           <h3>No trail yet</h3>
           <p>Watch a few videos and they'll show up here.</p>
           <Link to="/" className="archive-cta">
-            Start watching <span aria-hidden="true">→</span>
+            Start watching
           </Link>
         </div>
       ) : (

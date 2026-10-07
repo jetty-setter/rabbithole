@@ -95,7 +95,7 @@ export function SequenceComparison({
                   className="rh-seq-evidence-link"
                   onClick={() => onSelectEvidence(step.evidenceId!)}
                 >
-                  See the evidence →
+                  See the evidence
                 </button>
               )}
             </div>

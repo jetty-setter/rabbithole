@@ -1135,12 +1135,6 @@ a.rh-keep-inner:focus-visible .rh-keep-title {
   color: var(--violet-light);
 }
 
-a.rh-keep-inner:hover .rh-keep-arrow,
-a.rh-keep-inner:focus-visible .rh-keep-arrow {
-  transform: translateX(3px);
-  opacity: 1;
-}
-
 .rh-keep-title {
   display: flex;
   flex-wrap: wrap;
@@ -1154,21 +1148,11 @@ a.rh-keep-inner:focus-visible .rh-keep-arrow {
   transition: color 120ms ease;
 }
 
-.rh-keep-arrow {
-  color: var(--violet-soft);
-  opacity: 0.6;
-  transition: transform 150ms ease, opacity 150ms ease;
-}
-
 .rh-keep-item.is-soon .rh-keep-title {
   color: var(--muted);
 }
 
-.rh-keep-item.is-soon .rh-keep-arrow {
-  opacity: 0.3;
-}
-
-.rh-keep-soon {
+.rh-keep-item.is-soon .rh-keep-soon {
   display: inline-block;
   padding: 2px 7px;
   font-family: var(--sans);
@@ -1450,7 +1434,6 @@ a.rh-src-title:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .rh-src,
   .rh-src.is-flash,
-  .rh-keep-arrow,
   .rh-signal-bar,
   .rh-signal-glyph,
   .rh-signal-char,

@@ -55,7 +55,7 @@ export function SearchPage() {
           return <article className="transcript-result" key={hit.video.video_id}>
             <h3><Link to={`/watch/${hit.video.video_id}${timed ? `?t=${seconds}` : ""}`}>{displayTitle(hit.video)}{timed ? ` · ${time}` : ""}</Link></h3>
             <p>{hit.snippet}</p>
-            <Link className="link-btn" to={`/watch/${hit.video.video_id}${timed ? `?t=${seconds}` : ""}`}>{timed ? `Watch from ${time} →` : "Watch video →"}</Link>
+            <Link className="link-btn" to={`/watch/${hit.video.video_id}${timed ? `?t=${seconds}` : ""}`}>{timed ? `Watch from ${time}` : "Watch video"}</Link>
           </article>;
         })}
       </>}

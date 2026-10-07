@@ -80,7 +80,7 @@ function TunnelFeatureCard({
         <span className="tunnel-feat-count">
           {count} video{count === 1 ? "" : "s"}
         </span>
-        <span className="tunnel-feat-cta">Explore tunnel →</span>
+        <span className="tunnel-feat-cta">Explore tunnel</span>
       </div>
     </Link>
   );
@@ -232,7 +232,7 @@ export function TunnelsPage() {
           <h1>#{tag}</h1>
           <p>
             <Link to="/tunnels" className="link-btn">
-              ← all tunnels
+              all tunnels
             </Link>{" "}
             · {list.length} video{list.length === 1 ? "" : "s"}
           </p>
@@ -329,7 +329,7 @@ export function TunnelsPage() {
               </div>
               {tags.length > DEFAULT_TUNNEL_COUNT && (
                 <button type="button" className="link-btn tunnel-view-toggle" onClick={() => setBrowseAll(true)}>
-                  View all tunnels →
+                  View all tunnels
                 </button>
               )}
             </>
