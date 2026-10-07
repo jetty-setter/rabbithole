@@ -57,6 +57,7 @@ body {
 
 /* ── Buttons ─────────────────────────────────────────────── */
 .btn-primary {
+  text-decoration: none;
   font-family: var(--sans);
   font-weight: 700;
   font-size: 13px;
@@ -86,6 +87,7 @@ body {
 }
 
 .btn-ghost {
+  text-decoration: none;
   background: transparent;
   border: 1px solid var(--border-2);
   color: var(--muted);

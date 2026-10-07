@@ -514,6 +514,7 @@
 }
 
 .comment-signin {
+  text-decoration: none;
   display: block;
   width: 100%;
   text-align: left;

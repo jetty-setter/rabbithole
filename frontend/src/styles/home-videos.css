@@ -156,6 +156,7 @@
 }
 
 .hv-upload {
+  text-decoration: none;
   flex-shrink: 0;
   font: inherit;
   font-size: 14px;

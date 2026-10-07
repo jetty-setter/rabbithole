@@ -22,7 +22,7 @@ export function Footer() {
               <img src="/rabbit-hole-logo.png" alt="RabbitHole" className="footer-logo" />
             </Link>
             <p className="footer-tagline">
-              Follow curiosity deeper<span className="home-punct">.</span>
+              Follow curiosity deeper
             </p>
           </div>
           <nav className="footer-nav">
