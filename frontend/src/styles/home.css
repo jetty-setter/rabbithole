@@ -495,7 +495,7 @@
   background: var(--violet-deep);
   color: var(--text);
   padding: 0 16px;
-  border-radius: 8px;
+  border-radius: 999px;
   transition: background 140ms ease;
 }
 

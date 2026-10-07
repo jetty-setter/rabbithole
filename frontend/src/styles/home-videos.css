@@ -113,7 +113,7 @@
   display: inline-block;
   margin-top: 26px;
   padding: 12px 30px;
-  border-radius: 10px;
+  border-radius: 999px;
   background: var(--violet);
   color: #0a0a0d;
   font-weight: 700;
