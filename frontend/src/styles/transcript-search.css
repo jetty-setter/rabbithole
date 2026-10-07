@@ -1,0 +1,5 @@
+.transcript-results { margin: 28px 0 40px; }
+.transcript-result { border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin: 14px 0; max-width: 850px; }
+.transcript-result h3 { margin: 0 0 10px; font-size: 18px; }
+.transcript-result h3 a { color: var(--text); }
+.transcript-result p { line-height: 1.6; color: var(--muted); }
