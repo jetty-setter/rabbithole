@@ -360,7 +360,7 @@ export function WatchPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Watch at {sourceLabel(video)} <span aria-hidden="true">↗</span>
+                  Watch at {sourceLabel(video)}
                 </a>
               </div>
             ) : null}
@@ -370,7 +370,7 @@ export function WatchPage() {
             <p className="watch-source-line">
               Source:{" "}
               <a href={video.source_url} target="_blank" rel="noopener noreferrer">
-                {sourceLabel(video)} <span aria-hidden="true">↗</span>
+                {sourceLabel(video)}
               </a>
             </p>
           )}
