@@ -4,8 +4,14 @@ import { useApp } from "./App";
 import { EditorialCard } from "./EditorialCard";
 import { searchVideos } from "./discovery";
 import { useDocumentMeta } from "./hooks/useDocumentMeta";
-import { canSeekExactMoment, canTranscriptSearch, displayTitle, searchMoments, type SearchMoment } from "./api";
+import { canSeekExactMoment, canTranscriptSearch, displayTitle, searchMoments, type SearchMoment, type Video } from "./api";
 import { publicVideos } from "./discovery";
+import { useTranscriptPrefill } from "./hooks/useTranscriptPrefill";
+
+function SearchInput({ videos, query }: { videos: Video[]; query: string }) {
+  const [draft, setDraft] = useTranscriptPrefill(videos, query);
+  return <input name="q" type="search" aria-label="Search videos" value={draft} onChange={event => setDraft(event.target.value)} placeholder="Deep sea, strange sounds, clockwork…" maxLength={120} />;
+}
 
 export function SearchPage() {
   const [params, setParams] = useSearchParams();
@@ -39,7 +45,7 @@ export function SearchPage() {
       <p>Search titles, topics, creators, and what people say in videos.</p>
     </div>
     <form className="discovery-search-form" role="search" onSubmit={submit}>
-      <input key={query} name="q" type="search" aria-label="Search videos" defaultValue={query} placeholder="Deep sea, strange sounds, clockwork…" maxLength={120} />
+      <SearchInput key={query} videos={videos} query={query} />
       <button className="btn-primary" type="submit">Search</button>
     </form>
     {catalogError && <p role="alert">The video catalog could not be loaded. <button className="btn-ghost" onClick={refresh}>Try again</button></p>}

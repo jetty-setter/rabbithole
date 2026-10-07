@@ -1,8 +1,7 @@
-import { useMemo, useRef, useState, useEffect, type FormEvent } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useApp } from "./App";
 import {
-  askVideo,
   canAsk,
   canEmbed,
   canPlayInternal,
@@ -13,7 +12,6 @@ import {
   relativeTime,
   transcriptSectionState,
   updateVideo,
-  type AskAnswer,
   type Video,
 } from "./api";
 import { Player } from "./Player";
@@ -22,6 +20,7 @@ import { SkeletonWatch } from "./Skeleton";
 import { Comments } from "./Comments";
 import { Avatar } from "./Avatar";
 import { EditForm } from "./components/EditForm";
+import { VideoQuestion } from "./components/VideoQuestion";
 import { useVideoData } from "./hooks/useVideoData";
 import { useDocumentMeta } from "./hooks/useDocumentMeta";
 import { useTranscript } from "./hooks/useTranscript";
@@ -111,12 +110,6 @@ export function WatchPage() {
     return [...threads, ...rest];
   }, [videos, video]);
 
-  useEffect(() => {
-    setAskQuestion("");
-    setAskAnswer(null);
-    setAskError(null);
-  }, [video?.video_id]);
-
   // Right rail: RELATED / TRANSCRIPT tabs. Mode is intentionally NOT reset
   // per video -- it's meant to persist across in-app navigation for the
   // rest of the session (a plain useState does that for free, since
@@ -200,27 +193,6 @@ export function WatchPage() {
   function seekFromRail(t: number) {
     seekTo(t);
     setFollowPlayback(true);
-  }
-
-  // "Ask this video" — RAG Q&A grounded only in this video's own transcript.
-  const [askQuestion, setAskQuestion] = useState("");
-  const [askAnswer, setAskAnswer] = useState<AskAnswer | null>(null);
-  const [asking, setAsking] = useState(false);
-  const [askError, setAskError] = useState<string | null>(null);
-
-  async function submitAsk(e: FormEvent) {
-    e.preventDefault();
-    if (!video || !askQuestion.trim() || asking) return;
-    setAsking(true);
-    setAskError(null);
-    setAskAnswer(null);
-    try {
-      setAskAnswer(await askVideo(video.video_id, askQuestion.trim()));
-    } catch (err) {
-      setAskError(err instanceof Error ? err.message : "Couldn't get an answer.");
-    } finally {
-      setAsking(false);
-    }
   }
 
   function seekTo(t: number) {
@@ -445,6 +417,7 @@ export function WatchPage() {
                     <button className="btn-ghost" onClick={copyLink}>
                       {copied ? "Copied ✓" : "Copy link"}
                     </button>
+                    {canAsk(video) && <VideoQuestion key={vid} videoId={vid} title={displayTitle(video)} onSeek={seekTo} />}
                     {canManage && (
                       <div className="owner-menu">
                         <button
@@ -501,51 +474,6 @@ export function WatchPage() {
               </>
             )}
           </div>
-
-          {canAsk(video) && (
-            <details className="feature-panel ask-video">
-              <summary className="feature-head">Ask this video (optional AI)</summary>
-              <form className="ask-form" onSubmit={submitAsk}>
-                <input
-                  className="ask-input"
-                  placeholder="What do you want to know?"
-                  value={askQuestion}
-                  onChange={(e) => setAskQuestion(e.target.value)}
-                  maxLength={500}
-                  disabled={asking}
-                />
-                <button className="btn-primary ask-btn" type="submit" disabled={asking || !askQuestion.trim()}>
-                  {asking ? "Asking…" : "Ask"}
-                </button>
-              </form>
-              <p className="ask-hint">Answers are based on this video's transcript.</p>
-              {asking && (
-                <p className="muted ask-note">
-                  <span className="proc-spinner sm" /> Reading the transcript…
-                </p>
-              )}
-              {askError && <p className="ask-error">{askError}</p>}
-              {askAnswer && (
-                <div className="ask-answer">
-                  <p className="ask-answer-text">{askAnswer.answer}</p>
-                  {askAnswer.citations.length > 0 && (
-                    <div className="ask-citations">
-                      {askAnswer.citations.map((c) => (
-                        <button
-                          key={c.start}
-                          className="ask-citation"
-                          onClick={() => seekTo(c.start)}
-                          title={c.text}
-                        >
-                          {fmtTime(c.start)}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </details>
-          )}
 
           {showTranscriptUI && (
           <section className="transcript">

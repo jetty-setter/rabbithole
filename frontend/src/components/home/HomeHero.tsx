@@ -1,5 +1,7 @@
-import { useRef, useState, type FormEvent } from "react";
+import { useRef, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import type { Video } from "../../api";
+import { useTranscriptPrefill } from "../../hooks/useTranscriptPrefill";
 
 /**
  * Homepage hero. The approved 1980s-basement photograph is a full-bleed
@@ -14,9 +16,9 @@ import { useNavigate } from "react-router-dom";
  * into the existing `/search?q=` route (same navigation the old nav Search
  * used). Enter or DIVE IN submits; an empty query never does.
  */
-export function HomeHero() {
+export function HomeHero({ videos = [] }: { videos?: Video[] }) {
   const navigate = useNavigate();
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useTranscriptPrefill(videos);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function onSubmit(e: FormEvent) {
