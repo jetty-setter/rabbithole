@@ -18,7 +18,7 @@ it("prefills a transcript phrase and searches only when submitted", async () => 
   const phrase = input.value;
   expect(["glowing red eyes", "Silver Bridge"]).toContain(phrase);
   expect(searchMoments).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole("button", { name: "Search", exact: true }));
+  fireEvent.click(screen.getByRole("button", { name: "Search" }));
   expect(screen.getByRole("searchbox")).toHaveProperty("value", phrase);
   await waitFor(() => expect(searchMoments).toHaveBeenCalledWith(phrase, expect.any(AbortSignal)));
 });

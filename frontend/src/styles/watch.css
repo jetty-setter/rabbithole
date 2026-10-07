@@ -1174,41 +1174,57 @@
   color: var(--muted);
 }
 
-/* Ask this video + Go deeper/Dive sit directly on the page -- no card
-   chrome. They're the product; a tinted box read as "one more widget"
-   instead of a headline feature. */
-.feature-panel {
-  padding: 0;
+/* Questions open from the video action row in a focused side sheet. */
+.video-question {
+  position: fixed;
+  inset: 0 0 0 auto;
+  margin: 0;
+  box-sizing: border-box;
+  width: min(460px, 100vw);
+  max-width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  padding: 28px;
+  border: 0;
+  border-left: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-shadow: -16px 0 60px rgba(0, 0, 0, .35);
 }
-
-.feature-head {
-  font-family: var(--display);
-  font-weight: 700;
-  font-size: clamp(21px, 2.6vw, 28px);
-  letter-spacing: 0.005em;
-  text-transform: uppercase;
-  margin: 0 0 14px;
-}
-
-/* ── Ask this video (RAG Q&A) ──────────────────────────────── */
-.ask-video {
-  margin-top: 24px;
+.video-question::backdrop { background: rgba(0, 0, 0, .45); }
+.video-question-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.video-question-head h2 { margin: 0; font-size: 20px; line-height: 1.3; }
+.video-question-close { flex: none; width: 44px; height: 44px; border: 1px solid var(--border); border-radius: 50%; background: transparent; color: var(--text); font-size: 24px; cursor: pointer; }
+.video-question-close:hover { background: var(--panel); }
+.video-question-close:focus-visible { outline: 2px solid var(--violet); outline-offset: 3px; }
+.video-question-title { margin: 24px 0 6px; font-size: 16px; line-height: 1.5; }
+@media (max-width: 600px) {
+  .video-question { inset: auto 0 0; width: 100%; height: auto; max-height: 88dvh; border-left: 0; border-top: 1px solid var(--border); border-radius: 22px 22px 0 0; padding: 20px 20px max(24px, env(safe-area-inset-bottom)); }
 }
 
 .ask-form {
   display: flex;
+  flex-direction: column;
   gap: 10px;
+  margin-top: 28px;
 }
+.ask-form label { font-size: 13px; color: var(--muted); }
 
 .ask-input {
-  flex: 1;
-  padding: 9px 18px;
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 100px;
+  padding: 14px;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 12px;
   background: var(--panel);
   color: var(--text);
   font: inherit;
-  font-size: 14px;
+  font-size: 16px;
+  line-height: 1.5;
 }
 .ask-input::placeholder {
   color: var(--muted);
@@ -1220,6 +1236,8 @@
 
 .ask-btn {
   flex: none;
+  align-self: flex-end;
+  min-width: 80px;
 }
 
 .ask-note {
@@ -1256,6 +1274,7 @@
   color: var(--text);
   font-size: 14.5px;
   line-height: 1.6;
+  white-space: pre-wrap;
 }
 
 .ask-citations {
