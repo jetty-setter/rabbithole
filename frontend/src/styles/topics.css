@@ -205,13 +205,6 @@
   font-size: 12.5px;
 }
 
-.tunnel-feat-cta {
-  color: var(--violet);
-  font-size: 12px;
-  font-weight: 600;
-  margin-top: 3px;
-}
-
 @media (max-width: 900px) {
   .tunnel-feat-primary .tunnel-feat-tag {
     font-size: clamp(22px, 4vw, 30px);

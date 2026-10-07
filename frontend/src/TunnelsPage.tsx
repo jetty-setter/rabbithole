@@ -80,7 +80,6 @@ function TunnelFeatureCard({
         <span className="tunnel-feat-count">
           {count} video{count === 1 ? "" : "s"}
         </span>
-        <span className="tunnel-feat-cta">Explore tunnel</span>
       </div>
     </Link>
   );
