@@ -389,7 +389,7 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   border: none;
-  border-radius: 8px;
+  border-radius: 999px;
   padding: 10px 18px;
   cursor: pointer;
 }
@@ -641,9 +641,8 @@
   color: var(--text);
   background: var(--bg-2);
   border: none;
-  border-left: 3px solid var(--border-2);
-  border-radius: 2px;
-  padding: 10px 12px;
+  border-radius: 999px;
+  padding: 10px 18px;
   cursor: pointer;
   line-height: 1.35;
 }

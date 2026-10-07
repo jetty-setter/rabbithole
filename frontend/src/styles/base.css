@@ -63,7 +63,7 @@ body {
   color: var(--violet);
   background: transparent;
   border: 1.5px solid var(--violet);
-  border-radius: 10px;
+  border-radius: 999px;
   padding: 8px 17px;
   cursor: pointer;
   transition: background 140ms ease, color 140ms ease;
@@ -89,7 +89,7 @@ body {
   background: transparent;
   border: 1px solid var(--border-2);
   color: var(--muted);
-  border-radius: 10px;
+  border-radius: 999px;
   padding: 8px 16px;
   font: inherit;
   font-size: 13px;
@@ -108,7 +108,7 @@ body {
   color: var(--muted);
   width: 34px;
   height: 34px;
-  border-radius: 8px;
+  border-radius: 999px;
   cursor: pointer;
   font-size: 14px;
   line-height: 1;
@@ -244,8 +244,8 @@ body {
   max-width: 300px;
   background: var(--panel);
   border: 1px solid var(--border-2);
-  border-radius: 9px;
-  padding: 8px 12px;
+  border-radius: 999px;
+  padding: 8px 16px;
   color: var(--text);
   font: inherit;
   font-size: 13.5px;

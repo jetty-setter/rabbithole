@@ -1,6 +1,6 @@
 .case-map { max-width: 1180px; }
 .case-search { display: grid; gap: 8px; max-width: 520px; margin-bottom: 28px; color: var(--muted); }
-.case-search input { width: 100%; box-sizing: border-box; padding: 13px; background: #101014; border: 1px solid var(--border); border-radius: 8px; color: var(--text); font: inherit; }
+.case-search input { width: 100%; box-sizing: border-box; padding: 13px 20px; background: #101014; border: 1px solid var(--border); border-radius: 999px; color: var(--text); font: inherit; }
 .case-starts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .case-start { padding: 0; text-align: left; background: #101014; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; color: var(--text); cursor: pointer; font: inherit; }
 .case-start img, .case-branch > img, .case-current img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; }
