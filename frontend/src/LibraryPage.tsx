@@ -8,7 +8,7 @@ export function LibraryPage() {
   const { videos, loading, live, openUpload, openExternal, isAdmin, username, catalogError, refresh } = useApp();
   return (
     <main className="page home-page">
-      <HomeHero />
+      <HomeHero videos={videos} />
       <div className="home-below">
         <div className="home-below-inner">
           {catalogError && <p role="alert">The video catalog could not be loaded. <button className="btn-ghost" onClick={refresh}>Try again</button></p>}

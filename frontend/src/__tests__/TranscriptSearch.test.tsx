@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, expect, it, vi } from "vitest";
 import { SearchPage } from "../SearchPage";
@@ -7,9 +7,21 @@ import { searchMoments } from "../api";
 
 vi.mock("../api", async () => ({ ...await vi.importActual("../api"), searchMoments: vi.fn() }));
 vi.mock("../App", () => ({ useApp: () => ({ loading: false, catalogError: false, refresh: vi.fn(), videos: [
-  { video_id: "mothman", filename: "mothman", title: "Mothman", status: "ready", visibility: "public", capabilities: { watch: true, moment_search: true }, has_transcript: true },
+  { video_id: "mothman", filename: "mothman", title: "Mothman", status: "ready", visibility: "public", provider: "youtube", provider_id: "GUpeDwiD64M", capabilities: { watch: true, moment_search: true }, has_transcript: true },
 ] }) }));
 afterEach(() => { cleanup(); vi.clearAllMocks(); });
+
+it("prefills a transcript phrase and searches only when submitted", async () => {
+  vi.mocked(searchMoments).mockResolvedValue([]);
+  render(<MemoryRouter initialEntries={["/search"]}><SearchPage /></MemoryRouter>);
+  const input = screen.getByRole("searchbox") as HTMLInputElement;
+  const phrase = input.value;
+  expect(["glowing red eyes", "Silver Bridge"]).toContain(phrase);
+  expect(searchMoments).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Search", exact: true }));
+  expect(screen.getByRole("searchbox")).toHaveProperty("value", phrase);
+  await waitFor(() => expect(searchMoments).toHaveBeenCalledWith(phrase, expect.any(AbortSignal)));
+});
 
 it("finds spoken words absent from metadata and links to their timestamp", async () => {
   vi.mocked(searchMoments).mockResolvedValue([{ video: { video_id: "mothman", title: "Mothman", capabilities: { seek: true } } as never, start: 65, snippet: "The eyes glowed red.", score: .8 }]);
