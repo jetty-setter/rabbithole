@@ -53,7 +53,7 @@ it("separates literal matches from strong related passages and hides weak ones",
   ]);
   render(<MemoryRouter initialEntries={["/search?q=steganography"]}><SearchPage /></MemoryRouter>);
   expect(await screen.findByRole("link", { name: "Cicada · 2:25" })).toBeTruthy();
-  const toggle = screen.getByText(/Related passages/);
+  const toggle = screen.getByText(/Related videos/);
   const details = toggle.closest("details")!;
   expect(details.open).toBe(false);
   expect(details.textContent).toContain("Kryptos");
@@ -68,5 +68,5 @@ it("shows an honest empty literal section while offering related passages", asyn
   vi.mocked(searchMoments).mockResolvedValue([{ video: { video_id: "kryptos", title: "Kryptos" } as never, start: 0, snippet: "An encrypted message.", score: .71, match_type: "related" }]);
   render(<MemoryRouter initialEntries={["/search?q=hidden+messages"]}><SearchPage /></MemoryRouter>);
   expect(await screen.findByText("No transcript matches.")).toBeTruthy();
-  expect(screen.getByText(/Related passages/).closest("details")!.open).toBe(false);
+  expect(screen.getByText(/Related videos/).closest("details")!.open).toBe(false);
 });

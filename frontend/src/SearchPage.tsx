@@ -72,7 +72,7 @@ export function SearchPage() {
         {matches.length === 0 && <p>No transcript matches.</p>}
         <PassageList hits={matches} query={query} />
         {related.length > 0 && <details className="related-passages" key={query}>
-          <summary><span className="related-passages-label">Related passages <span className="related-passages-count">{related.length}</span></span><span className="related-passages-toggle" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m5 7.5 5 5 5-5" /></svg></span></summary>
+          <summary><span className="related-passages-label">Related videos <span className="related-passages-count">{related.length}</span></span><span className="related-passages-toggle" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m5 7.5 5 5 5-5" /></svg></span></summary>
           <div className="related-passages-body"><PassageList hits={related} query={query} /></div>
         </details>}
       </>}
