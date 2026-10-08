@@ -26,8 +26,11 @@ it("prefills a transcript phrase and searches only when submitted", async () => 
 it("finds spoken words absent from metadata and links to their timestamp", async () => {
   vi.mocked(searchMoments).mockResolvedValue([{ video: { video_id: "mothman", title: "Mothman", capabilities: { seek: true } } as never, start: 65, snippet: "The eyes glowed red.", score: .8 }]);
   render(<MemoryRouter initialEntries={["/search?q=red+eyes"]}><SearchPage /></MemoryRouter>);
-  expect(await screen.findByText("The eyes glowed red.")).toBeTruthy();
-  expect(screen.getByRole("link", { name: "Watch from 1:05" }).getAttribute("href")).toBe("/watch/mothman?t=65");
+  const watchLink = await screen.findByRole("link", { name: "Watch from 1:05" });
+  expect(watchLink.getAttribute("href")).toBe("/watch/mothman?t=65");
+  const passage = watchLink.closest("article")!.querySelector("p")!;
+  expect(passage.textContent).toBe("The eyes glowed red.");
+  expect([...passage.querySelectorAll("mark")].map(mark => mark.textContent)).toEqual(["eyes", "red"]);
 });
 it("reports a failed request instead of presenting it as no matches", async () => {
   vi.mocked(searchMoments).mockRejectedValue(new Error("unavailable"));

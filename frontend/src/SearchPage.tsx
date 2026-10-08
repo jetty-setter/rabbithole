@@ -7,6 +7,7 @@ import { useDocumentMeta } from "./hooks/useDocumentMeta";
 import { canSeekExactMoment, canTranscriptSearch, displayTitle, searchMoments, type SearchMoment, type Video } from "./api";
 import { publicVideos } from "./discovery";
 import { useTranscriptPrefill } from "./hooks/useTranscriptPrefill";
+import { HighlightedText } from "./components/HighlightedText";
 
 function SearchInput({ videos, query }: { videos: Video[]; query: string }) {
   const [draft, setDraft] = useTranscriptPrefill(videos, query);
@@ -59,8 +60,8 @@ export function SearchPage() {
           const seconds = Math.max(0, Math.floor(hit.start));
           const time = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
           return <article className="transcript-result" key={hit.video.video_id}>
-            <h3><Link to={`/watch/${hit.video.video_id}${timed ? `?t=${seconds}` : ""}`}>{displayTitle(hit.video)}{timed ? ` · ${time}` : ""}</Link></h3>
-            <p>{hit.snippet}</p>
+            <h3><Link to={`/watch/${hit.video.video_id}${timed ? `?t=${seconds}` : ""}`}><HighlightedText text={displayTitle(hit.video)} query={query} />{timed ? ` · ${time}` : ""}</Link></h3>
+            <p><HighlightedText text={hit.snippet} query={query} /></p>
             <Link className="link-btn" to={`/watch/${hit.video.video_id}${timed ? `?t=${seconds}` : ""}`}>{timed ? `Watch from ${time}` : "Watch video"}</Link>
           </article>;
         })}
@@ -69,6 +70,6 @@ export function SearchPage() {
     {query && <h2>Titles, topics, and creators</h2>}
     <p role="status">{loading ? "Loading videos…" : `${results.length} video${results.length === 1 ? "" : "s"}${query ? " found" : " to explore"}.`}</p>
     {!loading && !catalogError && results.length === 0 && <div className="empty"><p>{query ? "No matches yet. Try a broader topic or another word." : "The first finds are on their way."}</p><Link to="/tunnels">Explore topics</Link></div>}
-    <div className="home-grid">{results.map((video) => <EditorialCard key={video.video_id} v={video} />)}</div>
+    <div className="home-grid">{results.map((video) => <EditorialCard key={video.video_id} v={video} highlightQuery={query} />)}</div>
   </main>;
 }
