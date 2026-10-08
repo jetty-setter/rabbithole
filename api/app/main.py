@@ -890,6 +890,7 @@ def semantic_search(q: str = "") -> dict:
                 "start": hit["start"],
                 "snippet": hit["text"],
                 "score": hit["score"],
+                "match_type": hit["match_type"],
             }
         )
     return {"query": q, "results": results}

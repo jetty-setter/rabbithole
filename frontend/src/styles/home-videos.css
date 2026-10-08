@@ -151,8 +151,7 @@
 }
 .hv-more:hover {
   color: var(--violet-light);
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  text-decoration: none;
 }
 
 .hv-upload {

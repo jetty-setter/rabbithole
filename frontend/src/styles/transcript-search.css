@@ -2,5 +2,18 @@
 .transcript-result { border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin: 14px 0; max-width: 850px; }
 .transcript-result h3 { margin: 0 0 10px; font-size: 18px; }
 .transcript-result h3 a { color: var(--text); }
+.transcript-result h3 a:hover { color: var(--violet-light); }
 .transcript-result p { line-height: 1.6; color: var(--muted); }
 .search-match { background: #c9b8ff; color: #191022; border-radius: 3px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.related-passages { max-width: 850px; margin-top: 24px; border: 1px solid rgba(154, 130, 242, .3); border-radius: 16px; background: linear-gradient(110deg, rgba(154, 130, 242, .1), rgba(154, 130, 242, .02)); }
+.related-passages summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; color: var(--text); font-size: 16px; font-weight: 600; padding: 18px 22px; list-style: none; border-radius: 16px; }
+.related-passages summary::-webkit-details-marker { display: none; }
+.related-passages summary:hover { background: rgba(154, 130, 242, .08); }
+.related-passages-label { display: flex; align-items: center; gap: 12px; }
+.related-passages-count { display: inline-flex; align-items: center; justify-content: center; min-width: 25px; height: 25px; padding: 0 7px; border-radius: 999px; background: rgba(154, 130, 242, .15); color: var(--violet-light); font-size: 12px; }
+.related-passages-toggle { display: grid; place-items: center; flex: none; width: 30px; height: 30px; border: 1px solid rgba(154, 130, 242, .4); border-radius: 50%; color: var(--violet-light); font-size: 22px; font-weight: 400; }
+.related-passages-toggle svg { width: 18px; height: 18px; }
+.related-passages[open] .related-passages-toggle svg { transform: rotate(180deg); }
+.related-passages-body { padding: 0 22px 8px; }
+.related-passages .transcript-result { border: 0; border-top: 1px solid var(--border); border-radius: 0; margin: 0; padding: 20px 0; }
+.related-passages summary:focus-visible { outline: 2px solid var(--violet); outline-offset: 4px; }

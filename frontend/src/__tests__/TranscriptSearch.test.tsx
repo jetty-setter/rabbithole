@@ -43,3 +43,30 @@ it("does not invent timestamps for untimed transcripts", async () => {
   expect(await screen.findByRole("link", { name: "Watch video" })).toHaveProperty("href", expect.stringContaining("/watch/mothman"));
   expect(screen.queryByText(/Watch from/)).toBeNull();
 });
+
+it("separates literal matches from strong related passages and hides weak ones", async () => {
+  const video = (video_id: string, title: string) => ({ video_id, title, capabilities: { seek: true } } as never);
+  vi.mocked(searchMoments).mockResolvedValue([
+    { video: video("cicada", "Cicada"), start: 145, snippet: "Cryptography and steganography.", score: .72, match_type: "exact" },
+    { video: video("kryptos", "Kryptos"), start: 100, snippet: "An encrypted message.", score: .71, match_type: "related" },
+    { video: video("ufo", "UFO"), start: 20, snippet: "A fuzzy dot.", score: .60 },
+  ]);
+  render(<MemoryRouter initialEntries={["/search?q=steganography"]}><SearchPage /></MemoryRouter>);
+  expect(await screen.findByRole("link", { name: "Cicada · 2:25" })).toBeTruthy();
+  const toggle = screen.getByText(/Related passages/);
+  const details = toggle.closest("details")!;
+  expect(details.open).toBe(false);
+  expect(details.textContent).toContain("Kryptos");
+  expect(screen.queryByText("A fuzzy dot.")).toBeNull();
+  expect(screen.queryByRole("heading", { name: "Video matches" })).toBeNull();
+  fireEvent.click(toggle);
+  expect(details.open).toBe(true);
+  expect(screen.getByRole("link", { name: "Watch from 1:40" }).getAttribute("href")).toBe("/watch/kryptos?t=100");
+});
+
+it("shows an honest empty literal section while offering related passages", async () => {
+  vi.mocked(searchMoments).mockResolvedValue([{ video: { video_id: "kryptos", title: "Kryptos" } as never, start: 0, snippet: "An encrypted message.", score: .71, match_type: "related" }]);
+  render(<MemoryRouter initialEntries={["/search?q=hidden+messages"]}><SearchPage /></MemoryRouter>);
+  expect(await screen.findByText("No transcript matches.")).toBeTruthy();
+  expect(screen.getByText(/Related passages/).closest("details")!.open).toBe(false);
+});

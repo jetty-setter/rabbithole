@@ -777,7 +777,7 @@
 
 .rh-seq-evidence-link:hover {
   color: var(--violet-light);
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 /* ── Evidence comparison ──────────────────────────────────────────────────
@@ -1257,8 +1257,7 @@ a.rh-keep-inner:focus-visible .rh-keep-title {
 a.rh-src-title:hover,
 a.rh-src-title:focus-visible {
   color: var(--violet-light);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  text-decoration: none;
 }
 
 .rh-src-meta {
@@ -1294,7 +1293,7 @@ a.rh-src-title:focus-visible {
 }
 
 .rh-src-doi:hover {
-  text-decoration: underline;
+  color: var(--violet-light);
 }
 
 .rh-src-note {

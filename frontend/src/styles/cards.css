@@ -277,7 +277,7 @@
 }
 .vchannel-link:hover {
   color: var(--text);
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 /* ── Cards as links ──────────────────────────────────────── */

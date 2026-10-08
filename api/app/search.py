@@ -13,6 +13,7 @@ from __future__ import annotations
 import base64
 import functools
 import json
+import re
 import struct
 
 import numpy as np
@@ -195,32 +196,61 @@ def search_within_video(video_id: str, query: str, k: int = 6) -> list[dict]:
     ]
 
 
+# Conservative floor for bge-small cosine similarity; scores are not
+# probabilities. The related section may legitimately be empty.
+RELATED_MIN_SCORE = 0.65
+
+
+def matches_search_words(text: str, query: str) -> bool:
+    terms = query.split()
+    return bool(terms) and all(
+        re.search(r"(?<!\w)" + re.escape(term) + r"(?!\w)", text, re.IGNORECASE)
+        for term in terms
+    )
+
+
 def search(query: str, k: int = 12) -> list[dict]:
-    """Top moments across the library — the single best moment per video."""
+    """Literal word matches first, then up to three strong related videos.
+
+    Inspect every passage before deduping: a video's literal match must not
+    disappear behind a different passage with a higher semantic score.
+    """
+    if not query.strip() or k <= 0:
+        return []
     _ensure_indexed()
     qv = _embed([query])[0]
 
     scored = sorted(
-        ((cosine(qv, unpack_vector(it["vector"])), it) for it in _all_chunks()),
-        key=lambda x: x[0],
+        ((matches_search_words(it.get("text", ""), query), cosine(qv, unpack_vector(it["vector"])), it) for it in _all_chunks()),
+        key=lambda x: (x[0], x[1]),
         reverse=True,
     )
 
     results: list[dict] = []
     seen: set[str] = set()
-    for score, it in scored:
+    exact_count = related_count = 0
+    for exact, score, it in scored:
+        if exact and exact_count >= k:
+            # Reserve this video for the literal section, even beyond its cap.
+            seen.add(it["video_id"])
+            continue
+        if not exact and (score < RELATED_MIN_SCORE or related_count >= 3):
+            continue
         vid = it["video_id"]
         if vid in seen:
             continue
         seen.add(vid)
+        if exact:
+            exact_count += 1
+        else:
+            related_count += 1
         results.append(
             {
                 "video_id": vid,
                 "start": float(it.get("start") or 0.0),
                 "text": it.get("text", ""),
                 "score": round(score, 4),
+                "match_type": "exact" if exact else "related",
             }
         )
-        if len(results) >= k:
-            break
     return results
