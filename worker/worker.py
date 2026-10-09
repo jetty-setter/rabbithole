@@ -25,7 +25,7 @@ import boto3
 from metrics import emit_metrics, estimate_cost
 from status import set_status, video_id_from_key
 from storage import upload_tree
-from transcoder import _ffmpeg, sample_frames, transcode_hls
+from transcoder import _ffmpeg, duration_seconds, sample_frames, transcode_hls
 
 # Inlined from shared/ai_utils.py -- the container image only bakes in
 # worker/, so a cross-repo import here crashed the whole process at startup
@@ -336,6 +336,8 @@ def process_record(bucket: str, key: str) -> None:
 
         # Timing covers transcode only — measure before the (network-bound) AI call.
         elapsed = time.monotonic() - started
+        # The media's own length (what the UI shows), not how long the transcode took.
+        media_seconds = duration_seconds(src)
 
         # Kick off speech-to-text while the source is still on local disk. The
         # job runs async; the post-processor Lambda sets transcript_status
@@ -363,7 +365,7 @@ def process_record(bucket: str, key: str) -> None:
         "thumb_key": f"{video_id}/thumb.jpg",
         # DynamoDB's resource API rejects native float -- round first (so the
         # string conversion doesn't carry binary-float noise), then Decimal.
-        "duration_seconds": Decimal(str(round(elapsed, 2))),
+        "duration_seconds": Decimal(str(round(media_seconds, 2))),
         "cost_usd": f"{estimate_cost(elapsed):.4f}",
         "transcript_status": transcript_status,
         **thumb_extra,
