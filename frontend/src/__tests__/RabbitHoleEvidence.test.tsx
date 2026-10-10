@@ -16,13 +16,11 @@ vi.mock("../api", async () => {
 
 const QWERTY = fixture as unknown as RabbitHole;
 
-/** A synthetic RabbitHole shaped like the real Wow! Signal article --
- *  same slug (so the real shipped wow-signal.experience.json loads
- *  through the ordinary registry) and citations covering every source id
- *  the experience file references (s10-s17), so every citation the
- *  experience renders actually resolves, exactly as it would against the
- *  live article. Facts/claims are simplified stand-ins, not the real
- *  article prose. */
+/** A synthetic RabbitHole shaped like the Wow! Signal article: the same slug
+ *  (so the shipped wow-signal.experience.json loads through the registry) and
+ *  citations covering every source id the experience references (s10-s17), so
+ *  each rendered citation resolves as it would on the live article. Facts and
+ *  claims are simplified stand-ins, not the real prose. */
 function wowFixture(): RabbitHole {
   const cite = (sourceId: string, number: number) => ({ source_id: sourceId, number });
   return {

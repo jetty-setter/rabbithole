@@ -5,13 +5,12 @@ import type { EvidenceState } from "../../../experiences/useEvidenceState";
 import { EvidenceComparison } from "./EvidenceComparison";
 import { SequencePlayer } from "./SequencePlayer";
 
-/** The top of the investigation: inspect the real artifact (rendered
- *  separately, in the header, so hotspots sit on the same image the
- *  reader already sees), replay what it recorded, then compare
- *  explanations against one consistent body of evidence. Everything here
- *  is driven by Experience data -- no RabbitHole-specific facts live in
- *  this component. Renders nothing a RabbitHole without an experience
- *  ever sees; the normal article continues immediately below regardless. */
+/** The top of the investigation: inspect the artifact (rendered in the header,
+ *  so hotspots sit on the image the reader already sees), replay what it
+ *  recorded, then compare explanations against one body of evidence. All of it
+ *  is driven by Experience data, with no RabbitHole-specific facts here. A
+ *  RabbitHole without an experience renders nothing from this; the article
+ *  continues below regardless. */
 export function EvidenceExperience({
   experience,
   rh,

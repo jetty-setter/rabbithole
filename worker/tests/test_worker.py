@@ -69,15 +69,11 @@ def test_start_transcription_starts_job_and_passes_data_access_role(monkeypatch,
     fake_s3 = MagicMock()
     monkeypatch.setattr(worker_mod, "s3", fake_s3)
 
-    # A real client wrapped in Stubber, not a bare MagicMock: boto3 validates
-    # parameters against the actual service model before Stubber ever hands
-    # back its canned response, so an unknown/misplaced parameter raises
-    # ParamValidationError here exactly like it would against the real API.
-    # A MagicMock would have silently accepted the WRONG shape this test
-    # guards against -- a top-level DataAccessRoleArn kwarg, which is what
-    # actually shipped and broke every transcription job in production
-    # (real error: "Unknown parameter in input: DataAccessRoleArn" --
-    # botocore expects it nested under JobExecutionSettings).
+    # A real client wrapped in Stubber, not a MagicMock: boto3 validates
+    # parameters against the real service model before Stubber returns its
+    # canned response, so a misplaced parameter raises ParamValidationError.
+    # A MagicMock would accept the wrong shape this test guards against, a
+    # top-level DataAccessRoleArn (botocore expects it under JobExecutionSettings).
     stubber = Stubber(worker_mod.transcribe)
     stubber.add_response(
         "start_transcription_job",

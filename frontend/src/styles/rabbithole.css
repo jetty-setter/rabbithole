@@ -1,12 +1,9 @@
-/* ── RabbitHole reader page (/rabbitholes/:slug) ──────────────────────────
-   A longform editorial page on near-black, built around ONE reading spine:
-   the page canvas can be a little wider than the prose (~1160px vs. a
-   ~700px column), but almost every section shares that same column so the
-   article reads as one continuous piece, not a sequence of unrelated
-   layout demos. Only the opening (title beside the real archival image)
-   breaks the spine — everything after it returns to it. Hierarchy comes
-   from type and spacing; no hairline dividers, tick marks or connector
-   lines anywhere. */
+/* ── RabbitHole reader page (/rabbitholes/:slug) ──
+   A longform editorial page on near-black built around one reading spine: the
+   canvas is a little wider than the prose (~1160px vs a ~700px column), but
+   almost every section shares that column. Only the opening (title beside
+   the archival image) breaks it. Hierarchy comes from type and spacing, with
+   no hairline dividers, tick marks or connector lines. */
 
 .rh-page {
   max-width: 1160px;
@@ -114,14 +111,12 @@
   letter-spacing: -0.003em;
 }
 
-/* ── Media — real archival/source imagery ───────────────────────────────
-   A generic, reusable slot for real source imagery (a manuscript crop, an
-   engraving, a photograph) -- not built for any one story. No card, no
-   border, no shadow, no frame, no filter -- the real artifact is shown as
-   itself. On wide desktop, when it sits in the article opening (see
-   .rh-head--media) it sits beside the title/hook as a genuine second
-   column, roughly balanced with the text side. Renders nothing when a
-   RabbitHole has no media (see RabbitHoleMedia.tsx). */
+/* ── Media: real archival/source imagery ──
+   A generic slot for source imagery (a manuscript crop, an engraving, a
+   photograph). No card, border, shadow, frame or filter: the artifact is
+   shown as itself. On wide desktop, in the article opening (.rh-head--media),
+   it sits beside the title and hook as a second column. Renders nothing when
+   a RabbitHole has no media (see RabbitHoleMedia.tsx). */
 .rh-media-group {
   margin-top: 32px;
 }

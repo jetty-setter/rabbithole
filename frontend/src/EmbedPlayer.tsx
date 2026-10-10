@@ -1,13 +1,12 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Inline player for embeddable External content (YouTube today).
- *
- * Uses YouTube's *official* IFrame Player API — the only clean way to drive
- * play/seek from a transcript cue or a search deep-link. No provider media
- * is downloaded, cached, or rehosted: this is YouTube's own privacy-enhanced
- * (`youtube-nocookie.com`) player. If the API script can't load, it falls
- * back to a plain nocookie <iframe> that still honours a `?t=` start time.
+ * Inline player for embeddable External content (YouTube today). Uses
+ * YouTube's official IFrame Player API, the clean way to drive play and seek
+ * from a transcript cue or search deep link. No provider media is downloaded,
+ * cached or rehosted: it is YouTube's privacy-enhanced (`youtube-nocookie.com`)
+ * player. If the API script can't load, it falls back to a plain nocookie
+ * <iframe> that still honours a `?t=` start time.
  */
 
 interface YTPlayer {

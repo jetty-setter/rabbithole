@@ -97,16 +97,13 @@ export interface SequenceStep {
   state?: string;
 }
 
-/** An ordered, interactive sequence of steps. `kind` tells the generic
- *  renderer which of the two V1 presentations to use:
- *   - "replay": scrub/play through valued samples (a bar chart + time
- *     readout) -- e.g. the six 6EQUJ5 samples.
- *   - "comparison": reveal a small number of named passes, some
- *     detected and some not (a profile curve vs. a flat line) -- e.g.
- *     the two expected feed-horn responses.
- *  Both are the same underlying primitive (ordered, evidence-linked
- *  steps); only the presentation differs, and the renderer -- not the
- *  data -- owns that. */
+/** An ordered, interactive sequence of steps. `kind` selects the presentation:
+ *   - "replay": scrub or play through valued samples (bar chart and time
+ *     readout), e.g. the six 6EQUJ5 samples.
+ *   - "comparison": reveal a few named passes, some detected and some not (a
+ *     profile curve vs. a flat line), e.g. the two expected feed-horn responses.
+ *  Both are the same primitive (ordered, evidence-linked steps). The renderer,
+ *  not the data, owns presentation. */
 export interface Sequence {
   id: string;
   kind: "replay" | "comparison";

@@ -18,12 +18,10 @@ export interface EvidenceState {
 }
 
 /** Shared interaction state for one Evidence Experience, lifted to
- *  RabbitHolePage so the artifact's hotspots (rendered inside
- *  RabbitHoleHeader) and the sequence/comparison modules (rendered below
- *  it) read and write the same selection instead of being isolated
- *  islands. `initialHypothesisId` is normally the experience's first
- *  hypothesis, so the comparison has something selected before any
- *  interaction. */
+ *  RabbitHolePage so the artifact's hotspots (in RabbitHoleHeader) and the
+ *  sequence and comparison modules (below it) read and write the same
+ *  selection. `initialHypothesisId` is normally the experience's first
+ *  hypothesis, so the comparison has a selection before any interaction. */
 export function useEvidenceState(initialHypothesisId: string | null): EvidenceState {
   const [selectedEvidenceId, setSelectedEvidenceId] = useState<string | null>(null);
   const [activeHypothesisId, setActiveHypothesisId] = useState<string | null>(initialHypothesisId);

@@ -1,11 +1,8 @@
-/* Entry stylesheet: a thin, order-significant aggregator. Native @import
-   (inlined by Vite at build time, no extra network round-trip) guarantees
-   the cascade order below regardless of how the files are later touched --
-   most files are independent, but a couple of orderings are load-bearing:
-   admin.css before watch.css (both define a bare .tag; watch's tag-editor
-   version must win, matching the current site), and utilities.css dead
-   last (its cross-cutting mobile overrides must win over each feature
-   file's own base rules, exactly as they did in the pre-split stylesheet). */
+/* Entry stylesheet: an order-significant aggregator. Native @import is inlined
+   by Vite at build time. Most files are independent, but two orderings matter:
+   admin.css before watch.css (both define a bare .tag, and watch's tag-editor
+   version must win), and utilities.css last (its cross-cutting mobile
+   overrides must beat each feature file's base rules). */
 @import "./styles/tokens.css";
 @import "./styles/base.css";
 @import "./styles/header.css";

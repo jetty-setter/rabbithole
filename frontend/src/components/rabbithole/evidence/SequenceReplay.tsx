@@ -10,15 +10,13 @@ function formatElapsed(seconds: number): string {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-/** Renders a `kind: "replay"` Sequence: play/pause/scrub/select through
- *  its steps. Knows nothing about what the steps mean -- only that they
- *  have an order, an optional numeric `value` (drives a bar), and a
- *  `meaning` to read out once selected. Which step is selected is this
- *  component's own state (not lifted -- nothing outside a single replay
- *  needs to know which sample is showing); `onSelectEvidence` is the one
- *  hook out to the experience's shared state, used only when a step
- *  points at a specific piece of evidence. Generic across any RabbitHole
- *  that supplies a replay sequence. */
+/** Renders a `kind: "replay"` Sequence: play, pause, scrub or select through
+ *  its steps. It knows only that steps have an order, an optional numeric
+ *  `value` (drives a bar) and a `meaning` shown when selected. The selected
+ *  step is local state, since nothing outside one replay needs it.
+ *  `onSelectEvidence` reports to the experience's shared state when a step
+ *  points at a piece of evidence. Generic across any RabbitHole that supplies a
+ *  replay sequence. */
 export function SequenceReplay({
   sequence,
   onSelectEvidence,

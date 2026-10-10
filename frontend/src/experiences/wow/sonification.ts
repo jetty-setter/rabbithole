@@ -1,12 +1,9 @@
-/** Optional, explicit-opt-in sonification of the signal sequence's own
- *  intensity values -- never framed as "the sound of the Wow! Signal"
- *  (there is no recording of one; radio astronomy isn't audible). A
- *  restrained two-oscillator drone: intensity drives amplitude and a
- *  narrow pitch range, with a second, detuned oscillator fading in only
- *  at higher intensity for a little harmonic density near the peak. No
- *  autoplay -- created and started only from the user's own click, which
- *  is also what satisfies the browser's audio-context-needs-a-gesture
- *  policy. */
+/** Optional, opt-in sonification of the signal sequence's intensity values.
+ *  It is never framed as "the sound of the Wow! Signal" (there is no recording,
+ *  and radio astronomy isn't audible). A restrained two-oscillator drone:
+ *  intensity drives amplitude and a narrow pitch range, and a detuned second
+ *  oscillator fades in near the peak. No autoplay: it starts only from the
+ *  user's click, which also satisfies the browser's audio-gesture policy. */
 export class Sonifier {
   private ctx: AudioContext | null = null;
   private gain: GainNode | null = null;

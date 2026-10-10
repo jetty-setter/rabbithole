@@ -48,14 +48,12 @@ function SourceRow({ s }: { s: RhSource }) {
   );
 }
 
-/** Numbered 1–N in the API's order. Each `<li id="rh-source-N">` is the jump
- *  target for the matching inline citation. A clean reference list — no
- *  null fields, no exported-bibliography look. Reference material, not a
- *  visual showcase: past a handful of entries the rest sit behind a native
- *  `<details>` disclosure so the section doesn't dominate the page by
- *  default -- still real DOM nodes a citation can jump straight to, since
- *  browsers auto-expand a closed `<details>` around a scrollIntoView/
- *  fragment target. */
+/** Numbered 1-N in the API's order. Each `<li id="rh-source-N">` is the jump
+ *  target for its inline citation. Reference material, not a showcase: past a
+ *  handful of entries the rest sit behind a native `<details>`, so the section
+ *  doesn't dominate the page. They are still real DOM nodes a citation can jump
+ *  to, since browsers auto-expand a closed `<details>` around a fragment
+ *  target. */
 export function SourcesList({ sources }: { sources: RhSource[] }) {
   const visible = sources.slice(0, VISIBLE_BY_DEFAULT);
   const rest = sources.slice(VISIBLE_BY_DEFAULT);

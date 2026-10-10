@@ -135,15 +135,12 @@ export function WatchPage() {
     railScrollGenRef.current++; // cancel any in-flight animation on unmount
   }, []);
 
-  // A restrained, self-driven "nearest edge" smooth scroll -- deliberately
-  // NOT the browser's native scrollIntoView({behavior:"smooth"}). That
-  // relies on the browser's own animation timing, which we can't observe
-  // precisely: a fixed guard window long enough for a one-line follow falls
-  // short on a big jump (a distant seek, a deep link) where the animation
-  // is still mid-flight when the guard clears, and the tail end of our OWN
-  // scroll then reads as a user scroll and wrongly suspends follow. Driving
-  // scrollTop ourselves with rAF gives a duration we actually know, so the
-  // guard can clear at the exact right moment every time.
+  // Self-driven "nearest edge" smooth scroll, not native
+  // scrollIntoView({behavior:"smooth"}). The browser's animation timing isn't
+  // observable, so a fixed guard window can expire mid-flight on a long jump
+  // (a distant seek or deep link), and the tail of our own scroll then reads as
+  // a user scroll and wrongly suspends follow. Driving scrollTop with rAF gives
+  // a known duration, so the guard clears at the right moment.
   function animateRailScroll(container: HTMLElement, delta: number, duration = 320): Promise<void> {
     const gen = ++railScrollGenRef.current;
     const startTop = container.scrollTop;
