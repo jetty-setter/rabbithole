@@ -17,15 +17,12 @@ function bucketFor(verdict: EvidenceVerdict): (typeof BUCKETS)[number]["id"] {
   return verdict;
 }
 
-/** THE INVESTIGATION LAB. Not a tab panel swapping paragraphs -- the same
- *  evidence tokens stay on stage the whole time and physically reorganize
- *  into SUPPORTS/WEAKENS/COMPATIBLE/UNCERTAIN columns when the active
- *  hypothesis changes, via GSAP Flip: capture every token's position
- *  before the React re-render that moves it to its new bucket, then let
- *  Flip animate each one from where it *was* to where it now sits. No
- *  fade-out/fade-in swap -- the reader's spatial memory of "where each
- *  fact lives" survives a hypothesis change because the fact itself
- *  visibly travels. */
+/** THE INVESTIGATION LAB. The same evidence tokens stay on stage and move
+ *  between the SUPPORTS, WEAKENS, COMPATIBLE and UNCERTAIN columns when the
+ *  active hypothesis changes, using GSAP Flip: capture each token's position
+ *  before the React re-render, then animate it from where it was to where it
+ *  now sits. There is no fade swap, so the reader's sense of where each fact
+ *  lives survives a change of hypothesis. */
 export function InvestigationSequence({
   experience,
   sourceIndex,

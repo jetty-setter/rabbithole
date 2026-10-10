@@ -1,14 +1,12 @@
 import type { RabbitHole, RhCitation } from "../api";
 import type { SourceRef } from "./types";
 
-/** The public RabbitHole payload exposes a source's stable id only inside
- *  the citations that already reference it (RhCitation.source_id) -- the
- *  plain `sources[]` list itself only carries the display `number`. This
- *  scans every citation already on the article (facts, contested items,
- *  timeline, media) to build a `source_id -> display number` index, so an
- *  experience file can reference the RabbitHole's own stable ids without
- *  a second bibliography and without depending on numbers that can shift
- *  on republish. */
+/** The public RabbitHole payload exposes a source's stable id only inside the
+ *  citations that reference it (RhCitation.source_id), while `sources[]` carries
+ *  only the display `number`. This scans every citation on the article (facts,
+ *  contested items, timeline, media) to build a `source_id -> display number`
+ *  index, so an experience file can use stable ids without a second bibliography
+ *  or numbers that shift on republish. */
 export function buildSourceIdIndex(rh: RabbitHole): Map<string, number> {
   const index = new Map<string, number>();
   const scan = (citations: RhCitation[] | undefined) => {

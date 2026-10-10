@@ -1,11 +1,9 @@
-/** Narrative framing for the Wow! Signal flagship experience --
- *  transitional copy and scene labels, deliberately kept separate from
- *  wow-signal.experience.json's factual evidence/hypothesis/sequence data.
- *  This file is presentation narration, specific to how this one page
- *  tells its story; the .json file is the factual record any renderer
- *  (or a future non-cinematic one) could read. Nothing here states a
- *  fact that isn't already established in the article or the experience
- *  data -- it only frames it. */
+/** Narrative framing for the Wow! Signal experience: transitional copy and
+ *  scene labels, kept separate from wow-signal.experience.json's factual
+ *  evidence, hypothesis and sequence data. This file is presentation specific
+ *  to how this page tells its story. The JSON is the factual record any
+ *  renderer could read. Nothing here states a fact the article or experience
+ *  data doesn't already establish. */
 export const WOW_SCENES = {
   eyebrow: "The Wow! Signal",
   arrivalLine: "August 15, 1977 · Big Ear Radio Observatory",

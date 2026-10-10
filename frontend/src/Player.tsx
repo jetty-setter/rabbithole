@@ -109,13 +109,12 @@ export function Player({
   const videoRef = externalRef ?? internalRef;
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  // Safari's AVFoundation fetches HLS segments without an Origin header, so
-  // CloudFront's CORS policy never fires and returns no ACAO header. Setting
-  // crossOrigin="anonymous" on the video element then causes the browser's
-  // CORS check to reject the 200 response (no ACAO = blocked). Workaround:
-  // detect native HLS support, fetch captions via JS (which does send Origin
-  // and gets ACAO:*), and hand a same-origin blob URL to the <track> element
-  // so no crossOrigin attribute is needed on the <video>.
+  // Safari's native HLS fetches segments without an Origin header, so
+  // CloudFront's CORS policy never fires and no ACAO header comes back; setting
+  // crossOrigin="anonymous" on <video> would then make the browser reject the
+  // response. Workaround: detect native HLS, fetch captions via JS (which sends
+  // Origin and gets ACAO:*), and give <track> a same-origin blob URL so
+  // <video> needs no crossOrigin attribute.
   const usesNativeHls = useRef(
     typeof document !== "undefined" &&
       document.createElement("video").canPlayType("application/vnd.apple.mpegurl") !== "",

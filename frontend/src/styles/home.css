@@ -130,15 +130,12 @@
   text-wrap: balance;
 }
 
-/* Hero search: one composed control -- a softly rounded rectangle, not a
-   capsule or pill, so it reads as a functional search field rather than
-   a novelty shape. A charcoal surface (a step lighter than the hero-
-   black behind it, so it reads as its own object instead of dissolving
-   into the photo) with a hairline edge and a restrained inset shadow for
-   a touch of embedded depth. Inside: the <input> fills the field, and
-   its right end — warmed a hair by a dark-on-dark tonal fade, no line
-   between them — is the DIVE IN commit zone. No circle, badge, divider,
-   arrow, chevron, icon or separate button shape. */
+/* Hero search: one composed control, a pill with a charcoal surface (a step
+   lighter than the hero-black behind it so it reads as its own object), a
+   hairline edge and a restrained inset shadow. The <input> fills the field
+   and its right end, warmed slightly by a dark-on-dark tonal fade with no line
+   between them, is the DIVE IN commit zone. No circle, badge, divider, arrow,
+   chevron, icon or separate button shape. */
 .home-hero-search {
   display: flex;
   align-items: stretch;
@@ -195,15 +192,12 @@
   appearance: none;
 }
 
-/* The commit zone: a real filled button integrated into the field's
-   right end, its outer corners matching the field's own softened
-   radius so the two stay one shape. Deeper, moodier violet than
-   TUMBLE's -- DIVE IN is a strong action but subordinate to the nav-
-   level CTA. Warm-ivory text clears AA on this fill (near-black does
-   not -- checked both). No icon, arrow, divider, glow or shadow -- the
-   fill alone signals "button". Related to READ RABBITHOLE through the
-   same violet family and typography, but not forced into an identical
-   standalone button shape -- DIVE IN stays a search end-cap. */
+/* The commit zone: a filled button inside the field's right end, with outer
+   corners matching the field's radius so the two read as one shape. A deeper
+   violet than TUMBLE's, since DIVE IN is a strong action but below the
+   nav-level CTA. Warm-ivory text clears AA on this fill (near-black does
+   not). No icon, arrow, divider, glow or shadow: the fill alone signals
+   "button". */
 .home-hero-search-submit {
   flex: none;
   height: 100%;
@@ -539,23 +533,16 @@
   opacity: 0.7;
 }
 
-/* ── The index — later published RabbitHoles ────────────────────────────
-   A curated magazine index, not a card wall: two editorial columns, each
-   holding two compact horizontal stories (image left, text right). No
-   card fill, border, shadow or rounded panel anywhere -- image, type and
-   spacing alone carry the structure. The whole composition centers within
-   a wide-but-bounded measure so it reads as a substantial part of the
-   same page as Wow! Signal, not a narrow island with a void beside it.
+/* ── The index: later published RabbitHoles ──
+   A curated magazine index: two editorial columns of compact horizontal
+   stories (image left, text right). No card fill, border, shadow or rounded
+   panel; image, type and spacing carry the structure. The composition is
+   centered in a wide but bounded measure.
 
-   Width is tiered, not one flat max-width, because a single number can't
-   both "use real room at 1920px" and "not blow out at 1280px" -- below
-   1280px it just fills the available editorial column (no extra inset,
-   there's little enough room there already); from 1280-1599px it settles
-   around 1320px with a 72px breathing inset; from 1600px up it widens
-   toward 1480px with a 96px inset. See the two min-width media queries
-   below. margin-inline stays `auto` throughout (set once, here), so it
-   re-centers automatically as width changes at each tier -- no need to
-   repeat it in the enhancement queries. */
+   Width is tiered: below 1280px it fills the column, from 1280px it settles
+   around 1320px with a 72px inset, and from 1600px it widens toward 1480px
+   with a 96px inset (see the two min-width queries below). `margin-inline:
+   auto` is set once here so it re-centers at every tier. */
 
 /* Quiet section label for the tier below the lead feature -- same eyebrow
    treatment as "Latest" so it reads as part of the same label family, not
@@ -575,14 +562,11 @@
 }
 
 /* Two equal columns. DOM order is reading order (Voynich, Dancing Plague,
-   Lake Nyos, Tunguska), and the grid's default row-major auto-placement
-   puts that straight into the intended composition -- row 1 is Voynich /
-   Dancing Plague, row 2 is Lake Nyos / Tunguska, so column 1 reads
-   Voynich-then-Lake-Nyos top to bottom and column 2 reads Dancing-Plague-
-   then-Tunguska -- with no manual placement needed. Capped well short of
-   its now-generous ancestor (.home-latest, 1800px) and centered within
-   it, so at wide viewports it sits as a substantial, centered composition
-   rather than pinned flush left with empty space beside it. */
+   Lake Nyos, Tunguska) and row-major auto-placement puts it in the intended
+   composition: row 1 Voynich and Dancing Plague, row 2 Lake Nyos and Tunguska.
+   Capped well below its ancestor (.home-latest, 1800px) and centered, so wide
+   viewports get a substantial centered composition instead of one pinned
+   left. */
 .home-latest-index {
   list-style: none;
   width: min(100%, 1320px);
@@ -625,16 +609,11 @@
   }
 }
 
-/* One compact horizontal story: image beside text, as a real two-track
-   CSS grid rather than flexbox. That distinction matters -- a flex
-   `flex-basis: 44%` grows the image with whatever space the row happens
-   to have, which is exactly how it ended up far too large (and the whole
-   section too narrow to give it real room) in the previous pass. A fixed
-   `minmax()` grid track instead pins the image to a real, bounded pixel
-   range regardless of how wide its column gets; the `1fr` text track
-   absorbs everything else. Centered cross-axis alignment gives the pair
-   a composed, considered feel; the text itself still wraps and sits
-   naturally, not vertically centered line-by-line. */
+/* One compact story: image beside text, as a two-track grid, not flexbox. A
+   flex-basis percentage grows the image with the row, which made it far too
+   large before. A fixed `minmax()` track keeps the image in a bounded range
+   and the `1fr` text track takes the rest. Center cross-axis alignment
+   composes the pair; the text itself still wraps naturally. */
 .home-index-row {
   display: grid;
   grid-template-columns: minmax(190px, 220px) minmax(0, 1fr);
@@ -671,14 +650,12 @@
   min-height: 0;
 }
 
-/* object-fit: cover (not a forced re-crop of the source -- all four
-   images are already deliberate editorial crops; this only trims a
-   little off the top/bottom to reach the shared 3:2 frame, centered so
-   the subject stays intact) rather than a plain img, since height is now
-   driven by the container's aspect-ratio, not the image's own. The same
-   restrained brightness/contrast step as the Wow! Signal printout (no
-   tint, no overlay) keeps old paper and old ink from reading as a lit
-   rectangle against the near-black section. */
+/* object-fit: cover trims a little off the top and bottom to reach the shared
+   3:2 frame (the images are already deliberate editorial crops), centered so
+   the subject stays intact. It is needed because height now comes from the
+   container's aspect-ratio, not the image. The same restrained brightness and
+   contrast step as the Wow! Signal printout, with no tint or overlay, keeps old
+   paper from reading as a lit rectangle on the near-black section. */
 .home-index-image img {
   display: block;
   width: 100%;
@@ -757,19 +734,14 @@
   outline-offset: 3px;
 }
 
-/* ── Wide desktop: one editorial spread, not two stacked sections ───────
-   Below this tier .home-latest-shell is inert (a plain wrapper; the lead
-   feature and the index just stack, same as before these zone divs
-   existed -- see 1200-1599px, which keeps the existing two-column story
-   grid from the previous pass unchanged). From here up, when there's
-   actually a rail to show (.has-rail -- see HomeLatest.tsx), Wow! Signal
-   and More RabbitHoles become two side-by-side zones of one composition:
-   a wide magazine spread rather than a lead section with a second
-   section underneath it. Everything below is scoped under
-   `.home-latest-shell.has-rail` specifically so it can't affect the
-   1200-1599px stacked tier or the empty-items state, and so it wins over
-   the plain `.home-index-*`/`.home-featured-grid` rules on specificity
-   alone regardless of source order. */
+/* ── Wide desktop: one editorial spread, not two stacked sections ──
+   Below this tier .home-latest-shell is a plain wrapper and the lead and
+   index stack (the 1200-1599px layout is unchanged). From here up, when
+   there is a rail to show (.has-rail, see HomeLatest.tsx), Wow! Signal and
+   More RabbitHoles become two side-by-side zones. Everything below is scoped
+   under `.home-latest-shell.has-rail`, so it can't affect the stacked tier or
+   the empty state, and it wins over the plain `.home-index-*` and
+   `.home-featured-grid` rules on specificity. */
 @media (min-width: 1500px) {
   .home-latest-shell.has-rail {
     display: grid;
@@ -791,20 +763,12 @@
     margin-inline: auto;
   }
 
-  /* Compact Wow! Signal's own internal grid for its new, narrower zone --
-     smaller image/text tracks and a tighter gap than the standalone
-     >=1200px rule above (higher specificity here wins regardless of
-     source order). Still the same crop, same everything else -- this
-     rebalances the two column widths so the printout reads as the
-     visual half of the story (image ~60% / text ~40%, up from an even
-     ~56%/44%) rather than a medium supporting illustration, and fits the
-     feature into its zone without the browser silently compressing it
-     below its intended shape. Text column widened slightly (22rem ->
-     24rem) alongside the wider shell above so the copy column doesn't
-     stay pinned at its old width while the image and rail both grow --
-     the image track shrinks a hair in exchange (33rem -> 32.5rem) so the
-     pair still fits its zone without the browser silently compressing
-     either below its intended shape. */
+  /* Wow! Signal's own grid in the narrower zone: smaller tracks and a tighter
+       gap than the standalone >=1200px rule above (higher specificity wins
+       regardless of source order). The image gets ~60% and the text ~40% (up
+       from ~56/44) so the printout stays the visual half of the story. Text
+       column 22rem -> 24rem, image 33rem -> 32.5rem, so the pair fits its zone
+       without the browser compressing either. */
   .home-latest-shell.has-rail .home-featured-grid {
     grid-template-columns: minmax(0, 24rem) minmax(0, 32.5rem);
     column-gap: clamp(24px, 3vw, 40px);

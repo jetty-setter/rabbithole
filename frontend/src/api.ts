@@ -621,12 +621,11 @@ export function pickFeatured(ready: Video[]): Video | null {
 }
 
 /** Display title: the set title, else a prettified filename. */
-/** What the Transcript section should render for a video, given its
- *  transcript_status. A transcript failure/absence should never make the
- *  whole section silently disappear -- every ready video gets a Transcript
- *  section, just with state-appropriate copy instead of the searchable cue
- *  list. Legacy records with no transcript_status (and "pending"/"failed")
- *  all collapse into "unavailable" -- the user never sees raw error detail. */
+/** What the Transcript section renders for a video, given its transcript_status.
+ *  Every ready video gets a Transcript section, with state-appropriate copy
+ *  when there is no searchable cue list, so a failure never makes it vanish.
+ *  Legacy records with no transcript_status, and "pending" or "failed", all
+ *  collapse into "unavailable" so the user never sees raw error detail. */
 export type TranscriptSectionState = "transcribing" | "ready" | "no_speech" | "unavailable";
 
 export function transcriptSectionState(v: { transcript_status?: Video["transcript_status"] }): TranscriptSectionState {

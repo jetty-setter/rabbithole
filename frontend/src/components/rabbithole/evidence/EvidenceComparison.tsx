@@ -11,13 +11,12 @@ const VERDICT_LABEL: Record<EvidenceVerdict, string> = {
   not_applicable: "N/A",
 };
 
-/** "Which explanation best fits the evidence?" -- the evidence stays put;
- *  only the hypothesis changes. A row of hypothesis buttons switches one
- *  shared list of evidence, each row showing how that evidence bears on
- *  the selected hypothesis (Supports / Weakens / Compatible / Uncertain /
- *  N/A) -- read at a glance across the whole list, not one paragraph at
- *  a time. Selecting a row reveals its full statement and citations.
- *  Generic: reads Experience data only, no Wow-specific strings. */
+/** "Which explanation best fits the evidence?" The evidence stays put and only
+ *  the hypothesis changes. A row of hypothesis buttons switches one shared
+ *  evidence list, each row showing how that evidence bears on the selected
+ *  hypothesis (Supports, Weakens, Compatible, Uncertain, N/A). Selecting a row
+ *  reveals its full statement and citations. Generic: reads Experience data
+ *  only, no Wow-specific strings. */
 export function EvidenceComparison({
   experience,
   sourceIndex,

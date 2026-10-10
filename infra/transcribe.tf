@@ -72,12 +72,9 @@ resource "aws_iam_role_policy" "worker_transcribe" {
 }
 
 # ── Post-processor Lambda ──────────────────────────────────────
-# handler.py imports shared.captions; the deployed zip must bundle shared/
-# as a SIBLING of handler.py (Lambda always extracts to a flat /var/task,
-# so the repo's own "shared/ two directories up" layout doesn't survive
-# packaging -- see the comment in handler.py). source_dir alone can't pull
-# files from two different directories into one archive, so this lists
-# every file explicitly instead.
+# handler.py imports shared.captions, so the zip must bundle shared/ as a
+# sibling of handler.py (Lambda extracts to a flat /var/task; see handler.py).
+# source_dir can't archive two directories, so each file is listed explicitly.
 data "archive_file" "transcribe_post" {
   type        = "zip"
   output_path = "${path.module}/build/transcribe.zip"

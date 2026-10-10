@@ -9,13 +9,12 @@ export interface ArtifactRegion {
   height: number;
 }
 
-/** Sequence 1 -- THE ARTIFACT. A single authored timeline (driven by a
- *  pure `progress` 0..1, not scroll): the real printout settles in, a
- *  scan sweeps across it, locks onto the measured 6EQUJ5 region while the
- *  rest of the paper darkens, the six characters extract into large
- *  typography, and the paper recedes -- handing off to the signal
- *  sequence, which opens on the same six glyphs at rest. Pure function of
- *  `progress`: safe to scrub, reverse, or resume from any point. */
+/** Sequence 1, the artifact. One authored timeline driven by a pure `progress`
+ *  (0..1), not scroll: the printout settles in, a scan sweeps across and locks
+ *  onto the measured 6EQUJ5 region while the paper darkens, the six characters
+ *  extract into large type, and the paper recedes into the signal sequence,
+ *  which opens on the same six glyphs. Pure in `progress`, so it is safe to
+ *  scrub, reverse or resume from any point. */
 export function ArtifactSequence({
   progress,
   region,

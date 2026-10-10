@@ -1,10 +1,7 @@
-# Continuous deployment: GitHub Actions assumes this role via OIDC (no long-lived
-# AWS keys in the repo) to ship application artifacts on a push to main —
-# container images, the API Lambda, the worker service, and the frontend.
-#
-# Infrastructure itself is still applied manually (`terraform apply`) because the
-# state is local; migrating to a remote S3 backend is the prerequisite for
-# automating infra changes too.
+# Continuous deployment: GitHub Actions assumes this role via OIDC (no
+# long-lived AWS keys) to ship app artifacts on a push to main: container
+# images, the API Lambda, the worker service and the frontend. Infrastructure
+# is applied through the separate Terraform workflow (remote state in S3).
 
 locals {
   github_repo = "jetty-setter/rabbithole"

@@ -8,14 +8,12 @@ import type { SignalStep } from "./stage/SignalSequence";
 
 const BOX = { width: 900, height: 220 };
 
-/** The reduced-motion / unsupported-browser equivalent of the animated
- *  stage: the same three moments as discrete, control-equivalent states
- *  rather than a playable timeline -- nothing here is hidden or degraded
- *  in informational terms, only in motion. Artifact: a real, clickable
- *  hotspot instead of a scanning extraction. Signal: six selectable
- *  samples over a static (fully drawn, not growing) curve instead of a
- *  sweeping reconstruction. Second pass: both outcomes shown at once
- *  instead of a compressed wait. */
+/** The reduced-motion and unsupported-browser equivalent of the animated
+ *  stage: the same three moments as discrete states instead of a timeline, so
+ *  nothing is lost informationally, only motion. Artifact: a clickable hotspot
+ *  instead of a scanning extraction. Signal: six selectable samples over a
+ *  static, fully drawn curve instead of a sweeping reconstruction. Second pass:
+ *  both outcomes shown at once instead of a compressed wait. */
 export function WowReducedStage({
   rh,
   hotspots,

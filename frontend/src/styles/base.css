@@ -11,27 +11,14 @@ body {
 }
 
 html {
-  /* .home-hero-grid (and any other full-bleed section) uses width:100vw
-     with negative margins to break out of .page's padding. 100vw includes
-     the vertical scrollbar's own width, so on any page tall enough to
-     scroll, that element runs ~5-15px past the actual visible viewport
-     and forces a horizontal scrollbar. This is the standard guard against
-     that class of bug -- nothing on the site relies on page-level
-     horizontal scroll (wide tables/code blocks use their own scoped
-     overflow-x:auto containers, unaffected by this).
+  /* Guard against horizontal scroll from full-bleed sections. `.home-hero-grid`
+     uses width: 100vw with negative margins, and 100vw includes the vertical
+     scrollbar, so it overshoots the viewport by 5-15px and forces a horizontal
+     scrollbar.
 
-     Scoped to html only, NOT body: setting overflow-x on both forces
-     each element's overflow-y to compute as auto (a CSS quirk), and
-     since html declares its own overflow, body doesn't inherit/propagate
-     it to the viewport the usual way -- body ends up as its own genuine
-     scroll-container box. That silently breaks position:sticky on any
-     descendant (the topbar, notably): sticky resolves against the
-     nearest scroll-container ancestor, and body's isn't the one that
-     actually scrolls, so a sticky element pinned to it just scrolls away
-     with the page instead of sticking. html alone (the real scrolling
-     element here, confirmed via document.scrollingElement) keeps the
-     horizontal-scroll guard without creating that second, inert
-     scroll container. */
+     Set on `html` only, not `body`. With overflow-x on both, body becomes its
+     own scroll container (the viewport no longer propagates it), which breaks
+     `position: sticky` on descendants such as the topbar. */
   overflow-x: hidden;
 }
 
