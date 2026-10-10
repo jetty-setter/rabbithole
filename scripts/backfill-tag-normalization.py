@@ -2,14 +2,14 @@
 """One-time, idempotent backfill: re-normalize `tags` on existing video records.
 
 All write paths (upload, edit, AI-suggest) now funnel tags through
-app.main.clean_tags, so new and re-saved records are already canonical. But
+app.helpers.clean_tags, so new and re-saved records are already canonical. But
 records created before that change can still hold mechanically inconsistent
 tags -- "True Crime", "true crime" and "true-crime" showing up as three
 separate tunnels. This rewrites each video's `tags` list through the SAME
 canonical helper and writes back ONLY when the normalized list actually
 differs.
 
-Canonical rules (app.main.normalize_tag / clean_tags -- unchanged here):
+Canonical rules (app.helpers.normalize_tag / clean_tags -- unchanged here):
   lowercase · trim · drop leading '#' · spaces/underscores -> hyphen ·
   collapse repeated hyphens · trim stray hyphens · dedupe preserving order ·
   keep the existing per-record tag-count cap.
@@ -40,7 +40,7 @@ os.environ.setdefault("AWS_DEFAULT_REGION", os.environ["AWS_REGION"])
 
 # The one canonical implementation -- imported, never re-implemented.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "api"))
-from app.main import clean_tags  # noqa: E402
+from app.helpers import clean_tags  # noqa: E402
 
 
 def current_tags(item: dict) -> list[str]:

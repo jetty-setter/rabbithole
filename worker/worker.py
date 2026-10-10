@@ -86,15 +86,10 @@ POLL_WAIT_SECONDS = int(os.getenv("POLL_WAIT_SECONDS", "20"))
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 AI_MODEL = os.getenv("AI_MODEL", "claude-opus-4-8")
 
-# Speech-to-text (optional). TRANSCRIBE_ROLE_ARN is the data-access role AWS
-# Transcribe itself assumes to read the audio we upload and write its output --
-# it is NOT just an on/off flag (see infra/transcribe.tf: the role has its own
-# S3 read/write policy, and the worker's own role is granted iam:PassRole for
-# exactly this ARN). It must actually be passed as DataAccessRoleArn below;
-# omitting it makes Transcribe unable to read same-account buckets at all
-# (BadRequestException: "The S3 URI that you provided can't be accessed"),
-# which is what silently broke every transcription job. Absent the var ->
-# feature dormant (e.g. an environment with no transcribe.tf applied).
+# Speech-to-text (optional). TRANSCRIBE_ROLE_ARN is the role Transcribe itself
+# assumes to read and write S3 (see infra/transcribe.tf), so it must be passed
+# as DataAccessRoleArn, not treated as an on/off flag. Unset leaves the
+# feature dormant.
 TRANSCRIBE_ROLE_ARN = os.getenv("TRANSCRIBE_ROLE_ARN", "")
 
 _session = boto3.session.Session(region_name=AWS_REGION)
@@ -186,16 +181,9 @@ def _start_transcription(video_id: str, src: Path, workdir: Path) -> tuple[str, 
         s3.upload_file(str(audio), STREAMING_BUCKET, audio_key,
                        ExtraArgs={"ContentType": "audio/flac"})
         job = f"rh-{video_id}-{int(time.time())}"
-        # JobExecutionSettings.DataAccessRoleArn: Transcribe assumes this role
-        # to read/write the streaming bucket. Without it, Transcribe does NOT
-        # fall back to the calling (worker) identity's permissions -- it can't
-        # read the audio at all, even same-account, and start_transcription_job
-        # raises BadRequestException. infra/transcribe.tf already grants the
-        # worker iam:PassRole for exactly this ARN; it just needs to be passed.
-        # (DataAccessRoleArn is nested under JobExecutionSettings, not a
-        # top-level param -- confirmed directly against the installed
-        # botocore's service model; a top-level DataAccessRoleArn kwarg raises
-        # a ParamValidationError, "Unknown parameter in input".)
+        # Transcribe does not fall back to the worker's own permissions, so it needs
+        # a data-access role to reach the bucket. infra/transcribe.tf grants the worker
+        # iam:PassRole for this ARN. The parameter is nested under JobExecutionSettings.
         transcribe.start_transcription_job(
             TranscriptionJobName=job,
             Media={"MediaFileUri": f"s3://{STREAMING_BUCKET}/{audio_key}"},

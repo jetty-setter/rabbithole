@@ -11,7 +11,7 @@ the next content model.
 
 What it removes
 ---------------
-  videos table            every item  (mirrors api/app/main.py::delete_video:
+  videos table            every item  (mirrors api/app/routers/videos.py::delete_video:
                                         uploads/{id}/ prefix, streaming/{id}/
                                         prefix, and comments for that id)
   embeddings table         every item  (per-video transcript chunk vectors --

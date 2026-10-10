@@ -171,22 +171,18 @@ class Video(BaseModel):
     thumps: int = 0
     tags: list[str] = []
     ai_generated: bool = False
-    # Smart-thumbnail provenance. "auto" = frame chosen by the scoring pass,
-    # "manual" = an admin picked a specific candidate frame. Absent on legacy
-    # records (they predate smart thumbnails) -> reads as None, treated as
-    # legacy/auto. thumbnail_timestamp is the point in the source the frame
-    # was taken from. Internal scoring detail is not exposed here.
+    # Smart-thumbnail provenance: "auto" (scored frame) or "manual" (admin pick).
+    # None on legacy records. thumbnail_timestamp is the frame's position in the
+    # source video.
     thumbnail_source: str | None = None
     thumbnail_timestamp: float | None = None
     # Curated homepage Featured slot. Exactly one video is featured at a time
     # (enforced server-side); legacy records with no `featured` attribute read
     # as False.
     featured: bool = False
-    # Authoritative transcript state. has_transcript is kept for existing
-    # frontend code that already branches on it, but is always derived from
-    # this field (ready -> true, everything else -> false) so the two can
-    # never disagree. Legacy records with no transcript_status at all read
-    # as None, which the frontend treats the same as "unavailable".
+    # Authoritative transcript state. has_transcript is derived from it (ready ->
+    # true) so the two cannot disagree. Legacy records read as None, which the
+    # frontend treats as "unavailable".
     transcript_status: str | None = None
     has_transcript: bool = False
     transcribing: bool = False
@@ -225,10 +221,8 @@ class Video(BaseModel):
     topics: list[ContentTopic] = []
 
 
-# A tag and how many (ready, public) videos carry it -- the lightweight
-# "expertise" summary shown on a creator's profile. Renamed from the
-# original `Topic` to free that name for the curated Topic/Concept entity
-# below; the JSON shape ({"tag", "count"}) is unchanged.
+# A tag and how many ready, public videos carry it, shown as "expertise" on a
+# creator's profile. Kept separate from Topic, the curated entity below.
 class TagCount(BaseModel):
     tag: str
     count: int
