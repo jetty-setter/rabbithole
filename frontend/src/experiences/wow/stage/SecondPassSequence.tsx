@@ -17,15 +17,13 @@ function bumpCurve(x: number, center: number, width: number, height: number): nu
   return Math.max(0, 1 - d * d) * height;
 }
 
-/** Sequence 3 -- THE SECOND PASS. The stage resets into a spatial
- *  observing view: a fixed "expected response window" the source crosses
- *  twice. First pass -- the source enters, a signal visibly rises, peaks,
- *  falls (violet: observed data). Then time itself compresses (a
- *  countdown sweeping 02:52 -> 00:00 alongside a draining ring, not a
- *  literal wait). Second pass -- the source re-enters the same window,
- *  but the field stays flat: the absence IS the visual event, held
- *  before "NO SECOND DETECTION" lands on coral -- missing expectation,
- *  not a UI error state. */
+/** Sequence 3, the second pass. The stage resets into a spatial view: a fixed
+ *  "expected response window" the source crosses twice. On the first pass a
+ *  signal rises, peaks and falls (violet, observed data). Time then compresses
+ *  (a countdown from 02:52 to 00:00 beside a draining ring). On the second
+ *  pass the field stays flat. The absence is the visual event, held before
+ *  "NO SECOND DETECTION" lands in coral: a missing expectation, not an error
+ *  state. */
 export function SecondPassSequence({ progress, labels }: { progress: number; labels: PassLabels }) {
   const p = Math.max(0, Math.min(1, progress));
   const W = 900;

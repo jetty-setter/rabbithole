@@ -39,16 +39,13 @@ function pushDuplicates(errors: string[], scope: string, ids: string[]): void {
   }
 }
 
-/** Structural validation only -- no knowledge of a live RabbitHole. Checks
- *  every rule an experience file can violate on its own: required
- *  fields, unique ids, in-range hotspot percentages, and that every
- *  cross-reference (hotspot -> sequence/evidence, sequence step ->
- *  evidence, hypothesis -> evidence, matrix -> evidence) resolves to
- *  something the same file actually defines. Does not check that
- *  `sources[].sourceId` resolves against a real RabbitHole -- that
- *  depends on live data the file itself can't see (see
- *  resolveSourceRefs), so it's checked separately, and a miss there
- *  degrades a citation rather than invalidating the whole experience. */
+/** Structural validation only, with no knowledge of a live RabbitHole. Checks
+ *  what a file can violate on its own: required fields, unique ids, hotspot
+ *  percentages in range, and that every cross-reference (hotspot, sequence
+ *  step, hypothesis or matrix to evidence or sequence) resolves within the
+ *  file. `sources[].sourceId` is not checked here because it needs live data
+ *  (see resolveSourceRefs). A miss there degrades one citation instead of
+ *  invalidating the experience. */
 export function validateExperience(raw: unknown): ValidationResult {
   const errors: string[] = [];
   const fail = (msg: string) => errors.push(msg);

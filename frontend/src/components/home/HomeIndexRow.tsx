@@ -1,16 +1,14 @@
 import { Link } from "react-router-dom";
 
 /**
- * A published RabbitHole beyond the lead feature. Deliberately smaller and
- * quieter than <HomeFeatured> — a publication front page has one lead
- * story and a tighter, denser index under it, not a repeated stack of
- * identical cards. Every story uses the same compact horizontal image-
- * left/text-right composition, arranged into a two-column magazine index
- * (see .home-latest-index in home.css) rather than alternating mini
- * landing pages. Imagery is optional: only supply `imageUrl` where a
- * real, rights-cleared image exists. Without one the row is text-only
- * rather than forcing a placeholder graphic. Supply `imageAlt` for a real
- * image so it's exposed to assistive tech as content, not decoration.
+ * A published RabbitHole beyond the lead feature, deliberately smaller and
+ * quieter than <HomeFeatured>: one lead story, then a denser index. Every row
+ * uses the same compact image-left/text-right layout in a two-column grid
+ * (see .home-latest-index in home.css).
+ *
+ * Pass `imageUrl` only for a real, rights-cleared image. Without one the row
+ * is text-only, with no placeholder. Pass `imageAlt` with a real image so it
+ * is exposed as content, not decoration.
  */
 export interface IndexItem {
   slug: string;
