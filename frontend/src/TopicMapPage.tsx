@@ -36,13 +36,13 @@ export function TopicMapPage() {
     </> : <>
       <nav className="case-route" aria-label="Your route"><button onClick={() => setParams({})}>Starting points</button>{path.map((id, index) => <span key={`${id}-${index}`}><span aria-hidden="true"> / </span><button aria-current={index === path.length - 1 ? "step" : undefined} onClick={() => setParams({ case: path.slice(0, index + 1) })}>{cases.find(c => c.id === id)?.title}</button></span>)}</nav>
       <section className="case-current" aria-labelledby="current-case">
-        <Link to={`/watch/${current.videos[0].video_id}`} aria-label={`Watch ${current.title}`}><img src={current.videos[0].thumbnail_url || "/RHRabbit.png?v=5"} alt="" /></Link>
+        <Link className="case-thumb" to={`/watch/${current.videos[0].video_id}`} aria-label={`Watch ${current.title}`}><img src={current.videos[0].thumbnail_url || "/RHRabbit.png?v=5"} alt="" /><span className="case-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg></span></Link>
         <div><span className="case-eyebrow">You are here</span><h2 id="current-case">{current.title}</h2><p>{current.description}</p><div className="case-watch-links">{current.videos.map((video, index) => <Link className="btn-primary" key={video.video_id} to={`/watch/${video.video_id}`}>{current.videos.length > 1 ? `Watch perspective ${index + 1}` : "Watch video"}</Link>)}</div></div>
       </section>
-      <section aria-labelledby="case-branches"><h2 id="case-branches">Where does this lead?</h2><p className="case-note">Pick one to burrow into next.</p>
+      <section aria-labelledby="case-branches"><h2 id="case-branches">Where does this lead?</h2><p className="case-note">Pick a path to see where it goes next.</p>
         <div className="case-branches">{current.connections.slice(0, 4).map(edge => {
           const next = cases.find(c => c.id === edge.target)!;
-          return <article className="case-branch" key={next.id}><Link to={`/watch/${next.videos[0].video_id}`} aria-label={`Watch ${next.title}`}><img src={next.videos[0].thumbnail_url || "/RHRabbit.png?v=5"} alt="" /></Link><div><h3>{next.title}</h3><p>{edge.reason}</p><button className="btn-primary" onClick={() => follow(next.id)}>Burrow in</button></div></article>;
+          return <article className="case-branch" key={next.id}><Link className="case-thumb" to={`/watch/${next.videos[0].video_id}`} aria-label={`Watch ${next.title}`}><img src={next.videos[0].thumbnail_url || "/RHRabbit.png?v=5"} alt="" /><span className="case-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg></span></Link><div><h3>{next.title}</h3><p>{edge.reason}</p><button className="link-btn" onClick={() => follow(next.id)}>See where it leads</button></div></article>;
         })}</div>
         {!current.connections.length && <p>This branch ends here for now. Choose an earlier stop to explore another case.</p>}
       </section>

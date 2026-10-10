@@ -6,16 +6,12 @@ function prefersReducedMotion(): boolean {
   return typeof window !== "undefined" && !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 }
 
-/** Renders a `kind: "comparison"` Sequence: a small number of named
- *  passes, some detected and some not, shown as a real signal-profile
- *  curve beside a flat line -- the absence reads from the shape alone,
- *  no connecting line or node between panels. The end state (every step
- *  fully resolved) is the default, so the conclusion is never hidden
- *  behind an interaction; a Replay button re-runs the staged reveal --
- *  each step's timing surfaces, then its profile and state resolve, in
- *  order -- for whoever wants to watch it happen rather than just read
- *  it. Generic across any RabbitHole that supplies a comparison
- *  sequence. */
+/** Renders a `kind: "comparison"` Sequence: a few named passes, some detected
+ *  and some not, shown as a signal-profile curve beside a flat line so the
+ *  absence reads from the shape alone. The fully resolved end state is the
+ *  default, so the conclusion is never hidden behind an interaction. Replay
+ *  re-runs the staged reveal (timing, then profile and state, in order).
+ *  Generic across any RabbitHole that supplies a comparison sequence. */
 export function SequenceComparison({
   sequence,
   onSelectEvidence,

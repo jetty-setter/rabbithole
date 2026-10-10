@@ -3,7 +3,7 @@
 .case-search input { width: 100%; box-sizing: border-box; padding: 13px 20px; background: #101014; border: 1px solid var(--border); border-radius: 999px; color: var(--text); font: inherit; }
 .case-starts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .case-start { padding: 0; text-align: left; background: #101014; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; color: var(--text); cursor: pointer; font: inherit; }
-.case-start img, .case-branch > a img, .case-current img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; }
+.case-start img, .case-thumb img, .case-current img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; }
 .case-start > span { display: grid; gap: 10px; padding: 16px; }
 .case-start small, .case-note, .case-current p, .case-branch p { color: var(--muted); line-height: 1.6; }
 .case-start:hover, .case-start:focus-visible { border-color: var(--violet); }
@@ -18,10 +18,14 @@
 .case-watch-links { display: flex; flex-wrap: wrap; gap: 10px; }
 .case-branches { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr)); gap: 18px; }
 .case-branch { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; min-width: 0; }
-.case-branch > a { display: block; }
 .case-branch > div { padding: 16px; }
-.case-branch .btn-primary { margin-top: 12px; }
+.case-branch .link-btn { margin-top: 12px; }
 .case-branch h3 { margin: 0; font-size: 17px; }
 .case-branch p { font-size: 14px; }
 @media (max-width: 760px) { .case-starts { grid-template-columns: repeat(2, minmax(0, 1fr)); } .case-current { grid-template-columns: 1fr; padding: 18px; } .case-current > a { max-width: 360px; } }
 @media (max-width: 420px) { .case-starts { grid-template-columns: 1fr; } }
+.case-thumb { position: relative; display: block; }
+.case-play { position: absolute; inset: 0; margin: auto; width: 52px; height: 52px; border-radius: 999px; background: rgba(10, 10, 13, 0.7); border: 1px solid rgba(255, 255, 255, 0.5); display: flex; align-items: center; justify-content: center; transition: background 140ms ease, transform 140ms ease; }
+.case-play svg { width: 22px; height: 22px; fill: var(--text); margin-left: 2px; }
+.case-thumb:hover .case-play, .case-thumb:focus-visible .case-play { background: var(--violet); transform: scale(1.06); }
+.case-thumb:hover .case-play svg, .case-thumb:focus-visible .case-play svg { fill: #0a0a0d; }

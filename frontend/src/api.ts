@@ -652,7 +652,7 @@ export function displayTitle(v: { title?: string | null; filename: string }): st
  *  trim, drop a leading '#', and render internal whitespace/underscore runs as
  *  a single hyphen so "True Crime", "true crime" and "true-crime" land in one
  *  tunnel. Different spellings are left alone ("truecrime" stays its own tag).
- *  Must mirror `normalize_tag` in the API (api/app/main.py). */
+ *  Must mirror `normalize_tag` in the API (api/app/helpers.py). */
 export function normalizeTag(raw: string): string {
   return String(raw)
     .trim()
