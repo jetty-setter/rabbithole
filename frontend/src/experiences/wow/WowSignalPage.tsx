@@ -19,22 +19,16 @@ import type { SignalStep } from "./stage/SignalSequence";
 import { usePrefersReducedMotion } from "./useMotion";
 import { WowEvidenceStage } from "./WowEvidenceStage";
 
-/** RabbitHole's flagship interactive experience. The page itself stays
- *  calm -- title, hook, the real artifact, then the case file -- with a
- *  single bounded, playable animation stage ("Evidence Theatre") in the
- *  middle doing the actual motion work: the artifact's extraction, the
- *  72-second signal reconstruction, and the second pass, all on one
- *  authored GSAP timeline the reader drives directly (Play / Pause /
- *  Restart / scrub / chapter jump). Scrolling just moves the reader
- *  through the page, the way it moves them through any article --
- *  nothing here is choreographed to scroll position. The Investigation
- *  section below the stage is its own animated moment (GSAP Flip
- *  reorganizes evidence tokens into their verdict column when the active
- *  hypothesis changes), not part of the stage's timeline.
+/** RabbitHole's flagship interactive experience: title, hook, the real
+ *  artifact, then the case file, with one playable "Evidence Theatre" stage in
+ *  the middle. A single GSAP timeline the reader drives (play, pause, restart,
+ *  scrub, chapter jump) covers the artifact's extraction, the 72-second signal
+ *  reconstruction and the second pass. Nothing is tied to scroll position. The
+ *  Investigation section below animates separately (GSAP Flip moves evidence
+ *  tokens into their verdict column when the hypothesis changes).
  *
- *  Wow-specific narration lives in wow-signal.scenes.ts; Wow-specific
- *  facts live in wow-signal.experience.json; this component only
- *  composes them. */
+ *  Narration lives in wow-signal.scenes.ts and facts in
+ *  wow-signal.experience.json. This component only composes them. */
 export function WowSignalPage({ rh, experience }: { rh: RabbitHole; experience: Experience }) {
   const reduced = usePrefersReducedMotion();
   const cinematic = canRunStageMotion() && !reduced;

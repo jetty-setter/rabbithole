@@ -2,24 +2,14 @@ import { HomeFeatured } from "./HomeFeatured";
 import { HomeIndexRow, type IndexItem } from "./HomeIndexRow";
 
 /**
- * The homepage's Latest section: one eyebrow, the lead feature at full
- * editorial scale, and — once more RabbitHoles are published — a tighter,
- * denser magazine index alongside/underneath it. `items` defaults to
- * empty: today there is exactly one thing to feature (see HomeFeatured),
- * so nothing renders here and the page ends cleanly after the lead. When
- * real published RabbitHoles beyond the lead exist, pass them in and they
- * render as compact horizontal image-left/text-right stories — a curated
- * discovery index, not a repeat of the full lead treatment or a set of
- * alternating mini spreads.
+ * The homepage's Latest section: the lead feature at full scale, plus a
+ * compact magazine index of further RabbitHoles when `items` is non-empty
+ * (it defaults to empty, so the page ends after the lead).
  *
- * .home-latest-lead-zone and .home-latest-rail-zone are plain wrappers at
- * every width below wide desktop (the lead feature and the index simply
- * stack, same as before this pair of divs existed) -- they only become
- * two side-by-side editorial zones via .home-latest-shell.has-rail's own
- * grid at >=1500px (see home.css). The `has-rail` modifier is only
- * present when there's actually a rail to lay out beside the lead --
- * without it the shell never engages the two-zone grid, so the empty-
- * items state (no rail at all) renders exactly as before.
+ * Below 1500px the lead and the index stack. At wide desktop,
+ * `.home-latest-shell.has-rail` lays them out as two side-by-side zones (see
+ * home.css). `has-rail` is set only when there is a rail to show, so the
+ * empty state renders as before.
  */
 export function HomeLatest({ items = [] }: { items?: IndexItem[] }) {
   const hasMore = items.length > 0;

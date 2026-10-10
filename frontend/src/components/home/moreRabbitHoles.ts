@@ -1,35 +1,17 @@
 import type { IndexItem } from "./HomeIndexRow";
 
 /**
- * Homepage-only prototype content for the index grid beneath the Wow!
- * Signal lead feature — like WOW_SIGNAL in HomeFeatured.tsx, none of these
- * exist as a published RabbitHole today (the API's only real record is
- * "How the QWERTY Keyboard Took Over"). `slug` already points at each
- * record's intended address, so "Read RabbitHole" starts working the
- * moment something is published there; nothing here has to change.
+ * Prototype content for the homepage index grid under the Wow! Signal lead,
+ * like WOW_SIGNAL in HomeFeatured.tsx. None of these are published
+ * RabbitHoles yet. Each `slug` is its intended address, so "Read RabbitHole"
+ * works as soon as one is published.
  *
- * All four images are real archival/documentary assets (prepared and
- * provided directly for this homepage tier, not generated) rather than
- * placeholders:
- *  - Voynich: a crop of an illustrated page from the Voynich Manuscript
- *    (Beinecke Rare Book & Manuscript Library, Yale) showing its unknown
- *    script beside a botanical drawing of a plant with no known real-world
- *    match.
- *  - Dancing Plague: a period engraving depicting the 1518 Strasbourg
- *    dancing mania in a village square.
- *  - Lake Nyos: a USGS aerial photograph of the lake itself, showing the
- *    exposed shoreline rock left by the 1986 gas release.
- *  - Tunguska: an original black-and-white photograph of the Siberian
- *    forest flattened by the 1908 event.
+ * The images are real archival assets: the Voynich Manuscript (Beinecke
+ * Library, Yale), a period engraving of the 1518 dancing plague, a USGS aerial
+ * photo of Lake Nyos, and a photo of the forest flattened at Tunguska.
  *
- * The homepage is curated, not a feed: this tier is a fixed two-column
- * magazine index (see the .home-latest-index CSS), not a growing list.
- * Order here is DOM/reading order, which the grid auto-places left-to-
- * right, top-to-bottom -- Voynich and Dancing Plague form row 1, Lake
- * Nyos and Tunguska row 2, so the left column reads Voynich-then-Lake-
- * Nyos and the right column reads Dancing-Plague-then-Tunguska. Every
- * story uses the same horizontal image-left/text-right composition (see
- * HomeIndexRow) -- no alternation to configure per item.
+ * Order is reading order in the two-column grid: Voynich and Dancing Plague
+ * on row 1, Lake Nyos and Tunguska on row 2.
  */
 export const MORE_RABBITHOLES: IndexItem[] = [
   {

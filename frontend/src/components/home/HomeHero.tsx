@@ -4,17 +4,13 @@ import type { Video } from "../../api";
 import { useTranscriptPrefill } from "../../hooks/useTranscriptPrefill";
 
 /**
- * Homepage hero. The approved 1980s-basement photograph is a full-bleed
- * cinematic backdrop (a CSS `background-image`, primed by a
- * `<link rel="preload" fetchpriority="high">` in index.html so it still loads
- * as the LCP element). Copy sits in the dark negative space on the left; the
- * rabbit + CRT stay dominant on the right. A restrained left-to-transparent
- * scrim is the only readability treatment and it fades out before the rabbit.
+ * Homepage hero: a full-bleed basement photograph as a CSS background
+ * (preloaded in index.html so it is still the LCP element), with copy in the
+ * dark space on the left and the rabbit and CRT on the right. A
+ * left-to-transparent scrim is the only readability treatment.
  *
- * The call to action is a real search: one composed control — a charcoal
- * field with a text-only DIVE IN submit inside its right end — that posts
- * into the existing `/search?q=` route (same navigation the old nav Search
- * used). Enter or DIVE IN submits; an empty query never does.
+ * The call to action is a real search: one control with a DIVE IN submit
+ * inside it, posting to `/search?q=`. An empty query never submits.
  */
 export function HomeHero({ videos = [] }: { videos?: Video[] }) {
   const navigate = useNavigate();
