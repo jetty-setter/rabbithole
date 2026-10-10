@@ -108,19 +108,15 @@ output "topics_table" {
   value = aws_dynamodb_table.topics.name
 }
 
-# First-class relationships between two Topics (relationship_type + a short
-# "why this connects" explanation) -- what Map reads instead of only ever
-# deriving an edge from tag co-occurrence. Keyed by the natural pair
-# (from_topic, to_topic), so a re-run of the seed script overwrites the same
-# row rather than duplicating it. At the scale of a handful of curated
-# networks (dozens to low hundreds of rows), the read endpoint scans the
-# whole table and filters for either side of the pair in the API layer
-# (matching the existing videos/embeddings scan-at-this-scale pattern) --
-# a GSI on to_topic would be the move if this table ever needs to serve a
-# much larger connection graph.
+# Curated relationships between two Topics (relationship_type plus a short
+# "why this connects" note), which Map reads instead of deriving every edge
+# from tag co-occurrence. Keyed by (from_topic, to_topic), so re-running the
+# seed script overwrites rows instead of duplicating them. The read endpoint
+# scans and filters in the API at this scale, like videos and embeddings; add
+# a GSI on to_topic if the graph ever grows large.
 #
-# Named "topic_connections" (not "connections") because that name is
-# already taken by the WebSocket connection-id table below (websocket.tf).
+# Named "topic_connections" because "connections" is the WebSocket table
+# (websocket.tf).
 resource "aws_dynamodb_table" "topic_connections" {
   name         = "${local.name}-topic-connections"
   billing_mode = "PAY_PER_REQUEST"

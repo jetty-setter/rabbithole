@@ -1,17 +1,14 @@
 import { monthYear, type RabbitHole } from "../../api";
 import { RabbitHoleMedia, type MediaHotspot } from "./RabbitHoleMedia";
 
-/** Title area + trust metadata + Hook + (optional real imagery) -- the
- *  feature opening. Designed to be (most of) the first viewport: you enter
- *  this RabbitHole before you're invited anywhere else. The short version
- *  and any page-specific evidence modules render after this, back in the
- *  article's normal flow (see RabbitHolePage) -- this component only owns
- *  the one deliberately asymmetric composition. When a real image is
- *  present, wide desktop breaks the opening into a two-column composition
- *  (text left, image right) via CSS grid areas -- the DOM order (hook, then
- *  media) is unchanged, only the visual placement shifts. Without media it
- *  simply stacks as a single editorial column, still at the article's full
- *  title scale. */
+/** The feature opening: title, trust metadata, Hook and optional imagery,
+ *  designed to fill most of the first viewport. The short version and any
+ *  evidence modules render after it in the article's normal flow (see
+ *  RabbitHolePage).
+ *
+ *  With real imagery, wide desktop uses a two-column grid (text left, image
+ *  right). DOM order stays hook then media and only placement changes.
+ *  Without media it stacks as one editorial column at full title scale. */
 export function RabbitHoleHeader({
   rh,
   mediaHotspots,

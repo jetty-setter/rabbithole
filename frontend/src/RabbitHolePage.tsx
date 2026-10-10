@@ -29,16 +29,12 @@ type LoadState =
   | { status: "error" };
 
 /** The public RabbitHole reader page (`/rabbitholes/:slug`). Content comes
- *  entirely from the live API — nothing here is specific to any one
- *  RabbitHole. Optional sections that the API omits simply don't render.
+ *  entirely from the API, and optional sections the API omits don't render.
  *
- *  A RabbitHole may additionally have an Evidence Experience (see
- *  ./experiences) -- a validated, data-driven interactive layer that sits
- *  above the normal article and lets the reader inspect the real
- *  artifact, replay what it recorded, and compare hypotheses against one
- *  shared body of evidence, before dropping into the full narrative
- *  below. A RabbitHole with no experience file, or one that fails
- *  validation, renders exactly like this page always has. */
+ *  A RabbitHole may also have an Evidence Experience (see ./experiences): a
+ *  validated, data-driven layer above the article for inspecting the artifact,
+ *  replaying it and comparing hypotheses against shared evidence. Without an
+ *  experience file, or if it fails validation, the page renders as usual. */
 export function RabbitHolePage() {
   const { slug } = useParams<{ slug: string }>();
   const [state, setState] = useState<LoadState>({ status: "loading" });

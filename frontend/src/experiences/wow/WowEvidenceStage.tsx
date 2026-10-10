@@ -33,17 +33,16 @@ function formatT(seconds: number): string {
   return `${seconds.toFixed(1)}s`;
 }
 
-/** EVIDENCE THEATRE: the bounded, playable animated stage where the Wow!
- *  Signal observation is reconstructed -- artifact extraction, signal
- *  reconstruction, the second pass -- as one authored GSAP timeline the
- *  user drives directly (Play/Pause/Restart/scrub/chapter jump), not by
- *  scrolling the page. The timeline itself carries no visuals: it is a
- *  pure clock (`gsap.timeline` advancing a single empty tween), and every
- *  visual is a pure function of the current time `t`, so scrubbing,
- *  reversing, or resuming from any point is always safe -- there is no
- *  animation *state* to get out of sync, only a time to render from.
- *  Falls back to `WowReducedStage` (discrete, control-equivalent states)
- *  under reduced motion or when the browser can't support it. */
+/** EVIDENCE THEATRE: the playable stage that reconstructs the Wow! Signal
+ *  observation (artifact extraction, signal reconstruction, the second pass)
+ *  as one GSAP timeline the user drives with Play, Pause, Restart, scrub and
+ *  chapter jumps, not by scrolling.
+ *
+ *  The timeline is a pure clock (one empty tween). Every visual is a pure
+ *  function of the current time `t`, so scrubbing, reversing or resuming from
+ *  any point is safe: there is no animation state to get out of sync. Falls
+ *  back to `WowReducedStage` under reduced motion or when the browser can't
+ *  support it. */
 export function WowEvidenceStage({
   rh,
   hotspots,

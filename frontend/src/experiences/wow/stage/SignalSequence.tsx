@@ -10,16 +10,14 @@ export interface SignalStep {
   valueLabel?: string;
 }
 
-/** Sequence 2 -- THE SIGNAL RECONSTRUCTION. One designed signal form (a
- *  luminous, restrained contour -- a filled band under a bright edge, not
- *  an equalizer, not a stock waveform), continuously interpolated from
- *  the six real samples via Catmull-Rom (interpolate.ts, shared with the
- *  reduced-motion sample picker). The real 72 seconds are compressed into
- *  this sequence's own screen duration; `progress` (0..1) maps linearly
- *  onto that original 72s domain so the curve math and the glyph
- *  positions stay in the samples' real, authored proportions. A vertical
- *  beam sweeps through the field as the source is "observed"; each glyph
- *  lights up as the beam passes it. */
+/** Sequence 2, the signal reconstruction. One restrained luminous contour (a
+ *  filled band under a bright edge, not an equalizer or stock waveform),
+ *  interpolated from the six real samples with Catmull-Rom (interpolate.ts,
+ *  shared with the reduced-motion sample picker). The real 72 seconds are
+ *  compressed into the sequence's screen time. `progress` (0..1) maps
+ *  linearly onto the original 72s so curve and glyph positions keep the
+ *  samples' real proportions. A vertical beam sweeps the field, lighting each
+ *  glyph as it passes. */
 export function SignalSequence({ progress, steps, totalSeconds }: { progress: number; steps: SignalStep[]; totalSeconds: number }) {
   const p = Math.max(0, Math.min(1, progress));
   const points: TimedPoint[] = steps.map((s) => ({ t: s.elapsedSeconds, value: s.value }));
