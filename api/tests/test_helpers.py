@@ -1,4 +1,4 @@
-"""Unit tests for pure helpers in app.main (no AWS needed)."""
+"""Unit tests for pure helpers in app.helpers (no AWS needed)."""
 
 import pytest
 
