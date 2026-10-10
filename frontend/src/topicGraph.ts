@@ -150,19 +150,16 @@ export function connectionsFor(
 
 /**
  * Merge a centre topic's organic connections (tag co-occurrence) with its
- * curated connections (editorial topic-connection records) into one spoke
- * list.
+ * curated ones (editorial records) into one spoke list.
  *
- *  - An organic edge and a curated edge to the same topic collapse to a
- *    single spoke that carries the curated metadata (curated copy wins).
- *  - A curated-only topic becomes a real, navigable spoke with `shared: 0`.
- *  - Curated edges sort ahead of organic ones so a deliberate editorial
- *    link is never dropped by `limit`; within each group the existing
- *    organic ranking (shared count, then neighbour prominence, then name)
- *    is preserved.
+ *  - An organic and a curated edge to the same topic collapse into one spoke
+ *    carrying the curated metadata.
+ *  - A curated-only topic becomes a navigable spoke with `shared: 0`.
+ *  - Curated edges sort first so `limit` never drops an editorial link. Each
+ *    group keeps the organic ranking (shared count, prominence, name).
  *
  * Pass `organic` uncapped (e.g. `connectionsFor(tag, edges, scoreByTag,
- * Infinity)`) — this function applies the cap after merging.
+ * Infinity)`). The cap is applied after merging.
  */
 export function mergeConnections(
   organic: Connection[],
@@ -209,16 +206,15 @@ function link(map: Map<string, Set<string>>, a: string, b: string): void {
   sb.add(a);
 }
 
-/** The opening view's starting topics: strong navigation hubs that lead in
- *  genuinely different directions — "different doors into RabbitHole".
+/** The opening view's starting topics: strong hubs that lead in different
+ *  directions ("different doors into RabbitHole").
  *
- *  Walk the prominence ranking; take a candidate unless it's the same door as
- *  one already chosen. Three passes, each looser than the last, so a small
- *  catalogue still fills the list:
- *    1. full diversity — not strongly linked (2+ shared videos), not sharing
- *       most of its strong connections, and not just a small satellite of an
- *       already-chosen hub;
- *    2. only the hard rule — never two strongly-linked topics together;
+ *  Walks the prominence ranking and takes a candidate unless it duplicates a
+ *  door already chosen, in three passes, each looser, so a small catalogue
+ *  still fills:
+ *    1. full diversity: not strongly linked (2+ shared videos), not sharing
+ *       most strong connections, not a satellite of a chosen hub;
+ *    2. only the hard rule: never two strongly linked topics;
  *    3. plain ranking.
  *  Deterministic. */
 export function startingTopics(

@@ -1,32 +1,20 @@
-/** RabbitHole Evidence Experience — V1 schema.
+/** RabbitHole Evidence Experience: V1 schema.
  *
- * An "experience" is optional, subject-specific interactive content that
- * lets a reader inspect, replay and compare the evidence behind a
- * RabbitHole, instead of only reading about it. It is a SEPARATE layer
- * from the article: the article (title/hook/what-we-know/contested-open/
- * timeline/sources/keep-digging, served by the RabbitHole API) remains
- * the authoritative narrative content. An experience file only adds a
- * structured, interactive read of facts and sources the article already
- * has -- it never invents new claims, sources, or citations.
+ * An "experience" is optional interactive content for inspecting the evidence
+ * behind a RabbitHole. It is a separate layer from the article, which stays
+ * the authoritative narrative. An experience only adds a structured view of
+ * facts and sources the article already has and never invents claims or
+ * citations.
  *
- * Design rules that shape every type below:
- *  - Evidence is atomic and has a stable id. The same fact ("never
- *    repeated") is authored once as an EvidenceItem and then referenced
- *    by id everywhere it's relevant (a sequence step, several
- *    hypotheses) -- never restated as separate prose per hypothesis.
- *  - Hypotheses reference evidence with a verdict; they do not carry
- *    their own supports/problems paragraphs. This is what lets a reader
- *    hold the evidence list still and switch only the hypothesis: "the
- *    evidence stays put, the hypothesis changes."
- *  - Source references are the RabbitHole's own stable source ids (the
- *    `source_id` a citation carries, e.g. "s10") -- never a raw display
- *    number (those can be renumbered) and never a parallel bibliography.
- *    Resolution to a display number happens at render time against the
- *    live article (see registry.ts / resolveSourceRefs).
- *  - The schema describes semantics (what exists, what can be
- *    interacted with, how pieces relate), not layout. A renderer decides
- *    how a `sequence` or a `hypothesis` actually looks on screen; the
- *    data never carries CSS, coordinates-as-pixels, or component names.
+ * Design rules:
+ *  - Evidence is atomic with a stable id, authored once and referenced by id
+ *    (from sequence steps and from several hypotheses), never restated.
+ *  - Hypotheses reference evidence with a verdict instead of carrying their
+ *    own prose, so the evidence stays put while the hypothesis changes.
+ *  - Sources use the article's stable `source_id` (e.g. "s10"), never a
+ *    display number. Resolution happens at render time (see registry.ts).
+ *  - The schema describes semantics, not layout: no CSS, pixel coordinates or
+ *    component names.
  */
 
 /** How one piece of evidence bears on one hypothesis. Deliberately not

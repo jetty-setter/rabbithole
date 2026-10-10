@@ -8,21 +8,15 @@ export interface MediaHotspot {
   explain: string;
 }
 
-/** A real archival/source image attached to a RabbitHole — generic across
- *  articles (a manuscript crop, an engraving, a photograph), not built for
- *  any one story. Renders only `kind === "image"` items with a resolved
- *  `url`; anything else (a future video/document kind, or a media item the
- *  API couldn't resolve a url for yet) is silently skipped rather than
- *  showing a broken slot. Sits in the same reading column as the rest of
- *  the article — no card, no full-bleed break-out — so it reads as part of
- *  the story rather than a decorative header image.
+/** An archival/source image attached to a RabbitHole, generic across articles.
+ *  Renders only `kind === "image"` items that have a resolved `url`. Anything
+ *  else is skipped instead of showing a broken slot. It sits in the article's
+ *  reading column, not as a card or a full-bleed header.
  *
- *  `hotspots`, when supplied, draws real clickable regions over the image
- *  (measured against its actual pixels, in percentages so they hold up at
- *  any rendered size) -- a generic capability, not tied to any experience
- *  concept: this component only knows a region has a label, an
- *  explanation, and an id to report back through `onActivateHotspot`. The
- *  image itself is never modified. */
+ *  `hotspots` draws clickable regions over the image, as percentages so they
+ *  hold at any size. The component only knows a region's label, explanation
+ *  and id, which it reports through `onActivateHotspot`. The image itself is
+ *  never modified. */
 export function RabbitHoleMedia({
   items,
   hotspots,
