@@ -37,16 +37,8 @@ from pathlib import Path
 import boto3
 from botocore.exceptions import ClientError
 
-# In the repo, shared/ lives two directory levels up from this file
-# (rabbithole/shared). But the DEPLOYED Lambda zip is flat -- terraform
-# bundles shared/ as a sibling of handler.py at the zip root (see
-# infra/transcribe.tf), not nested inside lambdas/transcribe/ two levels
-# down -- so the two-levels-up path that works in local dev/tests resolves
-# to "/" inside the Lambda runtime and silently can't find shared at all.
-# This was never caught because no Transcribe job had ever successfully
-# started (see worker.py's DataAccessRoleArn fix) to actually invoke this
-# Lambda in production. Try the deployed (sibling) layout first, then fall
-# back to the repo layout, so both actually work.
+# shared/ is a sibling of handler.py in the deployed zip but two levels up in
+# the repo. Try the deployed layout first, then fall back to the repo layout.
 _here = Path(__file__).resolve().parent
 for _candidate in (_here, _here.parent.parent):
     if (_candidate / "shared").is_dir():

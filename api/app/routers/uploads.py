@@ -65,12 +65,10 @@ def create_upload(req: UploadRequest, user: str = Depends(require_auth)) -> Uplo
 
 
 # ── External-content transcript ingestion ────────────────────────────────
-# An imported/provider transcript is written to the SAME S3 keys and sets
-# the SAME record fields a hosted AWS-Transcribe job would (see
-# lambdas/transcribe/handler.py), so search indexing, chunking, embeddings,
-# "Ask this video", and the Watch transcript UI all reuse the hosted path
-# with zero branching. The only thing that differs is transcript_source
-# (provenance) and transcript_timed (whether cue start times are real).
+# Imported transcripts are written to the same S3 keys and record fields as a
+# hosted Transcribe job (see lambdas/transcribe/handler.py), so search, "Ask
+# this video" and the watch-page transcript need no special cases. Only
+# transcript_source (provenance) and transcript_timed (real cue times) differ.
 
 _SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+")
 

@@ -17,10 +17,9 @@ router = APIRouter()
 
 
 # ── Thumbnail override (admin) ───────────────────────────────────────
-# The worker pre-generates ~8-10 candidate frames per video (at
-# {video_id}/thumbs/cand_NN.jpg) and records their timestamps/scores. The
-# admin picker just displays those; selecting one server-side copies that
-# object over {video_id}/thumb.jpg -- no ffmpeg in the API, no new keys.
+# The worker pre-generates candidate frames at {video_id}/thumbs/cand_NN.jpg.
+# Picking one copies that object over {video_id}/thumb.jpg, so the API needs no
+# ffmpeg.
 
 def _thumb_candidates(item: dict) -> dict[int, dict]:
     return {int(c["i"]): c for c in (item.get("thumbnail_candidates") or [])}

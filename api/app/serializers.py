@@ -73,10 +73,8 @@ def _capabilities(item: dict, transcript_status: str | None, source_type: str) -
     has_link = is_external and bool(item.get("source_url"))
     playable = hls or has_embed
     watchable = playable or has_link
-    # Search only ever indexes transcribed content (api/app/search.py). A
-    # ready transcript is a ready transcript whether AWS Transcribe, a
-    # provider API, or an admin import produced it -- these flags track the
-    # transcript, not how the video is hosted.
+    # These flags describe the transcript, not how the video is hosted: a ready
+    # transcript is ready whether Transcribe, a provider or an admin import made it.
     transcript_ready = transcript_status == "ready"
     # Real cue timing? Hosted AWS-Transcribe output always has it (legacy
     # records have no flag -> True). An imported text-only transcript does not.
