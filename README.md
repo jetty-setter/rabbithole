@@ -7,20 +7,18 @@
 ![python](https://img.shields.io/badge/python-3.12-blue)
 ![terraform](https://img.shields.io/badge/IaC-Terraform-7B42BC)
 
-**Engineering case study of an event-driven, AI-augmented video platform on AWS.**
-This RabbitHole iteration accepted video uploads, processed them asynchronously into
-adaptive-bitrate HLS, enriched them with AI-generated metadata and transcripts, and
-served the result through a CDN with live processing status.
+**A curiosity-led video site for strange science, unexplained events, and the corners of
+history people argue about, built on an event-driven, AI-augmented video platform on AWS.**
 
-Built to demonstrate **cloud architecture** (event-driven design, serverless + container
-hybrid, Infrastructure as Code, deterministic scale-to-zero, real-time status, and
-cost-aware operations), **AI integration**, and full-stack engineering end to end.
+Editors collect videos, add a short reason to watch, and connect them with tags so a viewer
+can follow one question into the next. Videos come in two ways: embedded from their original
+creators with attribution, or hosted here when the license allows. Hosted videos run through
+an asynchronous pipeline that transcodes them to adaptive-bitrate HLS, captions them with AWS
+Transcribe, and makes every transcript searchable.
 
-> **Portfolio status:** The AWS video-processing architecture documented below was
-> implemented and deployed as an earlier RabbitHole iteration. RabbitHole has since
-> moved in a different product direction, so the current live experience may not mirror
-> this stack. The infrastructure, workers, delivery pipelines, tests, and architecture
-> documentation remain here as inspectable evidence of the engineering work.
+It is also a cloud-architecture project: event-driven design, a serverless plus container
+hybrid, Infrastructure as Code, deterministic scale-to-zero, live status over WebSockets,
+and cost-aware operations, with AI features that are optional and degrade gracefully.
 
 ## Engineering evidence
 
@@ -44,20 +42,38 @@ cost-aware operations), **AI integration**, and full-stack engineering end to en
 
 ## What it does
 
-- **Adaptive streaming** — every upload is transcoded into a 480/720/1080p HLS ladder with
-  a master playlist; `hls.js` switches rendition to match bandwidth.
-- **AI auto-metadata** — leave the title blank and Claude *vision* samples frames across the
-  clip and writes a punchy, accuracy-guarded title, description, and tags.
-- **Speech-to-text + in-video search** — AWS Transcribe turns audio into caption cues; the
-  watch page gets a searchable transcript (click a line to jump) and real WebVTT captions.
-- **Cross-video semantic search** — a local embedding model (bge-small / ONNX, baked into the
-  API) indexes every transcript; search a phrase and it ranks the **best moment in each video
-  across the whole library** by meaning, then deep-links the player to that timestamp.
-- **Real-time status** — `Queued → Transcoding → Ready` updates live via WebSocket, no polling.
-- **Engagement** — hop/thump reactions (anonymous voting), comments, favorites ("Stash").
-- **Visibility** — publish **public** or **unlisted** (hidden from feeds, link still works),
-  toggleable later by the owner.
-- **Cost-aware** — ~$0 when idle; each transcode's Fargate cost is measured and surfaced.
+**Discovery**
+- **Homepage, Tunnels, Map, Trail:** the homepage leads with real videos. Tunnels browse by
+  topic tag. The Map is a graph of connected cases you can step through. Trail is your local
+  watch history, and Tumble jumps to something random.
+- **Related rail:** curated threads (with a one-line reason for each connection) come first,
+  followed by tag-based matches.
+- **RabbitHole articles:** long-form write-ups with sources. A background evidence pipeline
+  snapshots each cited source so readers can search the evidence.
+
+**Getting videos in**
+- **Embedded finds:** an editor adds a YouTube link with a title, a reason to watch, and tags.
+  The original creator keeps hosting it; RabbitHole embeds the official player and credits them.
+- **Hosted uploads:** public-domain and openly licensed videos go through the upload pipeline
+  (see `scripts/upload-hosted-finds.py`). Audio-only sources are wrapped in a title card first.
+
+**Search and transcripts**
+- **Speech-to-text:** AWS Transcribe turns hosted audio into caption cues, giving the watch
+  page a searchable, click-to-seek transcript and real WebVTT captions. Embedded videos get
+  transcripts from imported caption exports (`scripts/import-caption-exports.py`).
+- **Cross-video semantic search:** a local embedding model (bge-small / ONNX, baked into the
+  API) indexes every transcript. Searching a phrase ranks the best moment in each video across
+  the library by meaning and deep-links the player to that timestamp.
+
+**Platform**
+- **Adaptive streaming:** every hosted upload is transcoded into a 480/720/1080p HLS ladder
+  with a master playlist; `hls.js` switches rendition to match bandwidth.
+- **Optional AI metadata:** Claude vision samples frames and suggests a title, description and
+  tags, but only when the uploader asks for it.
+- **Real-time status:** `Queued, Transcoding, Ready` updates live via WebSocket, no polling.
+- **Engagement and visibility:** hop/thump reactions, comments, favorites, and public or
+  unlisted publishing.
+- **Cost-aware:** about $0 when idle, and each transcode's Fargate cost is measured and shown.
 
 ## Architecture
 
@@ -140,14 +156,24 @@ solve — which makes it a real demonstration of architectural judgment, not jus
 ## Repo layout
 
 ```
-frontend/   React app — hls.js player, transcript search, live status, cost chip
-api/        FastAPI service (presigned uploads, videos, reactions, AI suggest) — Lambda
-worker/     ffmpeg transcode + frame sampling + Transcribe kickoff — Fargate
-lambdas/    websocket connect/disconnect · DynamoDB-stream broadcaster
-            scaleup/scaledown (deterministic autoscaling) · transcribe (caption post-proc)
-infra/      Terraform — every AWS resource
-scripts/    build + push the worker image to ECR
-docs/        architecture decisions + diagrams
+frontend/   React app: homepage, tunnels, map, trail, watch page, hls.js player,
+            transcript search, RabbitHole article reader, admin
+api/        FastAPI service, deployed as a Lambda container image
+  app/main.py        app wiring only: CORS, router registration, Lambda handler
+  app/routers/       one module per feature: system (auth), videos, uploads and
+                     external ingest, engagement, comments, topics, discovery (search),
+                     curation (thumbnails, featured), ai
+  app/helpers.py     pure helpers (tags, visibility, filenames)
+  app/serializers.py DynamoDB items to response models
+  app/rabbithole_*   RabbitHole article model, routes, storage, validation
+worker/     ffmpeg transcode, smart thumbnails, Transcribe kickoff (Fargate)
+lambdas/    websocket connect/disconnect, DynamoDB-stream broadcaster,
+            scaleup/scaledown (deterministic autoscaling), transcribe (caption
+            post-processing), evidence (source snapshots for articles)
+infra/      Terraform for every AWS resource
+scripts/    seed and curation tools (dry run by default): seed-curiosity,
+            upload-hosted-finds, import-caption-exports, backfills, push-worker.sh
+docs/       architecture decisions, content model, evidence pipeline, video curation
 ```
 
 ## Run it locally
@@ -212,7 +238,7 @@ SecureString (`/rabbithole-dev/anthropic-api-key`) to enable auto-metadata; the 
 pipeline activates automatically once its IAM role is provisioned. Without either, uploads
 still transcode and stream normally.
 
-## Implemented milestones — video-platform iteration
+## Implemented milestones — video-platform iteration (earlier work)
 
 - [x] **P0–P3** — scaffold, presigned upload, EventBridge→SQS→Fargate transcode, HLS + CloudFront + `hls.js`
 - [x] **P4** — deterministic worker autoscaling with scale-to-zero
@@ -227,6 +253,15 @@ still transcode and stream normally.
 - [x] **P13** — observability: CloudWatch dashboard (pipeline, worker, API, **$/day**) + X-Ray tracing on the serverless path
 - [x] **P14** — cross-video semantic search: local embedding model + brute-force vector search + jump-to-moment deep links
 - [ ] **Deferred in this iteration** — real multi-user auth; worker-level (Fargate) X-Ray sidecar
+
+## Implemented milestones — curiosity-platform iteration
+
+- [x] **Curated discovery** — homepage built on real videos, topic Tunnels, the case Map, local Trail, and curated threads in the related rail
+- [x] **Embedded finds** — official YouTube players with creator attribution, added by editors with a reason to watch and connecting tags
+- [x] **RabbitHole articles** — long-form model with sources, plus an asynchronous evidence pipeline (stream, SQS, worker, S3 snapshots) and "Search the evidence"
+- [x] **Transcript passage search** — timestamped passages deep-link into the player
+- [x] **Hosted public-domain finds** — manifest-driven script that runs licensed videos through the full transcode and Transcribe pipeline
+- [x] **API split by feature** — `main.py` reduced to wiring; routes live in `app/routers/` with an identical route table and OpenAPI document
 
 ## What I'd change at scale
 
