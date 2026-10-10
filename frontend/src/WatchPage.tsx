@@ -21,6 +21,7 @@ import { Comments } from "./Comments";
 import { Avatar } from "./Avatar";
 import { EditForm } from "./components/EditForm";
 import { VideoQuestion } from "./components/VideoQuestion";
+import { HighlightedText } from "./components/HighlightedText";
 import { useVideoData } from "./hooks/useVideoData";
 import { useDocumentMeta } from "./hooks/useDocumentMeta";
 import { useTranscript } from "./hooks/useTranscript";
@@ -510,7 +511,7 @@ export function WatchPage() {
                       onClick={() => seekTo(c.start)}
                     >
                       <span className="cue-time">{fmtTime(c.start)}</span>
-                      <span className="cue-text">{c.text}</span>
+                      <span className="cue-text"><HighlightedText text={c.text} query={cueQuery} phrase /></span>
                     </button>
                   ))
                 )}
@@ -627,7 +628,7 @@ export function WatchPage() {
                         onClick={() => seekFromRail(c.start)}
                       >
                         <span className="cue-time">{fmtTime(c.start)}</span>
-                        <span className="cue-text">{c.text}</span>
+                        <span className="cue-text"><HighlightedText text={c.text} query={cueQuery} phrase /></span>
                       </button>
                     ))
                   )}

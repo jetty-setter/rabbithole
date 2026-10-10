@@ -23,3 +23,8 @@ it("supports another query and an honest empty result", () => {
   expect(screen.getByRole("heading", { name: "Results for “clockwork”" })).toBeTruthy();
   expect(screen.getByText(/No matches yet/)).toBeTruthy();
 });
+
+it("highlights matching words in video titles", () => {
+  render(<MemoryRouter initialEntries={["/search?q=phantom"]}><SearchPage /></MemoryRouter>);
+  expect(screen.getByRole("heading", { name: "Phantom jelly" }).querySelector("mark")?.textContent).toBe("Phantom");
+});

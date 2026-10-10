@@ -2,6 +2,7 @@
 faked AWS backend with a stand-in embedder (so no model download is needed)."""
 
 import json
+import math
 
 import boto3
 
@@ -142,6 +143,45 @@ def test_search_endpoint_filters_unlisted(client, videos_table, monkeypatch):
     ids = {r["video"]["video_id"] for r in body["results"]}
     assert "pubv" in ids
     assert "unlv" not in ids
+    assert all(r["match_type"] == "exact" for r in body["results"])
+
+
+def _ranked_chunk(video_id, text, score, start=0):
+    return {"video_id": video_id, "text": text, "start": start,
+            "vector": pack_vector([score, math.sqrt(1 - score ** 2)])}
+
+
+def test_literal_passage_wins_before_video_deduplication(monkeypatch):
+    monkeypatch.setattr(search_mod, "_ensure_indexed", lambda: None)
+    monkeypatch.setattr(search_mod, "_embed", lambda texts: [[1.0, 0.0]])
+    monkeypatch.setattr(search_mod, "_all_chunks", lambda: [
+        _ranked_chunk("cicada", "Hidden messages in pictures", .95),
+        _ranked_chunk("cicada", "They used STEGANOGRAPHY.", .20, 145),
+        _ranked_chunk("kryptos", "An encrypted message", .72),
+        _ranked_chunk("ufo", "A fuzzy dot in the sky", .60),
+    ])
+    hits = search_mod.search("steganography")
+    assert [(h["video_id"], h["match_type"]) for h in hits] == [("cicada", "exact"), ("kryptos", "related")]
+    assert hits[0]["start"] == 145
+
+
+def test_related_results_are_limited_and_can_be_empty(monkeypatch):
+    monkeypatch.setattr(search_mod, "_ensure_indexed", lambda: None)
+    monkeypatch.setattr(search_mod, "_embed", lambda texts: [[1.0, 0.0]])
+    monkeypatch.setattr(search_mod, "_all_chunks", lambda: [
+        _ranked_chunk(str(i), "A different phrase", .9 - i * .02) for i in range(5)
+    ])
+    assert len(search_mod.search("hidden messages")) == 3
+    monkeypatch.setattr(search_mod, "_all_chunks", lambda: [_ranked_chunk("weak", "Unrelated words", .60)])
+    assert search_mod.search("hidden messages") == []
+
+
+def test_literal_matching_requires_all_words_and_respects_punctuation():
+    assert search_mod.matches_search_words("The eyes glowed RED.", "red eyes")
+    assert search_mod.matches_search_words("C++ and [signal]", "C++ [signal]")
+    assert not search_mod.matches_search_words("A hundred eyes", "red eyes")
+    assert not search_mod.matches_search_words("red lights", "red eyes")
+    assert not search_mod.matches_search_words("Anything", " ")
 
 
 def test_search_within_video_scoped_to_one_video(aws_stack, monkeypatch):

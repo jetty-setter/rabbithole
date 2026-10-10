@@ -412,6 +412,7 @@ export interface SearchMoment {
   start: number;
   snippet: string;
   score: number;
+  match_type?: "exact" | "related";
 }
 
 /** Cross-video semantic search — best moment per matching video. */

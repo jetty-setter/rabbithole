@@ -2,6 +2,9 @@
   box-sizing: border-box;
 }
 
+a { text-decoration: none; }
+a:focus-visible { outline: 2px solid var(--violet); outline-offset: 4px; }
+
 html,
 body {
   margin: 0;

@@ -629,7 +629,7 @@
   text-decoration: none;
 }
 .watch-channel:hover {
-  text-decoration: underline;
+  color: var(--violet-light);
 }
 
 .watch-stats {

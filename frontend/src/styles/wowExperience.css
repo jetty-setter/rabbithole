@@ -59,7 +59,7 @@
 }
 .wow-inline-link:hover {
   color: var(--violet-light);
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 .wow-sr-only {

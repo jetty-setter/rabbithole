@@ -749,7 +749,7 @@
 
 .home-index-action:hover {
   color: var(--violet-light);
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 .home-index-action:focus-visible {
