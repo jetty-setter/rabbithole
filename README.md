@@ -17,7 +17,7 @@ an asynchronous pipeline that transcodes them to adaptive-bitrate HLS, captions 
 Transcribe, and makes every transcript searchable.
 
 It is also a cloud-architecture project: event-driven design, a serverless plus container
-hybrid, Infrastructure as Code, deterministic scale-to-zero, live status over WebSockets,
+hybrid, Infrastructure as Code, queue-driven scale-to-zero, live status over WebSockets,
 and cost-aware operations, with AI features that are optional and degrade gracefully.
 
 ## Engineering evidence
@@ -29,8 +29,7 @@ and cost-aware operations, with AI features that are optional and degrade gracef
   worker, and [`worker/`](worker/) contains the ffmpeg processing implementation.
 - **Deterministic scale-to-zero:** [`infra/autoscaling.tf`](infra/autoscaling.tf),
   [`infra/scaleup.tf`](infra/scaleup.tf), and [`infra/scaledown.tf`](infra/scaledown.tf)
-  coordinate queue-aware wake-up and safe return to zero only after queued and in-flight
-  work is gone.
+  wake the worker on new jobs and scale it back to zero when the queue idle alarm fires.
 - **OIDC-based delivery:** [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)
   and [`.github/workflows/terraform.yml`](.github/workflows/terraform.yml) assume AWS
   roles through GitHub OIDC rather than storing long-lived AWS deployment credentials.
@@ -126,7 +125,7 @@ solve — which makes it a real demonstration of architectural judgment, not jus
 | **Lambda API + Fargate workers** | Right tool per job: serverless for the lightweight API, containers for long-running CPU-heavy ffmpeg. |
 | **Direct-to-S3 upload** (presigned) | The API never proxies file bytes — cheap, fast, Lambda-friendly. |
 | **EventBridge → SQS → workers** | Decoupled, resilient, fan-out-ready; DLQ + redelivery for failures (transcode is idempotent). |
-| **Deterministic scale-to-zero** | A scale-up Lambda *pins* the autoscaling floor while work is queued; a scale-down Lambda releases it only when an idle alarm confirms the queue is empty. A stale metric can never strand a job — and idle cost is still **$0**. |
+| **Queue-driven scale-to-zero** | A scale-up Lambda raises the worker floor when a job arrives. A CloudWatch alarm triggers scale-down after five minutes of idle queue metrics. The scale-down decision uses the alarm state. |
 | **No NAT Gateway** | Public subnets + egress-only SG → ~$0 idle (trade-off documented). |
 | **CloudFront + OAC** | Adaptive HLS over a CDN while the S3 bucket stays fully private. |
 | **DynamoDB Stream → WebSocket** | Real-time status without coupling the worker to the transport. |
@@ -168,7 +167,7 @@ api/        FastAPI service, deployed as a Lambda container image
   app/rabbithole_*   RabbitHole article model, routes, storage, validation
 worker/     ffmpeg transcode, smart thumbnails, Transcribe kickoff (Fargate)
 lambdas/    websocket connect/disconnect, DynamoDB-stream broadcaster,
-            scaleup/scaledown (deterministic autoscaling), transcribe (caption
+            scaleup/scaledown (queue-driven autoscaling), transcribe (caption
             post-processing), evidence (source snapshots for articles)
 infra/      Terraform for every AWS resource
 scripts/    seed and curation tools (dry run by default): seed-curiosity,
@@ -241,7 +240,7 @@ still transcode and stream normally.
 ## Implemented milestones — video-platform iteration (earlier work)
 
 - [x] **P0–P3** — scaffold, presigned upload, EventBridge→SQS→Fargate transcode, HLS + CloudFront + `hls.js`
-- [x] **P4** — deterministic worker autoscaling with scale-to-zero
+- [x] **P4** — queue-driven worker autoscaling with scale-to-zero
 - [x] **P5** — real-time status (DynamoDB Stream → WebSocket) + per-video cost surfacing
 - [x] **P6** — engagement: reactions, anonymous voting, comments, favorites
 - [x] **P7** — AI auto-metadata (Claude vision, multi-frame, accuracy-guarded)
