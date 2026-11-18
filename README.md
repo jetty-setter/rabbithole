@@ -107,16 +107,14 @@ Full decisions log, sequence diagrams, and data model: **[docs/architecture.md](
 
 ## Why it's built this way
 
-A streaming service is a textbook **asynchronous workload**: uploads are fast, transcoding
-is slow and bursty. That mismatch is what event-driven, autoscaling infrastructure exists to
-solve — which makes it a real demonstration of architectural judgment, not just CRUD.
+Uploads go straight to S3. The API can respond while a Fargate worker converts the video to HLS in the background.
 
 | Decision | Rationale |
 |---|---|
-| **Lambda API + Fargate workers** | Right tool per job: serverless for the lightweight API, containers for long-running CPU-heavy ffmpeg. |
+| **Lambda API + Fargate workers** | Lambda handles API requests. Fargate runs ffmpeg jobs. |
 | **Direct-to-S3 upload** (presigned) | The API never proxies file bytes — cheap, fast, Lambda-friendly. |
-| **EventBridge → SQS → workers** | Decoupled, resilient, fan-out-ready; DLQ + redelivery for failures (transcode is idempotent). |
-| **Queue-driven scale-to-zero** | A scale-up Lambda *pins* the autoscaling floor while work is queued; a scale-down Lambda releases it only when an idle alarm confirms the queue is empty. Scale-down acts on the alarm state. |
+| **EventBridge → SQS → workers** | SQS buffers jobs and redelivers failures. Repeated failures go to a dead-letter queue. |
+| **Queue-driven scale-to-zero** | New jobs raise the worker floor. Five minutes of idle queue metrics trigger the scale-down alarm. |
 | **No NAT Gateway** | Public subnets + egress-only SG → ~$0 idle (trade-off documented). |
 | **CloudFront + OAC** | Adaptive HLS over a CDN while the S3 bucket stays fully private. |
 | **DynamoDB Stream → WebSocket** | Real-time status without coupling the worker to the transport. |
