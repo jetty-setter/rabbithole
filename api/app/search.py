@@ -148,11 +148,12 @@ def _ensure_indexed() -> None:
 
 def reindex_all() -> int:
     """Force a rebuild of every transcript's embeddings (admin/backfill)."""
-    resp = aws.videos_table().scan(
+    items = _scan_all(
+        aws.videos_table(),
         FilterExpression=Attr("has_transcript").eq(True),
         ProjectionExpression="video_id",
     )
-    return sum(index_video(i["video_id"]) for i in resp.get("Items", []) if i.get("video_id"))
+    return sum(index_video(item["video_id"]) for item in items if item.get("video_id"))
 
 
 # ── Search ─────────────────────────────────────────────────────────────

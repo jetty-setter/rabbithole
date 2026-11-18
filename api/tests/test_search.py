@@ -223,3 +223,29 @@ def test_ask_video_no_key_configured(client, monkeypatch):
     # No ANTHROPIC_KEY_PARAM in the test environment -- should fail safely,
     # not attempt a real network call.
     assert resp.status_code == 503
+
+
+def test_reindex_all_indexes_videos_from_every_scan_page(monkeypatch):
+    class VideosTable:
+        def scan(self, **kwargs):
+            assert kwargs["ProjectionExpression"] == "video_id"
+            assert "FilterExpression" in kwargs
+            if "ExclusiveStartKey" not in kwargs:
+                return {
+                    "Items": [{"video_id": "v1"}],
+                    "LastEvaluatedKey": {"video_id": "v1"},
+                }
+            assert kwargs["ExclusiveStartKey"] == {"video_id": "v1"}
+            return {"Items": [{"video_id": "v2"}]}
+
+    indexed = []
+
+    def index_video(video_id):
+        indexed.append(video_id)
+        return 2
+
+    monkeypatch.setattr(search_mod.aws, "videos_table", VideosTable)
+    monkeypatch.setattr(search_mod, "index_video", index_video)
+
+    assert search_mod.reindex_all() == 4
+    assert indexed == ["v1", "v2"]
