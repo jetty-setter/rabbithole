@@ -1,5 +1,6 @@
 """End-to-end-ish API tests against a moto-faked AWS backend."""
 
+import boto3
 from conftest import auth, seed_video
 
 
@@ -321,3 +322,37 @@ def test_feed_skips_unlisted_and_still_fills_the_page(client, videos_table):
 
     ids = [v["video_id"] for v in client.get("/videos").json()]
     assert ids == ["pub"]  # a newer wall of unlisted videos doesn't push it out of the feed
+
+
+def test_feed_falls_back_to_scan_when_the_index_is_missing(client, videos_table):
+    # The API can deploy before Terraform creates the index. Recreate the table without it.
+    videos_table.delete()
+    table = boto3.resource("dynamodb", region_name="us-east-1").create_table(
+        TableName="test-videos",
+        KeySchema=[{"AttributeName": "video_id", "KeyType": "HASH"}],
+        AttributeDefinitions=[{"AttributeName": "video_id", "AttributeType": "S"}],
+        BillingMode="PAY_PER_REQUEST",
+    )
+    seed_video(table, video_id="old", created_at="2026-01-01T00:00:00+00:00")
+    seed_video(table, video_id="new", created_at="2026-03-01T00:00:00+00:00")
+    seed_video(table, video_id="unl", visibility="unlisted", owner="bob",
+               created_at="2026-04-01T00:00:00+00:00")
+
+    resp = client.get("/videos")
+
+    assert resp.status_code == 200
+    assert [v["video_id"] for v in resp.json()] == ["new", "old"]
+
+
+def test_only_index_related_errors_trigger_the_scan_fallback():
+    from botocore.exceptions import ClientError
+
+    from app.routers.videos import _index_unavailable
+
+    def err(code, message=""):
+        return ClientError({"Error": {"Code": code, "Message": message}}, "Query")
+
+    assert _index_unavailable(err("AccessDeniedException"))  # IAM not applied yet
+    assert _index_unavailable(err("ValidationException", "The table does not have the specified index: feed-by-created"))
+    assert not _index_unavailable(err("ValidationException", "Invalid KeyConditionExpression"))
+    assert not _index_unavailable(err("ProvisionedThroughputExceededException"))
