@@ -50,6 +50,7 @@ def main():
             "content_type": "video/mp4", "status": "pending_upload",
             "owner": "RabbitHole", "created_by": "hosted-finds",
             "created_at": datetime.now(timezone.utc).isoformat(), "visibility": "public",
+            "gsi_feed": "FEED",
             "title": entry["title"], "description": entry["description"], "tags": entry["tags"],
         }
         try:

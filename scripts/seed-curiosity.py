@@ -41,6 +41,7 @@ def main():
             "description": pick["description"], "tags": pick["tags"],
             "owner": author, "source_name": author, "created_by": "curiosity-starter",
             "created_at": datetime.now(timezone.utc).isoformat(), "visibility": "public",
+            "gsi_feed": "FEED",
             "transcript_source": "none", "transcript_status": "pending", "has_transcript": False,
             "views": 0, "hops": 0, "thumps": 0,
             "editorial_reference": pick["reference_url"],

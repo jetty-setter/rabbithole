@@ -2,35 +2,48 @@
 
 from __future__ import annotations
 
+from boto3.dynamodb.conditions import Key
 from fastapi import APIRouter, Depends, HTTPException, Response
 
 from .. import aws, config
 from ..auth import is_admin, optional_auth, require_auth
-from ..helpers import clean_tags, norm_visibility
+from ..helpers import FEED_PARTITION, clean_tags, norm_visibility
 from ..models import UpdateVideo, Video
 from ..serializers import to_video
 from .comments import delete_comments
 
 router = APIRouter()
 
+FEED_LIMIT = 100
+
 
 @router.get("/videos", response_model=list[Video])
 def list_videos(viewer: str | None = Depends(optional_auth)) -> list[Video]:
-    # Scan is fine at portfolio scale; a GSI on created_at would be the
-    # production move once the table grows
-    resp = aws.videos_table().scan(Limit=100)
-    items = [i for i in resp.get("Items", []) if "video_id" in i]
     # Unlisted videos are hidden from the feed for everyone except their owner
     # (and the admin). Direct links still work.
     can_see_all = bool(viewer) and is_admin(viewer)
-    items = [
-        i for i in items
-        if norm_visibility(i.get("visibility")) == "public"
-        or can_see_all
-        or (viewer is not None and i.get("owner") == viewer)
-    ]
-    items.sort(key=lambda i: i.get("created_at", ""), reverse=True)
-    return [to_video(item) for item in items]
+    items: list[dict] = []
+    kwargs: dict = {
+        "IndexName": "feed-by-created",
+        "KeyConditionExpression": Key("gsi_feed").eq(FEED_PARTITION),
+        "ScanIndexForward": False,  # newest first
+        "Limit": FEED_LIMIT,
+    }
+    # Page until the feed is full: hidden (unlisted) videos use up part of each page
+    while len(items) < FEED_LIMIT:
+        resp = aws.videos_table().query(**kwargs)
+        for item in resp.get("Items", []):
+            visible = (
+                norm_visibility(item.get("visibility")) == "public"
+                or can_see_all
+                or (viewer is not None and item.get("owner") == viewer)
+            )
+            if visible:
+                items.append(item)
+        if "LastEvaluatedKey" not in resp:
+            break
+        kwargs["ExclusiveStartKey"] = resp["LastEvaluatedKey"]
+    return [to_video(item) for item in items[:FEED_LIMIT]]
 
 
 @router.get("/videos/{video_id}", response_model=Video)

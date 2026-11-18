@@ -259,7 +259,7 @@ Honest production trade-offs (the demo deliberately optimizes for cost + clarity
 
 - **AWS Elemental MediaConvert** instead of self-managed ffmpeg — less ops, per-job billing.
 - **Private subnets + VPC endpoints** for workers — defense-in-depth over the public-subnet demo.
-- **GSI on `created_at`** instead of `Scan` for the library listing + pagination.
+- **Cursor pagination** for the library listing (it reads the newest 100 from the `feed-by-created` index today).
 - **Real auth** (Cognito / a user store) — today it's a single-creator model with an `owner` field.
 - **Signed URLs / cookies** on the streaming bucket; **rate limiting** + scoped CORS on the API.
 - **Code-split the frontend bundle** (`hls.js` is the bulk) and post Lighthouse numbers.
