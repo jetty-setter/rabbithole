@@ -45,7 +45,21 @@ def aws_stack():
         ddb.create_table(
             TableName="test-videos",
             KeySchema=[{"AttributeName": "video_id", "KeyType": "HASH"}],
-            AttributeDefinitions=[{"AttributeName": "video_id", "AttributeType": "S"}],
+            AttributeDefinitions=[
+                {"AttributeName": "video_id", "AttributeType": "S"},
+                {"AttributeName": "gsi_feed", "AttributeType": "S"},
+                {"AttributeName": "created_at", "AttributeType": "S"},
+            ],
+            GlobalSecondaryIndexes=[
+                {
+                    "IndexName": "feed-by-created",
+                    "KeySchema": [
+                        {"AttributeName": "gsi_feed", "KeyType": "HASH"},
+                        {"AttributeName": "created_at", "KeyType": "RANGE"},
+                    ],
+                    "Projection": {"ProjectionType": "ALL"},
+                }
+            ],
             BillingMode="PAY_PER_REQUEST",
         )
         ddb.create_table(
@@ -235,6 +249,7 @@ def seed_video(table, **over):
         "filename": "clip.mp4",
         "status": "ready",
         "created_at": "2026-01-01T00:00:00+00:00",
+        "gsi_feed": "FEED",
         "owner": "alice",
         "visibility": "public",
         "hls_key": f"{over.get('video_id', 'vid-1')}/hls/master.m3u8",

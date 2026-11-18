@@ -10,6 +10,9 @@ from . import config
 # Allowed visibility states. Anything else is treated as "public".
 _VISIBILITIES = {"public", "unlisted"}
 
+# Partition value for the videos feed index (feed-by-created); every video carries it.
+FEED_PARTITION = "FEED"
+
 
 def norm_visibility(value: str | None) -> str:
     return value if value in _VISIBILITIES else "public"

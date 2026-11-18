@@ -48,6 +48,7 @@ resource "aws_iam_role_policy" "api_lambda" {
         ]
         Resource = [
           aws_dynamodb_table.videos.arn,
+          "${aws_dynamodb_table.videos.arn}/index/*",
           aws_dynamodb_table.users.arn,
           aws_dynamodb_table.comments.arn,
           aws_dynamodb_table.embeddings.arn,

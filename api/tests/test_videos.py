@@ -41,6 +41,7 @@ def test_legacy_record_without_visibility_is_public(client, videos_table):
             "filename": "old.mp4",
             "status": "ready",
             "created_at": "2025-01-01T00:00:00+00:00",
+            "gsi_feed": "FEED",
             "hls_key": "legacy/hls/master.m3u8",
         }
     )
@@ -201,6 +202,7 @@ def test_legacy_record_with_stale_has_transcript_flag_is_not_trusted_directly(cl
             "filename": "old.mp4",
             "status": "ready",
             "created_at": "2025-01-01T00:00:00+00:00",
+            "gsi_feed": "FEED",
             "hls_key": "legacy/hls/master.m3u8",
             "has_transcript": True,
             "transcribing": False,
@@ -218,6 +220,7 @@ def test_legacy_record_with_no_transcript_fields_at_all(client, videos_table):
             "filename": "old.mp4",
             "status": "ready",
             "created_at": "2025-01-01T00:00:00+00:00",
+            "gsi_feed": "FEED",
             "hls_key": "legacy2/hls/master.m3u8",
         }
     )
@@ -290,3 +293,31 @@ def test_admin_can_clear_the_featured_video(client, videos_table):
 def test_feature_missing_video_404(client):
     r = client.put("/videos/nope/featured", json={"featured": True}, headers=auth("admin"))
     assert r.status_code == 404
+
+
+def test_feed_is_newest_first(client, videos_table):
+    seed_video(videos_table, video_id="old", created_at="2026-01-01T00:00:00+00:00")
+    seed_video(videos_table, video_id="new", created_at="2026-03-01T00:00:00+00:00")
+    seed_video(videos_table, video_id="mid", created_at="2026-02-01T00:00:00+00:00")
+
+    ids = [v["video_id"] for v in client.get("/videos").json()]
+    assert ids == ["new", "mid", "old"]
+
+
+def test_feed_returns_newest_100_of_a_larger_table(client, videos_table):
+    for n in range(105):
+        seed_video(videos_table, video_id=f"v{n:03d}", created_at=f"2026-01-01T00:{n // 60:02d}:{n % 60:02d}+00:00")
+
+    ids = [v["video_id"] for v in client.get("/videos").json()]
+    assert len(ids) == 100
+    assert ids[0] == "v104" and ids[-1] == "v005"  # the 5 oldest are cut, not random ones
+
+
+def test_feed_skips_unlisted_and_still_fills_the_page(client, videos_table):
+    for n in range(100):
+        seed_video(videos_table, video_id=f"u{n:03d}", visibility="unlisted", owner="bob",
+                   created_at=f"2026-02-01T00:00:{n:02d}+00:00")
+    seed_video(videos_table, video_id="pub", created_at="2026-01-01T00:00:00+00:00")
+
+    ids = [v["video_id"] for v in client.get("/videos").json()]
+    assert ids == ["pub"]  # a newer wall of unlisted videos doesn't push it out of the feed

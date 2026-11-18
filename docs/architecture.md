@@ -113,8 +113,8 @@ Single DynamoDB table, partition key `video_id`. Representative item:
 | `duration_seconds` / `cost_usd` | `12.4` / `0.0007` | measured at transcode time |
 | `views` / `hops` / `thumps` | counters | atomic `ADD` updates |
 
-Listing uses a bounded `Scan` (fine at portfolio scale; a GSI on `created_at` is the
-production move). The API maps stored keys to CloudFront URLs at read time, so the bucket
+Listing queries the `feed-by-created` index (newest first, capped at 100). Every video carries
+`gsi_feed`; `scripts/backfill-video-feed.py` adds it to older records. The API maps stored keys to CloudFront URLs at read time, so the bucket
 layout can change without breaking clients.
 
 ### RabbitHole content model (V1)
@@ -282,7 +282,7 @@ The demo optimizes for cost and clarity. For production I'd change:
 - **Auth** — Cognito or a real user store; today it's a single-creator JWT with an `owner`
   field and a default credential that must be rotated before public sharing.
 - **API edge** — scoped CORS, rate limiting, and CloudFront/WAF in front of the API.
-- **Data** — GSI on `created_at` + pagination instead of `Scan`.
+- **Data** — cursor pagination for the video feed.
 - **Networking** — private subnets + VPC endpoints for the workers.
 - **Transcode** — AWS Elemental MediaConvert to shed ffmpeg ops.
 - **Frontend** — code-split the bundle (`hls.js` dominates) and publish Lighthouse scores.

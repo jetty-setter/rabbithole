@@ -8,6 +8,23 @@ resource "aws_dynamodb_table" "videos" {
     name = "video_id"
     type = "S"
   }
+  attribute {
+    name = "gsi_feed"
+    type = "S"
+  }
+  attribute {
+    name = "created_at"
+    type = "S"
+  }
+
+  # library feed: every video carries gsi_feed ("FEED"), so one Query returns
+  # the newest videos first instead of Scanning the table
+  global_secondary_index {
+    name            = "feed-by-created"
+    hash_key        = "gsi_feed"
+    range_key       = "created_at"
+    projection_type = "ALL"
+  }
 
   point_in_time_recovery {
     enabled = true

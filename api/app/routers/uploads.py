@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from .. import aws, config, providers
 from ..auth import is_admin, require_auth
-from ..helpers import clean_tags, norm_visibility, safe_filename
+from ..helpers import FEED_PARTITION, clean_tags, norm_visibility, safe_filename
 from ..models import ExternalCreate, UploadRequest, UploadResponse, Video
 from ..serializers import to_video
 
@@ -50,6 +50,7 @@ def create_upload(req: UploadRequest, user: str = Depends(require_auth)) -> Uplo
         "owner": user,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "visibility": norm_visibility(req.visibility),
+        "gsi_feed": FEED_PARTITION,
     }
     if req.title and req.title.strip():
         item["title"] = req.title.strip()[:200]
@@ -179,6 +180,7 @@ def create_external(body: ExternalCreate, user: str = Depends(require_auth)) -> 
         "created_by": user,            # audit only; not surfaced
         "title": body.title.strip()[:200],
         "visibility": norm_visibility(body.visibility),
+        "gsi_feed": FEED_PARTITION,
         "views": 0,
         "hops": 0,
         "thumps": 0,
